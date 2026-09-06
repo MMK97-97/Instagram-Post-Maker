@@ -1,46 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>FWCWL Creative Studio</title>
+<html lang="en">
+
+<head>
+
+  <meta charset="UTF-8" />
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>
+    FWCWL Creative Studio
+  </title>
+
 
   <meta
     name="description"
-    content="Premium FWCWL cricket poster and video creative studio."
+    content="Professional cricket poster and video creative studio for FWCWL."
   />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  />
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  />
+
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet"
   />
 
-  <link rel="stylesheet" href="styles.css" />
+
+  <link
+    rel="stylesheet"
+    href="styles.css"
+  />
+
+
+  <link
+    rel="stylesheet"
+    href="poster-pro.css"
+  />
+
 </head>
+
 
 <body>
 
+
 <div class="app-shell">
 
+
   <!-- =====================================================
-       TOP APP BAR
+       TOP BAR
   ====================================================== -->
+
   <header class="topbar">
+
 
     <div class="brand">
 
+
       <div class="brand-logo-wrap">
+
         <img
           src="assets/fwcwl-logo.jpeg"
           alt="FWCWL"
         />
+
       </div>
 
+
       <div class="brand-copy">
+
         <strong>
           FWCWL
         </strong>
@@ -48,13 +89,17 @@
         <span>
           CREATIVE STUDIO
         </span>
+
       </div>
 
     </div>
 
 
-    <!-- PROJECT / STUDIO SWITCH -->
+
+    <!-- CENTER -->
+
     <div class="topbar-center">
+
 
       <div class="project-chip">
 
@@ -65,6 +110,7 @@
           type="text"
           value="FWCWL Campaign"
           maxlength="80"
+          aria-label="Project name"
         />
 
       </div>
@@ -72,12 +118,15 @@
 
       <div class="studio-switch">
 
+
         <button
           id="posterModeBtn"
           class="studio-mode-btn active"
           type="button"
         >
+
           <svg viewBox="0 0 24 24">
+
             <rect
               x="4"
               y="4"
@@ -88,21 +137,25 @@
               stroke="currentColor"
               stroke-width="1.8"
             />
+
             <circle
               cx="9"
               cy="9"
               r="1.3"
               fill="currentColor"
             />
+
             <path
               d="m6 17 4-4 3 3 2-2 3 3"
               fill="none"
               stroke="currentColor"
               stroke-width="1.7"
             />
+
           </svg>
 
           Poster
+
         </button>
 
 
@@ -111,7 +164,9 @@
           class="studio-mode-btn"
           type="button"
         >
+
           <svg viewBox="0 0 24 24">
+
             <rect
               x="3"
               y="5"
@@ -122,13 +177,16 @@
               stroke="currentColor"
               stroke-width="1.8"
             />
+
             <path
               d="m10 9 5 3-5 3z"
               fill="currentColor"
             />
+
           </svg>
 
           Video
+
         </button>
 
       </div>
@@ -136,23 +194,27 @@
     </div>
 
 
-    <!-- TOP ACTIONS -->
+
+    <!-- ACTIONS -->
+
     <div class="topbar-actions">
+
 
       <button
         id="undoGlobalBtn"
         class="top-icon-btn"
         type="button"
-        title="Undo"
+        title="Undo · Ctrl/Cmd + Z"
       >
         ↶
       </button>
+
 
       <button
         id="redoGlobalBtn"
         class="top-icon-btn"
         type="button"
-        title="Redo"
+        title="Redo · Ctrl/Cmd + Shift + Z"
       >
         ↷
       </button>
@@ -191,24 +253,31 @@
 
 
   <!-- =====================================================
-       APP BODY
+       MAIN
   ====================================================== -->
+
   <main class="main-layout">
 
 
     <!-- ===================================================
          LEFT SIDEBAR
     ==================================================== -->
+
     <aside class="left-sidebar">
 
 
-      <!-- POSTER PANEL -->
+      <!-- =================================================
+           POSTER LEFT
+      ================================================== -->
+
       <div
         id="posterLeftPanel"
         class="left-mode-panel"
       >
 
+
         <div class="left-tabs">
+
 
           <button
             class="left-tab active"
@@ -218,6 +287,7 @@
             Templates
           </button>
 
+
           <button
             class="left-tab"
             data-poster-tab="media"
@@ -225,6 +295,7 @@
           >
             Media
           </button>
+
 
           <button
             class="left-tab"
@@ -237,16 +308,24 @@
         </div>
 
 
+
+        <!-- ===============================================
+             TEMPLATES
+        ================================================ -->
+
         <section
           id="posterTemplatesPanel"
           class="left-tab-panel active"
         >
 
+
           <div class="panel-title-row">
 
+
             <div>
+
               <div class="panel-eyebrow">
-                FWCWL LIBRARY
+                FWCWL DESIGN LIBRARY
               </div>
 
               <h2>
@@ -254,19 +333,24 @@
               </h2>
 
               <p>
-                Premium social designs built for league content.
+                Match graphics, rustic designs, layered editorials and premium cricket artwork.
               </p>
+
             </div>
+
 
             <span
               id="posterTemplateCount"
               class="count-pill"
             >
-              24
+              —
             </span>
 
           </div>
 
+
+
+          <!-- SEARCH -->
 
           <div class="search-box">
 
@@ -277,16 +361,21 @@
             <input
               id="posterTemplateSearch"
               type="text"
-              placeholder="Search cricket templates..."
+              placeholder="Search match day, vintage, grunge..."
+              autocomplete="off"
             />
 
           </div>
 
 
+
+          <!-- FILTERS -->
+
           <div
             id="posterTemplateFilters"
             class="filter-row"
           >
+
 
             <button
               class="filter-chip active"
@@ -296,6 +385,7 @@
               All
             </button>
 
+
             <button
               class="filter-chip"
               data-filter="match"
@@ -303,6 +393,7 @@
             >
               Match
             </button>
+
 
             <button
               class="filter-chip"
@@ -312,6 +403,7 @@
               Team
             </button>
 
+
             <button
               class="filter-chip"
               data-filter="result"
@@ -319,6 +411,7 @@
             >
               Results
             </button>
+
 
             <button
               class="filter-chip"
@@ -328,6 +421,7 @@
               Events
             </button>
 
+
             <button
               class="filter-chip"
               data-filter="social"
@@ -336,8 +430,51 @@
               Social
             </button>
 
+
+            <button
+              class="filter-chip"
+              data-filter="rustic"
+              data-collection-filter="rustic"
+              type="button"
+            >
+              Rustic
+            </button>
+
+
+            <button
+              class="filter-chip"
+              data-filter="layered"
+              data-collection-filter="layered"
+              type="button"
+            >
+              Layered
+            </button>
+
+
+            <button
+              class="filter-chip"
+              data-filter="vintage"
+              data-collection-filter="vintage"
+              type="button"
+            >
+              Vintage
+            </button>
+
+
+            <button
+              class="filter-chip"
+              data-filter="editorial"
+              data-collection-filter="editorial"
+              type="button"
+            >
+              Editorial
+            </button>
+
           </div>
 
+
+
+          <!-- TEMPLATE GRID -->
 
           <div
             id="posterTemplateGrid"
@@ -348,350 +485,44 @@
 
 
 
-        <!-- POSTER MEDIA -->
+        <!-- ===============================================
+             MEDIA
+             PosterEditor fills this dynamically
+        ================================================ -->
+
         <section
           id="posterMediaPanel"
           class="left-tab-panel"
-        >
-
-          <div class="panel-title-row">
-            <div>
-              <div class="panel-eyebrow">
-                MEDIA
-              </div>
-
-              <h2>
-                Player Assets
-              </h2>
-
-              <p>
-                Upload photography, team logos and sponsors.
-              </p>
-            </div>
-          </div>
-
-
-          <label class="upload-card hero-upload">
-
-            <input
-              id="posterBackgroundInput"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              hidden
-            />
-
-            <div class="upload-icon-large">
-              ＋
-            </div>
-
-            <strong>
-              Upload Player / Match Photo
-            </strong>
-
-            <span>
-              PNG • JPG • WEBP
-            </span>
-
-          </label>
-
-
-          <div
-            id="posterBackgroundPreviewWrap"
-            class="uploaded-preview hidden"
-          >
-
-            <img
-              id="posterBackgroundPreview"
-              alt=""
-            />
-
-            <button
-              id="posterRemoveBackgroundBtn"
-              type="button"
-            >
-              Remove
-            </button>
-
-          </div>
-
-
-          <div class="inspector-mini-section">
-
-            <div class="mini-title">
-              IMAGE POSITION
-            </div>
-
-
-            <div class="field-block">
-
-              <div class="range-head">
-                <label>
-                  Zoom
-                </label>
-
-                <span id="posterImageScaleValue">
-                  100%
-                </span>
-              </div>
-
-              <input
-                id="posterImageScale"
-                type="range"
-                min="100"
-                max="220"
-                value="100"
-              />
-
-            </div>
-
-
-            <div class="field-block">
-
-              <div class="range-head">
-                <label>
-                  Horizontal
-                </label>
-
-                <span id="posterImageXValue">
-                  50%
-                </span>
-              </div>
-
-              <input
-                id="posterImageX"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-              />
-
-            </div>
-
-
-            <div class="field-block">
-
-              <div class="range-head">
-                <label>
-                  Vertical
-                </label>
-
-                <span id="posterImageYValue">
-                  50%
-                </span>
-              </div>
-
-              <input
-                id="posterImageY"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-              />
-
-            </div>
-
-          </div>
-
-
-          <div class="section-divider"></div>
-
-
-          <label class="upload-card compact">
-
-            <input
-              id="posterSponsorLogoInput"
-              type="file"
-              accept="image/png,image/jpeg,image/webp,image/svg+xml"
-              hidden
-            />
-
-            <div class="upload-icon-small">
-              ＋
-            </div>
-
-            <strong>
-              Team / Sponsor Logo
-            </strong>
-
-            <span>
-              Optional • top right
-            </span>
-
-          </label>
-
-
-          <div
-            id="posterSponsorPreviewWrap"
-            class="uploaded-preview logo-preview hidden"
-          >
-
-            <img
-              id="posterSponsorPreview"
-              alt=""
-            />
-
-            <button
-              id="posterRemoveSponsorBtn"
-              type="button"
-            >
-              Remove
-            </button>
-
-          </div>
-
-        </section>
+        ></section>
 
 
 
-        <!-- POSTER BRAND -->
+        <!-- ===============================================
+             BRAND
+             PosterEditor fills this dynamically
+        ================================================ -->
+
         <section
           id="posterBrandPanel"
           class="left-tab-panel"
-        >
-
-          <div class="panel-title-row">
-            <div>
-              <div class="panel-eyebrow">
-                BRAND SYSTEM
-              </div>
-
-              <h2>
-                FWCWL Identity
-              </h2>
-
-              <p>
-                League colors and official branding.
-              </p>
-            </div>
-          </div>
-
-
-          <div class="official-brand-card">
-
-            <div class="brand-preview-logo">
-              <img
-                src="assets/fwcwl-logo.jpeg"
-                alt="FWCWL"
-              />
-            </div>
-
-            <div>
-              <strong>
-                Official FWCWL Mark
-              </strong>
-
-              <p>
-                Automatically shown on exports.
-              </p>
-            </div>
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Brand / Team Name
-            </label>
-
-            <input
-              id="posterBrandName"
-              type="text"
-              value="FWCWL"
-            />
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Accent
-            </label>
-
-            <div class="color-row">
-
-              <input
-                id="posterAccentColor"
-                type="color"
-                value="#F0C34C"
-              />
-
-              <input
-                id="posterAccentColorText"
-                type="text"
-                value="#F0C34C"
-              />
-
-            </div>
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Text
-            </label>
-
-            <div class="color-row">
-
-              <input
-                id="posterTextColor"
-                type="color"
-                value="#FFFFFF"
-              />
-
-              <input
-                id="posterTextColorText"
-                type="text"
-                value="#FFFFFF"
-              />
-
-            </div>
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Background
-            </label>
-
-            <div class="color-row">
-
-              <input
-                id="posterBackgroundColor"
-                type="color"
-                value="#210B0E"
-              />
-
-              <input
-                id="posterBackgroundColorText"
-                type="text"
-                value="#210B0E"
-              />
-
-            </div>
-
-          </div>
-
-        </section>
+        ></section>
 
       </div>
 
 
 
-      <!-- ===================================================
-           VIDEO LEFT PANEL
-      ==================================================== -->
+      <!-- =================================================
+           VIDEO LEFT
+      ================================================== -->
+
       <div
         id="videoLeftPanel"
         class="left-mode-panel hidden"
       >
 
+
         <div class="left-tabs video-tabs">
+
 
           <button
             class="left-tab active"
@@ -701,6 +532,7 @@
             Media
           </button>
 
+
           <button
             class="left-tab"
             data-video-tab="templates"
@@ -708,6 +540,7 @@
           >
             Cricket
           </button>
+
 
           <button
             class="left-tab"
@@ -720,15 +553,20 @@
         </div>
 
 
+
         <!-- VIDEO MEDIA -->
+
         <section
           id="videoMediaPanel"
           class="left-tab-panel active"
         >
 
+
           <div class="panel-title-row">
 
+
             <div>
+
               <div class="panel-eyebrow">
                 ASSET LIBRARY
               </div>
@@ -738,14 +576,17 @@
               </h2>
 
               <p>
-                Upload video, photography and music.
+                Upload match videos, player photography and music.
               </p>
+
             </div>
 
           </div>
 
 
+
           <div class="media-upload-grid">
+
 
             <label class="mini-upload">
 
@@ -768,6 +609,7 @@
             </label>
 
 
+
             <label class="mini-upload">
 
               <input
@@ -787,6 +629,7 @@
               </strong>
 
             </label>
+
 
 
             <label class="mini-upload">
@@ -811,6 +654,7 @@
           </div>
 
 
+
           <div class="section-label-row">
 
             <span>
@@ -822,6 +666,7 @@
             </small>
 
           </div>
+
 
 
           <div
@@ -852,14 +697,18 @@
 
 
         <!-- VIDEO PRESETS -->
+
         <section
           id="videoTemplatesPanel"
           class="left-tab-panel"
         >
 
+
           <div class="panel-title-row">
 
+
             <div>
+
               <div class="panel-eyebrow">
                 CRICKET GRAPHICS
               </div>
@@ -871,6 +720,7 @@
               <p>
                 Add broadcast-style cricket graphics instantly.
               </p>
+
             </div>
 
           </div>
@@ -886,14 +736,17 @@
 
 
         <!-- VIDEO TEXT -->
+
         <section
           id="videoTextPanel"
           class="left-tab-panel"
         >
 
+
           <div class="panel-title-row">
 
             <div>
+
               <div class="panel-eyebrow">
                 TYPOGRAPHY
               </div>
@@ -903,11 +756,13 @@
               </h2>
 
               <p>
-                Add titles, names and live-score graphics.
+                Add match titles, players and score graphics.
               </p>
+
             </div>
 
           </div>
+
 
 
           <button
@@ -920,7 +775,9 @@
               T
             </div>
 
+
             <div>
+
               <span class="text-preview-large">
                 MATCH DAY
               </span>
@@ -928,9 +785,11 @@
               <small>
                 Hero title
               </small>
+
             </div>
 
           </button>
+
 
 
           <button
@@ -943,7 +802,9 @@
               P
             </div>
 
+
             <div>
+
               <span class="text-preview-player">
                 PLAYER NAME
               </span>
@@ -951,9 +812,11 @@
               <small>
                 Lower third
               </small>
+
             </div>
 
           </button>
+
 
 
           <button
@@ -966,7 +829,9 @@
               #
             </div>
 
+
             <div>
+
               <span class="text-preview-score">
                 186/5
               </span>
@@ -974,6 +839,7 @@
               <small>
                 Score graphic
               </small>
+
             </div>
 
           </button>
@@ -987,24 +853,33 @@
 
 
     <!-- ===================================================
-         CENTER
+         CENTER WORKSPACE
     ==================================================== -->
+
     <section class="center-workspace">
 
 
-      <!-- POSTER WORKSPACE -->
+      <!-- =================================================
+           POSTER WORKSPACE
+      ================================================== -->
+
       <div
         id="posterWorkspace"
         class="studio-workspace"
       >
 
+
+        <!-- TOOLBAR -->
+
         <div class="workspace-toolbar">
+
 
           <div class="toolbar-group">
 
             <div class="toolbar-label">
               FORMAT
             </div>
+
 
             <select id="posterCanvasSize">
 
@@ -1025,37 +900,66 @@
           </div>
 
 
+
           <div class="toolbar-group">
+
 
             <button
               id="posterSafeZoneBtn"
               class="tool-btn"
               type="button"
+              title="Instagram safe area"
             >
               Safe Area
             </button>
 
+
+            <button
+              id="posterSnapBtn"
+              class="tool-btn active"
+              type="button"
+              title="Snap objects to canvas center"
+            >
+              Snap
+            </button>
+
+
+            <button
+              id="posterFitBtn"
+              class="tool-btn"
+              type="button"
+              title="Fit poster in workspace"
+            >
+              Fit
+            </button>
+
+
             <div class="toolbar-divider"></div>
+
 
             <button
               id="posterZoomOutBtn"
               class="icon-tool"
               type="button"
+              title="Zoom out"
             >
               −
             </button>
+
 
             <span
               id="posterZoomValue"
               class="zoom-value"
             >
-              55%
+              50%
             </span>
+
 
             <button
               id="posterZoomInBtn"
               class="icon-tool"
               type="button"
+              title="Zoom in"
             >
               +
             </button>
@@ -1065,7 +969,11 @@
         </div>
 
 
+
+        <!-- POSTER STAGE -->
+
         <div class="poster-stage-area">
+
 
           <div class="canvas-shadow-wrap">
 
@@ -1080,12 +988,21 @@
         </div>
 
 
+
+        <!-- STATUS -->
+
         <div class="workspace-statusbar">
 
           <span>
             <i class="online-dot"></i>
-            Live preview
+            Editable layer canvas
           </span>
+
+
+          <span>
+            Drag • Resize • Rotate • Double-click text to edit
+          </span>
+
 
           <span id="posterDimensions">
             1080 × 1350
@@ -1100,19 +1017,24 @@
       <!-- =================================================
            VIDEO WORKSPACE
       ================================================== -->
+
       <div
         id="videoWorkspace"
         class="studio-workspace hidden"
       >
 
-        <!-- TOOLBAR -->
+
+        <!-- VIDEO TOOLBAR -->
+
         <div class="workspace-toolbar">
+
 
           <div class="toolbar-group">
 
             <div class="toolbar-label">
               FORMAT
             </div>
+
 
             <select id="videoAspectSelect">
 
@@ -1137,7 +1059,9 @@
           </div>
 
 
+
           <div class="toolbar-group">
+
 
             <button
               id="videoSplitBtn"
@@ -1147,6 +1071,7 @@
               ✂ Split
             </button>
 
+
             <button
               id="videoDuplicateBtn"
               class="tool-btn"
@@ -1154,6 +1079,7 @@
             >
               Duplicate
             </button>
+
 
             <button
               id="videoDeleteBtn"
@@ -1170,9 +1096,12 @@
 
 
         <!-- VIDEO PREVIEW -->
+
         <div class="video-preview-area">
 
+
           <div class="video-stage-shell">
+
 
             <div class="video-stage-top">
 
@@ -1180,15 +1109,21 @@
                 PROGRAM
               </span>
 
+
               <div>
+
                 <i></i>
+
                 LIVE PREVIEW
+
               </div>
 
             </div>
 
 
+
             <div class="video-preview-shell">
+
 
               <canvas
                 id="videoCanvas"
@@ -1225,9 +1160,12 @@
 
 
         <!-- PLAYBACK -->
+
         <div class="playback-bar">
 
+
           <div class="playback-group">
+
 
             <button
               id="videoSkipBackBtn"
@@ -1237,6 +1175,7 @@
               −1s
             </button>
 
+
             <button
               id="videoPlayBtn"
               class="play-button"
@@ -1244,6 +1183,7 @@
             >
               ▶
             </button>
+
 
             <button
               id="videoSkipForwardBtn"
@@ -1289,9 +1229,12 @@
 
 
         <!-- TIMELINE -->
+
         <div class="timeline-panel">
 
+
           <div class="timeline-toolbar">
+
 
             <div class="timeline-left-tools">
 
@@ -1306,7 +1249,9 @@
             </div>
 
 
+
             <div class="timeline-toolbar-center">
+
 
               <button
                 id="timelineSnapBtn"
@@ -1315,6 +1260,7 @@
               >
                 Snap
               </button>
+
 
               <button
                 id="timelineFitBtn"
@@ -1325,6 +1271,7 @@
               </button>
 
             </div>
+
 
 
             <div class="timeline-toolbar-right">
@@ -1350,15 +1297,18 @@
           </div>
 
 
+
           <div
             id="timelineScroll"
             class="timeline-scroll"
           >
 
+
             <div
               id="timelineContent"
               class="timeline-content"
             >
+
 
               <div
                 id="timelineRuler"
@@ -1366,8 +1316,11 @@
               ></div>
 
 
-              <!-- VIDEO -->
+
+              <!-- VIDEO TRACK -->
+
               <div class="timeline-track-row">
+
 
                 <div class="track-label">
 
@@ -1375,7 +1328,9 @@
                     V
                   </span>
 
+
                   <div>
+
                     <strong>
                       Video
                     </strong>
@@ -1383,9 +1338,11 @@
                     <small>
                       V1
                     </small>
+
                   </div>
 
                 </div>
+
 
                 <div
                   id="videoTrack"
@@ -1395,8 +1352,11 @@
               </div>
 
 
-              <!-- IMAGE -->
+
+              <!-- IMAGE TRACK -->
+
               <div class="timeline-track-row">
+
 
                 <div class="track-label">
 
@@ -1404,7 +1364,9 @@
                     P
                   </span>
 
+
                   <div>
+
                     <strong>
                       Photos
                     </strong>
@@ -1412,9 +1374,11 @@
                     <small>
                       P1
                     </small>
+
                   </div>
 
                 </div>
+
 
                 <div
                   id="imageTrack"
@@ -1424,8 +1388,11 @@
               </div>
 
 
-              <!-- TEXT -->
+
+              <!-- TEXT TRACK -->
+
               <div class="timeline-track-row">
+
 
                 <div class="track-label">
 
@@ -1433,7 +1400,9 @@
                     T
                   </span>
 
+
                   <div>
+
                     <strong>
                       Graphics
                     </strong>
@@ -1441,9 +1410,11 @@
                     <small>
                       T1
                     </small>
+
                   </div>
 
                 </div>
+
 
                 <div
                   id="textTrack"
@@ -1453,8 +1424,11 @@
               </div>
 
 
-              <!-- LOGO -->
+
+              <!-- BRAND TRACK -->
+
               <div class="timeline-track-row">
+
 
                 <div class="track-label">
 
@@ -1462,7 +1436,9 @@
                     L
                   </span>
 
+
                   <div>
+
                     <strong>
                       Branding
                     </strong>
@@ -1470,9 +1446,11 @@
                     <small>
                       L1
                     </small>
+
                   </div>
 
                 </div>
+
 
                 <div class="track-lane">
 
@@ -1488,8 +1466,11 @@
               </div>
 
 
-              <!-- AUDIO -->
+
+              <!-- AUDIO TRACK -->
+
               <div class="timeline-track-row">
+
 
                 <div class="track-label">
 
@@ -1497,7 +1478,9 @@
                     A
                   </span>
 
+
                   <div>
+
                     <strong>
                       Audio
                     </strong>
@@ -1505,9 +1488,11 @@
                     <small>
                       A1
                     </small>
+
                   </div>
 
                 </div>
+
 
                 <div
                   id="audioTrack"
@@ -1517,7 +1502,9 @@
               </div>
 
 
+
               <!-- PLAYHEAD -->
+
               <div
                 id="timelinePlayhead"
                 class="timeline-playhead"
@@ -1545,395 +1532,51 @@
 
 
     <!-- ===================================================
-         POSTER INSPECTOR
+         POSTER RIGHT PANEL
+         PosterEditor populates the inspector.
     ==================================================== -->
+
     <aside
       id="posterRightPanel"
       class="right-sidebar"
     >
 
+
       <div class="right-header">
 
         <div class="panel-eyebrow">
-          INSPECTOR
+          PRO INSPECTOR
         </div>
 
         <h2>
-          Poster
+          Poster Editor
         </h2>
 
         <p>
-          Customize your cricket creative.
+          Layer-based editing, typography, photo adjustments and effects.
         </p>
 
       </div>
 
 
-      <div class="right-scroll">
+      <div class="right-scroll"></div>
 
 
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            CONTENT
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Eyebrow
-            </label>
-
-            <input
-              id="posterKicker"
-              type="text"
-              value="FWCWL • MATCH DAY"
-            />
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Headline
-            </label>
-
-            <textarea
-              id="posterHeadline"
-              rows="3"
-            >TAMPA
-VS RIVALS</textarea>
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Details
-            </label>
-
-            <textarea
-              id="posterSubheadline"
-              rows="3"
-            >Saturday • 10:00 AM • Tampa, Florida</textarea>
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              CTA
-            </label>
-
-            <input
-              id="posterCta"
-              type="text"
-              value="MATCH DETAILS"
-            />
-
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Footer
-            </label>
-
-            <input
-              id="posterFooter"
-              type="text"
-              value="FLORIDA WEST COAST WINTER LEAGUE"
-            />
-
-          </div>
-
-        </section>
-
-
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            TYPOGRAPHY
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Headline Font
-            </label>
-
-            <select id="posterHeadlineFont">
-
-              <option value="Montserrat">
-                Montserrat
-              </option>
-
-              <option value="Bebas Neue">
-                Bebas Neue
-              </option>
-
-              <option value="Poppins">
-                Poppins
-              </option>
-
-              <option value="DM Sans">
-                DM Sans
-              </option>
-
-              <option value="Playfair Display">
-                Playfair Display
-              </option>
-
-            </select>
-
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Headline Size
-              </label>
-
-              <span id="posterHeadlineSizeValue">
-                112
-              </span>
-
-            </div>
-
-            <input
-              id="posterHeadlineSize"
-              type="range"
-              min="60"
-              max="190"
-              value="112"
-            />
-
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Vertical Position
-              </label>
-
-              <span id="posterContentYValue">
-                56%
-              </span>
-
-            </div>
-
-            <input
-              id="posterContentY"
-              type="range"
-              min="20"
-              max="78"
-              value="56"
-            />
-
-          </div>
-
-
-          <div
-            id="posterAlignmentButtons"
-            class="segmented-control"
-          >
-
-            <button
-              class="active"
-              data-align="left"
-              type="button"
-            >
-              Left
-            </button>
-
-            <button
-              data-align="center"
-              type="button"
-            >
-              Center
-            </button>
-
-            <button
-              data-align="right"
-              type="button"
-            >
-              Right
-            </button>
-
-          </div>
-
-        </section>
-
-
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            EFFECTS
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Dark Overlay
-              </label>
-
-              <span id="posterOverlayValue">
-                37%
-              </span>
-
-            </div>
-
-            <input
-              id="posterOverlay"
-              type="range"
-              min="0"
-              max="85"
-              value="37"
-            />
-
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Brightness
-              </label>
-
-              <span id="posterBrightnessValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="posterBrightness"
-              type="range"
-              min="40"
-              max="140"
-              value="100"
-            />
-
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Saturation
-              </label>
-
-              <span id="posterSaturationValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="posterSaturation"
-              type="range"
-              min="0"
-              max="180"
-              value="100"
-            />
-
-          </div>
-
-
-          <label class="switch-row">
-
-            <div>
-              <strong>
-                Gold Accent Glow
-              </strong>
-
-              <span>
-                FWCWL premium highlight
-              </span>
-            </div>
-
-            <input
-              id="posterAccentGlow"
-              type="checkbox"
-              checked
-            />
-
-            <span class="switch-ui"></span>
-
-          </label>
-
-        </section>
-
-      </div>
-
-
-      <div class="right-footer">
-
-        <button
-          id="posterDownloadPngBtn"
-          class="export-main-btn"
-          type="button"
-        >
-
-          <span>
-            <strong>
-              Download PNG
-            </strong>
-
-            <small>
-              Maximum quality
-            </small>
-          </span>
-
-          <span>
-            ↓
-          </span>
-
-        </button>
-
-
-        <button
-          id="posterDownloadJpgBtn"
-          class="export-alt-btn"
-          type="button"
-        >
-          Download JPG
-        </button>
-
-      </div>
+      <div class="right-footer"></div>
 
     </aside>
 
 
 
     <!-- ===================================================
-         VIDEO INSPECTOR
+         VIDEO RIGHT PANEL
     ==================================================== -->
+
     <aside
       id="videoRightPanel"
       class="right-sidebar hidden"
     >
+
 
       <div class="right-header">
 
@@ -1952,11 +1595,14 @@ VS RIVALS</textarea>
       </div>
 
 
+
       <div class="right-scroll">
 
 
-        <!-- SELECTED CLIP -->
+        <!-- CLIP -->
+
         <section class="inspector-section">
+
 
           <div class="inspector-title-row">
 
@@ -1974,7 +1620,9 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="form-grid-2">
+
 
             <div class="form-field">
 
@@ -2012,6 +1660,7 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="form-field">
 
             <label>
@@ -2032,7 +1681,10 @@ VS RIVALS</textarea>
                 0.75×
               </option>
 
-              <option value="1" selected>
+              <option
+                value="1"
+                selected
+              >
                 1×
               </option>
 
@@ -2051,6 +1703,7 @@ VS RIVALS</textarea>
             </select>
 
           </div>
+
 
 
           <div class="field-block">
@@ -2082,6 +1735,7 @@ VS RIVALS</textarea>
 
 
         <!-- TRANSFORM -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2114,6 +1768,7 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="field-block">
 
             <div class="range-head">
@@ -2139,6 +1794,7 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="field-block">
 
             <div class="range-head">
@@ -2162,6 +1818,7 @@ VS RIVALS</textarea>
             />
 
           </div>
+
 
 
           <div class="field-block">
@@ -2193,6 +1850,7 @@ VS RIVALS</textarea>
 
 
         <!-- COLOR -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2203,6 +1861,7 @@ VS RIVALS</textarea>
           <div class="field-block">
 
             <div class="range-head">
+
               <label>
                 Brightness
               </label>
@@ -2210,6 +1869,7 @@ VS RIVALS</textarea>
               <span id="clipBrightnessValue">
                 100%
               </span>
+
             </div>
 
             <input
@@ -2223,9 +1883,11 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="field-block">
 
             <div class="range-head">
+
               <label>
                 Saturation
               </label>
@@ -2233,6 +1895,7 @@ VS RIVALS</textarea>
               <span id="clipSaturationValue">
                 100%
               </span>
+
             </div>
 
             <input
@@ -2246,9 +1909,11 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="field-block">
 
             <div class="range-head">
+
               <label>
                 Contrast
               </label>
@@ -2256,6 +1921,7 @@ VS RIVALS</textarea>
               <span id="clipContrastValue">
                 100%
               </span>
+
             </div>
 
             <input
@@ -2273,6 +1939,7 @@ VS RIVALS</textarea>
 
 
         <!-- TRANSITIONS -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2281,6 +1948,7 @@ VS RIVALS</textarea>
 
 
           <div class="form-grid-2">
+
 
             <div class="form-field">
 
@@ -2313,6 +1981,7 @@ VS RIVALS</textarea>
               </select>
 
             </div>
+
 
 
             <div class="form-field">
@@ -2353,7 +2022,8 @@ VS RIVALS</textarea>
 
 
 
-        <!-- GRAPHICS -->
+        <!-- VIDEO GRAPHICS -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2376,6 +2046,7 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="form-field">
 
             <label>
@@ -2389,6 +2060,7 @@ VS RIVALS</textarea>
             />
 
           </div>
+
 
 
           <div class="form-field">
@@ -2406,7 +2078,9 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="form-grid-2">
+
 
             <div class="form-field">
 
@@ -2423,6 +2097,7 @@ VS RIVALS</textarea>
               />
 
             </div>
+
 
 
             <div class="form-field">
@@ -2442,6 +2117,7 @@ VS RIVALS</textarea>
             </div>
 
           </div>
+
 
 
           <div class="form-field">
@@ -2480,7 +2156,8 @@ VS RIVALS</textarea>
 
 
 
-        <!-- BRAND -->
+        <!-- VIDEO BRAND -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2491,6 +2168,7 @@ VS RIVALS</textarea>
           <label class="switch-row">
 
             <div>
+
               <strong>
                 Official FWCWL Logo
               </strong>
@@ -2498,6 +2176,7 @@ VS RIVALS</textarea>
               <span>
                 Show throughout video
               </span>
+
             </div>
 
             <input
@@ -2509,6 +2188,7 @@ VS RIVALS</textarea>
             <span class="switch-ui"></span>
 
           </label>
+
 
 
           <div class="field-block">
@@ -2540,6 +2220,7 @@ VS RIVALS</textarea>
 
 
         <!-- AUDIO -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2553,6 +2234,7 @@ VS RIVALS</textarea>
           >
             No background music
           </div>
+
 
 
           <div class="field-block">
@@ -2583,7 +2265,8 @@ VS RIVALS</textarea>
 
 
 
-        <!-- EXPORT SETTINGS -->
+        <!-- EXPORT -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
@@ -2619,6 +2302,7 @@ VS RIVALS</textarea>
           </div>
 
 
+
           <div class="form-field">
 
             <label>
@@ -2651,7 +2335,11 @@ VS RIVALS</textarea>
       </div>
 
 
+
+      <!-- VIDEO FOOTER -->
+
       <div class="right-footer">
+
 
         <button
           id="videoExportBtn"
@@ -2660,6 +2348,7 @@ VS RIVALS</textarea>
         >
 
           <span>
+
             <strong>
               Export Video
             </strong>
@@ -2667,6 +2356,7 @@ VS RIVALS</textarea>
             <small id="videoExportTypeLabel">
               High quality
             </small>
+
           </span>
 
           <span>
@@ -2676,10 +2366,12 @@ VS RIVALS</textarea>
         </button>
 
 
+
         <div
           id="videoExportProgressWrap"
           class="export-progress-wrap hidden"
         >
+
 
           <div class="export-progress-head">
 
@@ -2692,6 +2384,7 @@ VS RIVALS</textarea>
             </span>
 
           </div>
+
 
           <div class="export-progress-track">
 
@@ -2713,15 +2406,18 @@ VS RIVALS</textarea>
 </div>
 
 
+
 <!-- =====================================================
-     HIDDEN VIDEO/AUDIO SOURCES
+     HIDDEN VIDEO / AUDIO PLAYBACK SOURCES
 ====================================================== -->
+
 <video
   id="videoSource"
   playsinline
   preload="auto"
   style="display:none"
 ></video>
+
 
 <audio
   id="audioSource"
@@ -2731,10 +2427,17 @@ VS RIVALS</textarea>
 ></audio>
 
 
+
+<!-- =====================================================
+     APP
+====================================================== -->
+
 <script
   type="module"
   src="app.js"
 ></script>
 
+
 </body>
+
 </html>
