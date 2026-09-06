@@ -2410,3 +2410,967 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
 }
+/* ============================================================
+   FWCWL POSTER EDITOR
+   PROPERTIES / LAYERS VISIBILITY ENHANCEMENT V9.2
+
+   SAFE UI-ONLY ENHANCEMENT
+   ------------------------------------------------------------
+   Preserves:
+   • Canvas
+   • Templates
+   • Poster rendering
+   • Media
+   • Export
+   • Dragging
+   • History
+   • Brand controls
+   • Video editor
+============================================================ */
+
+
+/* ============================================================
+   RIGHT PANEL
+============================================================ */
+
+.poster-right {
+  background:
+    linear-gradient(
+      180deg,
+      #0b0e12 0%,
+      #090b0e 100%
+    );
+}
+
+
+.inspector-heading {
+  min-height: 58px;
+
+  padding:
+    0 16px;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.085);
+
+  background:
+    linear-gradient(
+      180deg,
+      #0d1014,
+      #090b0e
+    );
+
+  box-shadow:
+    0 8px 24px
+    rgba(0,0,0,.14);
+}
+
+
+.inspector-heading .micro-label {
+  color:
+    #f1c34d;
+
+  font-size:
+    6px;
+
+  font-weight:
+    950;
+
+  letter-spacing:
+    .13em;
+}
+
+
+.inspector-heading strong {
+  margin-top:
+    5px;
+
+  color:
+    #f3f4f6;
+
+  font-size:
+    10px;
+
+  line-height:
+    1.15;
+
+  font-weight:
+    850;
+}
+
+
+.type-badge {
+  min-width:
+    44px;
+
+  min-height:
+    24px;
+
+  display:
+    inline-flex;
+
+  align-items:
+    center;
+
+  justify-content:
+    center;
+
+  padding:
+    0 8px;
+
+  border:
+    1px solid
+    rgba(241,195,77,.20);
+
+  border-radius:
+    7px;
+
+  color:
+    #f5cd65;
+
+  background:
+    rgba(241,195,77,.065);
+
+  box-shadow:
+    inset 0 1px 0
+    rgba(255,255,255,.025);
+
+  font-size:
+    6px;
+
+  font-weight:
+    950;
+
+  letter-spacing:
+    .08em;
+}
+
+
+/* ============================================================
+   INSPECTOR SCROLL AREA
+============================================================ */
+
+.poster-inspector {
+  background:
+    #090b0e;
+
+  scrollbar-color:
+    #343943
+    transparent;
+}
+
+
+.poster-inspector::-webkit-scrollbar {
+  width:
+    7px;
+}
+
+
+.poster-inspector::-webkit-scrollbar-thumb {
+  border-radius:
+    20px;
+
+  background:
+    #343943;
+}
+
+
+/* ============================================================
+   INSPECTOR SECTIONS
+============================================================ */
+
+.inspector-section {
+  position:
+    relative;
+
+  padding:
+    16px 14px 17px;
+
+  border-bottom:
+    1px solid
+    rgba(255,255,255,.065);
+
+  background:
+    rgba(255,255,255,.008);
+}
+
+
+.inspector-section + .inspector-section {
+  margin-top:
+    0;
+}
+
+
+.inspector-section > .micro-label {
+  margin-bottom:
+    5px;
+
+  color:
+    #f1c34d;
+
+  font-size:
+    6px;
+
+  line-height:
+    1;
+
+  font-weight:
+    950;
+
+  letter-spacing:
+    .12em;
+}
+
+
+.inspector-section h3 {
+  margin:
+    5px 0 0;
+
+  color:
+    #d9dce1;
+
+  font-size:
+    9px;
+
+  line-height:
+    1.25;
+
+  font-weight:
+    800;
+}
+
+
+/* ============================================================
+   CANVAS SETTINGS
+============================================================ */
+
+.inspector-section .range-field {
+  margin-top:
+    15px;
+}
+
+
+.range-field > div {
+  min-height:
+    17px;
+}
+
+
+.range-field > div > span {
+  color:
+    #9297a0;
+
+  font-size:
+    7px;
+
+  font-weight:
+    750;
+}
+
+
+.range-field b {
+  color:
+    #c9cdd3;
+
+  font-size:
+    7px;
+
+  font-weight:
+    850;
+}
+
+
+.poster-inspector input[type="range"] {
+  height:
+    4px;
+
+  background:
+    linear-gradient(
+      90deg,
+      #363b44,
+      #252930
+    );
+}
+
+
+.poster-inspector input[type="range"]::-webkit-slider-thumb {
+  width:
+    13px;
+
+  height:
+    13px;
+
+  border:
+    2px solid
+    #080a0d;
+
+  background:
+    #f1c34d;
+
+  box-shadow:
+    0 0 0 1px
+    rgba(241,195,77,.55),
+    0 2px 8px
+    rgba(0,0,0,.30);
+}
+
+
+/* ============================================================
+   LAYER LIST
+============================================================ */
+
+.layer-list {
+  display:
+    grid;
+
+  gap:
+    7px;
+
+  margin-top:
+    11px;
+}
+
+
+.layer-row {
+  position:
+    relative;
+
+  min-height:
+    46px;
+
+  grid-template-columns:
+    31px
+    minmax(0,1fr)
+    31px;
+
+  overflow:
+    hidden;
+
+  border:
+    1px solid
+    rgba(255,255,255,.085);
+
+  border-radius:
+    9px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255,255,255,.025),
+      rgba(255,255,255,.012)
+    );
+
+  transition:
+    border-color .16s ease,
+    background .16s ease,
+    transform .16s ease,
+    box-shadow .16s ease;
+}
+
+
+.layer-row:hover {
+  transform:
+    translateY(-1px);
+
+  border-color:
+    rgba(255,255,255,.16);
+
+  background:
+    rgba(255,255,255,.032);
+
+  box-shadow:
+    0 7px 18px
+    rgba(0,0,0,.16);
+}
+
+
+.layer-row.active {
+  border-color:
+    rgba(241,195,77,.42);
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(241,195,77,.09),
+      rgba(241,195,77,.025)
+    );
+
+  box-shadow:
+    inset 3px 0 0
+    #f1c34d,
+    0 7px 20px
+    rgba(0,0,0,.16);
+}
+
+
+/* ============================================================
+   VISIBILITY + LOCK BUTTONS
+============================================================ */
+
+.layer-row > button:first-child,
+.layer-row > button:last-child {
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  width:
+    100%;
+
+  height:
+    100%;
+
+  padding:
+    0;
+
+  color:
+    #717782;
+
+  background:
+    transparent;
+
+  font-size:
+    9px;
+
+  transition:
+    color .15s ease,
+    background .15s ease;
+}
+
+
+.layer-row > button:first-child:hover,
+.layer-row > button:last-child:hover {
+  color:
+    #f1c34d;
+
+  background:
+    rgba(241,195,77,.045);
+}
+
+
+.layer-row.active > button:first-child {
+  color:
+    #f1c34d;
+}
+
+
+/* ============================================================
+   LAYER MAIN BUTTON
+============================================================ */
+
+.layer-main {
+  min-width:
+    0;
+
+  min-height:
+    44px;
+
+  display:
+    flex;
+
+  align-items:
+    center;
+
+  gap:
+    9px;
+
+  padding:
+    5px 4px;
+
+  color:
+    inherit;
+
+  background:
+    transparent;
+
+  text-align:
+    left;
+}
+
+
+.layer-icon {
+  flex:
+    0 0 27px;
+
+  width:
+    27px;
+
+  height:
+    27px;
+
+  display:
+    grid;
+
+  place-items:
+    center;
+
+  border:
+    1px solid
+    rgba(255,255,255,.085);
+
+  border-radius:
+    7px;
+
+  color:
+    #d1a83f;
+
+  background:
+    rgba(255,255,255,.025);
+
+  font-size:
+    8px;
+
+  font-weight:
+    900;
+
+  box-shadow:
+    inset 0 1px 0
+    rgba(255,255,255,.025);
+}
+
+
+.layer-row.active .layer-icon {
+  border-color:
+    rgba(241,195,77,.26);
+
+  color:
+    #f5ce67;
+
+  background:
+    rgba(241,195,77,.08);
+}
+
+
+.layer-main > span:last-child {
+  min-width:
+    0;
+}
+
+
+.layer-main strong {
+  display:
+    block;
+
+  overflow:
+    hidden;
+
+  text-overflow:
+    ellipsis;
+
+  white-space:
+    nowrap;
+
+  color:
+    #d8dbe0;
+
+  font-size:
+    8px;
+
+  line-height:
+    1.25;
+
+  font-weight:
+    750;
+}
+
+
+.layer-row.active .layer-main strong {
+  color:
+    #ffffff;
+}
+
+
+.layer-main small {
+  display:
+    block;
+
+  margin-top:
+    3px;
+
+  color:
+    #626873;
+
+  font-size:
+    5px;
+
+  line-height:
+    1;
+
+  font-weight:
+    800;
+
+  text-transform:
+    uppercase;
+
+  letter-spacing:
+    .07em;
+}
+
+
+/* ============================================================
+   HELPER MESSAGE
+============================================================ */
+
+.inspector-help {
+  margin:
+    13px;
+
+  padding:
+    13px 14px;
+
+  border:
+    1px solid
+    rgba(255,255,255,.065);
+
+  border-radius:
+    9px;
+
+  color:
+    #777d87;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255,255,255,.018),
+      rgba(255,255,255,.007)
+    );
+
+  font-size:
+    7px;
+
+  line-height:
+    1.65;
+}
+
+
+.inspector-help::before {
+  display:
+    block;
+
+  margin-bottom:
+    6px;
+
+  color:
+    #f1c34d;
+
+  content:
+    "TIP";
+
+  font-size:
+    5px;
+
+  font-weight:
+    950;
+
+  letter-spacing:
+    .12em;
+}
+
+
+/* ============================================================
+   SELECTED OBJECT CONTROLS
+============================================================ */
+
+.poster-inspector .field {
+  gap:
+    7px;
+
+  margin-top:
+    12px;
+}
+
+
+.poster-inspector .field > span {
+  color:
+    #8c919a;
+
+  font-size:
+    7px;
+
+  font-weight:
+    750;
+}
+
+
+.poster-inspector .field input:not([type="color"]),
+.poster-inspector .field select,
+.poster-inspector .field textarea {
+  min-height:
+    36px;
+
+  border-color:
+    rgba(255,255,255,.085);
+
+  color:
+    #e2e4e7;
+
+  background:
+    #0d1014;
+
+  font-size:
+    8px;
+}
+
+
+.poster-inspector .field textarea {
+  min-height:
+    82px;
+
+  line-height:
+    1.5;
+}
+
+
+.poster-inspector .field input:focus,
+.poster-inspector .field select:focus,
+.poster-inspector .field textarea:focus {
+  border-color:
+    rgba(241,195,77,.38);
+
+  box-shadow:
+    0 0 0 2px
+    rgba(241,195,77,.035);
+}
+
+
+/* ============================================================
+   COLOR FIELD
+============================================================ */
+
+.poster-inspector input[type="color"] {
+  min-height:
+    36px;
+
+  border-color:
+    rgba(255,255,255,.09);
+
+  background:
+    #0d1014;
+}
+
+
+/* ============================================================
+   SEGMENTED CONTROLS
+============================================================ */
+
+.poster-inspector .segmented {
+  gap:
+    5px;
+
+  margin-top:
+    11px;
+}
+
+
+.poster-inspector .segmented button {
+  height:
+    33px;
+
+  border-color:
+    rgba(255,255,255,.08);
+
+  color:
+    #818690;
+
+  background:
+    rgba(255,255,255,.015);
+
+  font-size:
+    7px;
+
+  text-transform:
+    capitalize;
+}
+
+
+.poster-inspector .segmented button:hover {
+  color:
+    #d7dae0;
+
+  border-color:
+    rgba(255,255,255,.15);
+}
+
+
+.poster-inspector .segmented button.active {
+  color:
+    #f5cc63;
+
+  border-color:
+    rgba(241,195,77,.30);
+
+  background:
+    rgba(241,195,77,.07);
+}
+
+
+/* ============================================================
+   ARRANGE BUTTONS
+============================================================ */
+
+.poster-inspector .action-grid {
+  gap:
+    7px;
+
+  margin-top:
+    10px;
+}
+
+
+.poster-inspector .action-grid button {
+  min-height:
+    34px;
+
+  border-color:
+    rgba(255,255,255,.085);
+
+  color:
+    #91969f;
+
+  background:
+    rgba(255,255,255,.018);
+
+  font-size:
+    7px;
+}
+
+
+.poster-inspector .action-grid button:hover {
+  color:
+    #f1c34d;
+
+  border-color:
+    rgba(241,195,77,.24);
+
+  background:
+    rgba(241,195,77,.045);
+}
+
+
+.poster-inspector .danger-button {
+  color:
+    #da7a82 !important;
+
+  border-color:
+    rgba(222,102,112,.20) !important;
+
+  background:
+    rgba(222,102,112,.035) !important;
+}
+
+
+.poster-inspector .danger-button:hover {
+  color:
+    #ff9aa2 !important;
+
+  border-color:
+    rgba(222,102,112,.32) !important;
+
+  background:
+    rgba(222,102,112,.065) !important;
+}
+
+
+/* ============================================================
+   RIGHT PANEL FOOTER
+============================================================ */
+
+.poster-right-footer {
+  padding:
+    11px;
+
+  border-top:
+    1px solid
+    rgba(255,255,255,.08);
+
+  background:
+    linear-gradient(
+      180deg,
+      #090b0e,
+      #080a0d
+    );
+
+  box-shadow:
+    0 -12px 30px
+    rgba(0,0,0,.16);
+}
+
+
+.download-button {
+  min-height:
+    48px;
+
+  padding:
+    0 13px;
+
+  border:
+    1px solid
+    #f1c34d;
+
+  border-radius:
+    9px;
+
+  box-shadow:
+    0 7px 22px
+    rgba(241,195,77,.12);
+
+  transition:
+    transform .16s ease,
+    filter .16s ease;
+}
+
+
+.download-button:hover {
+  transform:
+    translateY(-1px);
+
+  filter:
+    brightness(1.04);
+}
+
+
+.download-button strong {
+  font-size:
+    8px;
+}
+
+
+.download-button small {
+  margin-top:
+    3px;
+
+  font-size:
+    5px;
+}
+
+
+/* ============================================================
+   SLIGHTLY WIDER RIGHT INSPECTOR
+   DESKTOP ONLY
+
+   Keeps everything else intact.
+============================================================ */
+
+@media (min-width: 1251px) {
+
+  :root {
+    --right:
+      330px;
+  }
+
+}
+
+
+/* ============================================================
+   KEEP CURRENT WIDTH ON SMALLER LAPTOPS
+============================================================ */
+
+@media (max-width: 1250px) {
+
+  :root {
+    --right:
+      285px;
+  }
+
+}
