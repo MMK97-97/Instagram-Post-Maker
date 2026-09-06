@@ -1,6 +1,10 @@
-import { VIDEO_PRESETS } from "./cricket-templates.js";
+import {
+  VIDEO_PRESETS
+} from "./cricket-templates.js";
+
 
 const VIDEO_SIZES = {
+
   reel: {
     width: 1080,
     height: 1920
@@ -20,6 +24,7 @@ const VIDEO_SIZES = {
     width: 1920,
     height: 1080
   }
+
 };
 
 
@@ -28,43 +33,111 @@ export class VideoEditor {
   constructor() {
 
     this.canvas =
-      document.getElementById("videoCanvas");
+      document.getElementById(
+        "videoCanvas"
+      );
 
     this.ctx =
-      this.canvas.getContext("2d");
+      this.canvas.getContext(
+        "2d",
+        {
+          alpha: false
+        }
+      );
 
 
     this.video =
-      document.getElementById("videoSource");
+      document.getElementById(
+        "videoSource"
+      );
 
     this.audio =
-      document.getElementById("audioSource");
+      document.getElementById(
+        "audioSource"
+      );
 
 
     this.media = [];
+
     this.clips = [];
+
     this.images = [];
 
 
-    this.audioTrack = null;
+    this.audioTrack =
+      null;
 
 
-    this.selectedClipId = null;
+    this.selectedClipId =
+      null;
 
 
-    this.officialLogo = null;
+    this.officialLogo =
+      null;
 
 
-    this.currentTime = 0;
-    this.playing = false;
-
-    this.playStartTimestamp = 0;
+    this.currentTime =
+      0;
 
 
-    this.timelineZoom = 100;
+    this.playing =
+      false;
 
 
-    this.activeSourceUrl = null;
+    this.playStartTimestamp =
+      0;
+
+
+    this.timelineZoom =
+      100;
+
+
+    this.snapEnabled =
+      true;
+
+
+    this.activeSourceUrl =
+      null;
+
+
+    this.audioContext =
+      null;
+
+    this.audioDestination =
+      null;
+
+    this.videoSourceNode =
+      null;
+
+    this.audioSourceNode =
+      null;
+
+    this.videoGain =
+      null;
+
+    this.musicGain =
+      null;
+
+    this.mixGain =
+      null;
+
+    this.previewGain =
+      null;
+
+
+    this.exporting =
+      false;
+
+
+    this.history =
+      [];
+
+    this.historyIndex =
+      -1;
+
+
+    this.dragState =
+      null;
 
 
     this.project = {
@@ -72,493 +145,543 @@ export class VideoEditor {
       aspect: "reel",
 
       logoVisible: true,
+
       logoSize: 100,
 
       musicVolume: 60,
 
       text: {
-        title: "MATCH DAY",
-        subtitle: "FWCWL • TAMPA, FLORIDA",
+
+        title:
+          "MATCH DAY",
+
+        subtitle:
+          "FWCWL • TAMPA, FLORIDA",
+
         score: "",
+
         start: 0,
+
         end: 5,
-        animation: "rise"
+
+        animation:
+          "rise"
+
       }
+
     };
 
 
-    this.audioContext = null;
-    this.audioDestination = null;
-
-    this.videoSourceNode = null;
-    this.audioSourceNode = null;
-
-    this.videoGain = null;
-    this.musicGain = null;
-
-    this.mixGain = null;
-    this.previewGain = null;
-
-
-    this.exporting = false;
-
-
-    this.loadOfficialLogo();
-    this.renderVideoPresets();
-    this.bind();
-
-    this.resizeCanvas();
-
-    this.renderTimeline();
-    this.renderFrame();
+    this.init();
   }
 
 
 
-  async loadOfficialLogo() {
+  async init() {
 
     this.officialLogo =
       await this.loadImage(
         "assets/fwcwl-logo.jpeg"
       );
 
+
+    this.bind();
+
+    this.renderVideoPresets();
+
+    this.resizeCanvas();
+
+    this.pushHistory();
+
+    this.renderTimeline();
+
     this.renderFrame();
   }
 
 
+
+  /* =====================================================
+     IMAGE LOADER
+  ====================================================== */
+
   loadImage(src) {
 
-    return new Promise((resolve, reject) => {
+    return new Promise(
+      (resolve, reject) => {
 
-      const image = new Image();
+        const image =
+          new Image();
 
-      image.onload = () => resolve(image);
-      image.onerror = reject;
+        image.onload =
+          () => resolve(image);
 
-      image.src = src;
-    });
+        image.onerror =
+          reject;
+
+        image.src =
+          src;
+      }
+    );
   }
 
 
+
+  /* =====================================================
+     BIND
+  ====================================================== */
 
   bind() {
 
+    this.bindTabs();
+
+    this.bindUploads();
+
+    this.bindPlayback();
+
+    this.bindTimeline();
+
+    this.bindInspector();
+
+    this.bindGraphics();
+
+    this.bindBrand();
+
+    this.bindExport();
+  }
+
+
+
+  bindTabs() {
+
     document
-      .querySelectorAll("[data-video-tab]")
+      .querySelectorAll(
+        "[data-video-tab]"
+      )
       .forEach(button => {
 
-        button.addEventListener("click", () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          document
-            .querySelectorAll("[data-video-tab]")
-            .forEach(item =>
-              item.classList.remove("active")
+            document
+              .querySelectorAll(
+                "[data-video-tab]"
+              )
+              .forEach(item =>
+                item.classList.remove(
+                  "active"
+                )
+              );
+
+
+            document
+              .querySelectorAll(
+                "#videoLeftPanel .left-tab-panel"
+              )
+              .forEach(panel =>
+                panel.classList.remove(
+                  "active"
+                )
+              );
+
+
+            button.classList.add(
+              "active"
             );
 
-          document
-            .querySelectorAll("#videoLeftPanel .left-tab-panel")
-            .forEach(panel =>
-              panel.classList.remove("active")
-            );
+
+            const name =
+              button.dataset.videoTab;
 
 
-          button.classList.add("active");
+            const panelMap = {
+
+              media:
+                "videoMediaPanel",
+
+              templates:
+                "videoTemplatesPanel",
+
+              text:
+                "videoTextPanel"
+
+            };
 
 
-          const name =
-            button.dataset.videoTab;
-
-          const panelId =
-            name === "media"
-              ? "videoMediaPanel"
-              : name === "templates"
-                ? "videoTemplatesPanel"
-                : "videoTextPanel";
-
-          document
-            .getElementById(panelId)
-            .classList.add("active");
-        });
-      });
-
-
-
-    document
-      .getElementById("videoUploadInput")
-      .addEventListener("change", event => {
-
-        this.handleVideoFiles(
-          [...event.target.files]
+            document
+              .getElementById(
+                panelMap[name]
+              )
+              .classList.add(
+                "active"
+              );
+          }
         );
-
-        event.target.value = "";
-      });
-
-
-
-    document
-      .getElementById("videoImageUploadInput")
-      .addEventListener("change", event => {
-
-        this.handleImageFiles(
-          [...event.target.files]
-        );
-
-        event.target.value = "";
-      });
-
-
-
-    document
-      .getElementById("videoAudioUploadInput")
-      .addEventListener("change", event => {
-
-        const file =
-          event.target.files[0];
-
-        if (file) {
-          this.handleAudioFile(file);
-        }
-
-        event.target.value = "";
-      });
-
-
-
-    document
-      .getElementById("videoAspectSelect")
-      .addEventListener("change", event => {
-
-        this.project.aspect = event.target.value;
-
-        this.resizeCanvas();
-        this.renderFrame();
-      });
-
-
-
-    document
-      .getElementById("videoPlayBtn")
-      .addEventListener("click", () => {
-
-        if (this.playing) {
-          this.pause();
-        } else {
-          this.play();
-        }
-      });
-
-
-
-    document
-      .getElementById("videoSkipBackBtn")
-      .addEventListener("click", () => {
-
-        this.seek(
-          Math.max(
-            0,
-            this.currentTime - 1
-          )
-        );
-      });
-
-
-
-    document
-      .getElementById("videoSkipForwardBtn")
-      .addEventListener("click", () => {
-
-        this.seek(
-          Math.min(
-            this.getDuration(),
-            this.currentTime + 1
-          )
-        );
-      });
-
-
-
-    document
-      .getElementById("videoSeekRange")
-      .addEventListener("input", event => {
-
-        const duration =
-          this.getDuration();
-
-        const ratio =
-          Number(event.target.value) / 1000;
-
-        this.seek(duration * ratio);
-      });
-
-
-
-    document
-      .getElementById("timelineZoom")
-      .addEventListener("input", event => {
-
-        this.timelineZoom =
-          Number(event.target.value);
-
-        this.renderTimeline();
-      });
-
-
-
-    document
-      .getElementById("videoSplitBtn")
-      .addEventListener("click", () =>
-        this.splitSelectedClip()
-      );
-
-
-    document
-      .getElementById("videoDuplicateBtn")
-      .addEventListener("click", () =>
-        this.duplicateSelectedClip()
-      );
-
-
-    document
-      .getElementById("videoDeleteBtn")
-      .addEventListener("click", () =>
-        this.deleteSelectedClip()
-      );
-
-
-
-    this.bindClipInspector();
-
-
-    this.bindTextControl(
-      "videoTitleText",
-      "title"
-    );
-
-    this.bindTextControl(
-      "videoSubtitleText",
-      "subtitle"
-    );
-
-    this.bindTextControl(
-      "videoScoreText",
-      "score"
-    );
-
-
-    document
-      .getElementById("videoTextStart")
-      .addEventListener("input", event => {
-
-        this.project.text.start =
-          Math.max(
-            0,
-            Number(event.target.value)
-          );
-
-        this.renderTimeline();
-        this.renderFrame();
-      });
-
-
-    document
-      .getElementById("videoTextEnd")
-      .addEventListener("input", event => {
-
-        this.project.text.end =
-          Math.max(
-            this.project.text.start,
-            Number(event.target.value)
-          );
-
-        this.renderTimeline();
-        this.renderFrame();
-      });
-
-
-    document
-      .getElementById("videoTextAnimation")
-      .addEventListener("change", event => {
-
-        this.project.text.animation =
-          event.target.value;
-
-        this.renderFrame();
-      });
-
-
-
-    document
-      .getElementById("videoShowLogo")
-      .addEventListener("change", event => {
-
-        this.project.logoVisible =
-          event.target.checked;
-
-        this.renderFrame();
-      });
-
-
-
-    document
-      .getElementById("videoLogoSize")
-      .addEventListener("input", event => {
-
-        this.project.logoSize =
-          Number(event.target.value);
-
-        document
-          .getElementById("videoLogoSizeValue")
-          .textContent =
-          `${this.project.logoSize}%`;
-
-        this.renderFrame();
-      });
-
-
-
-    document
-      .getElementById("videoMusicVolume")
-      .addEventListener("input", event => {
-
-        this.project.musicVolume =
-          Number(event.target.value);
-
-        document
-          .getElementById("videoMusicVolumeValue")
-          .textContent =
-          `${this.project.musicVolume}%`;
-
-        this.audio.volume =
-          this.project.musicVolume / 100;
-
-        if (this.musicGain) {
-          this.musicGain.gain.value =
-            this.project.musicVolume / 100;
-        }
-      });
-
-
-
-    document
-      .getElementById("videoAddMatchTitleBtn")
-      .addEventListener("click", () => {
-
-        this.applyTextPreset(
-          "MATCH DAY",
-          "FWCWL • TAMPA, FLORIDA",
-          "",
-          "rise"
-        );
-      });
-
-
-    document
-      .getElementById("videoAddPlayerTitleBtn")
-      .addEventListener("click", () => {
-
-        this.applyTextPreset(
-          "PLAYER NAME",
-          "FWCWL • PLAYER PROFILE",
-          "BATSMAN",
-          "slide"
-        );
-      });
-
-
-    document
-      .getElementById("videoAddScoreTitleBtn")
-      .addEventListener("click", () => {
-
-        this.applyTextPreset(
-          "LIVE SCORE",
-          "15.2 OVERS",
-          "142/3",
-          "pop"
-        );
-      });
-
-
-
-    document
-      .getElementById("videoExportBtn")
-      .addEventListener("click", () =>
-        this.exportVideo()
-      );
-
-
-    document
-      .getElementById("videoExportTopBtn")
-      .addEventListener("click", () =>
-        this.exportVideo()
-      );
-  }
-
-
-
-  bindTextControl(id, key) {
-
-    document
-      .getElementById(id)
-      .addEventListener("input", event => {
-
-        this.project.text[key] =
-          event.target.value;
-
-        this.renderFrame();
       });
   }
 
 
 
-  bindClipInspector() {
+  bindUploads() {
 
-    const numberFields = [
-      ["clipTrimStart", "trimStart"],
-      ["clipTrimEnd", "trimEnd"],
-      ["clipScale", "scale"],
-      ["clipX", "x"],
-      ["clipY", "y"],
-      ["clipRotation", "rotation"],
-      ["clipBrightness", "brightness"],
-      ["clipSaturation", "saturation"],
-      ["clipContrast", "contrast"]
+    document
+      .getElementById(
+        "videoUploadInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.handleVideoFiles(
+            [
+              ...event.target.files
+            ]
+          );
+
+          event.target.value =
+            "";
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoImageUploadInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.handleImageFiles(
+            [
+              ...event.target.files
+            ]
+          );
+
+          event.target.value =
+            "";
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoAudioUploadInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const file =
+            event.target.files[0];
+
+          if (file) {
+            this.handleAudioFile(
+              file
+            );
+          }
+
+          event.target.value =
+            "";
+        }
+      );
+  }
+
+
+
+  bindPlayback() {
+
+    document
+      .getElementById(
+        "videoPlayBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.togglePlayback()
+      );
+
+
+    document
+      .getElementById(
+        "videoSkipBackBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.seekRelative(-1)
+      );
+
+
+    document
+      .getElementById(
+        "videoSkipForwardBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.seekRelative(1)
+      );
+
+
+    document
+      .getElementById(
+        "videoSeekRange"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const duration =
+            this.getDuration();
+
+
+          const ratio =
+            Number(
+              event.target.value
+            ) /
+            1000;
+
+
+          this.seek(
+            duration *
+            ratio
+          );
+        }
+      );
+  }
+
+
+
+  bindTimeline() {
+
+    document
+      .getElementById(
+        "timelineZoom"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          this.timelineZoom =
+            Number(
+              event.target.value
+            );
+
+          this.renderTimeline();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "timelineSnapBtn"
+      )
+      .addEventListener(
+        "click",
+        event => {
+
+          this.snapEnabled =
+            !this.snapEnabled;
+
+
+          event.currentTarget
+            .classList
+            .toggle(
+              "active",
+              this.snapEnabled
+            );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "timelineFitBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.fitTimeline()
+      );
+
+
+    document
+      .getElementById(
+        "videoSplitBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.splitSelectedClip()
+      );
+
+
+    document
+      .getElementById(
+        "videoDuplicateBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.duplicateSelectedClip()
+      );
+
+
+    document
+      .getElementById(
+        "videoDeleteBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.deleteSelectedClip()
+      );
+
+
+    const playheadHandle =
+      document.getElementById(
+        "timelinePlayheadHandle"
+      );
+
+
+    playheadHandle.addEventListener(
+      "pointerdown",
+      event => {
+
+        event.preventDefault();
+
+        this.startPlayheadDrag(
+          event
+        );
+      }
+    );
+  }
+
+
+
+  bindInspector() {
+
+    document
+      .getElementById(
+        "videoAspectSelect"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.project.aspect =
+            event.target.value;
+
+          this.resizeCanvas();
+
+          this.commit();
+        }
+      );
+
+
+    const numberBindings = [
+
+      [
+        "clipTrimStart",
+        "trimStart"
+      ],
+
+      [
+        "clipTrimEnd",
+        "trimEnd"
+      ],
+
+      [
+        "clipScale",
+        "scale"
+      ],
+
+      [
+        "clipX",
+        "x"
+      ],
+
+      [
+        "clipY",
+        "y"
+      ],
+
+      [
+        "clipRotation",
+        "rotation"
+      ],
+
+      [
+        "clipBrightness",
+        "brightness"
+      ],
+
+      [
+        "clipSaturation",
+        "saturation"
+      ],
+
+      [
+        "clipContrast",
+        "contrast"
+      ]
+
     ];
 
 
-    numberFields.forEach(
+    numberBindings.forEach(
       ([id, key]) => {
 
-        document
-          .getElementById(id)
-          .addEventListener("input", event => {
+        const control =
+          document.getElementById(
+            id
+          );
+
+
+        control.addEventListener(
+          "input",
+          event => {
 
             const clip =
               this.getSelectedClip();
 
             if (!clip) return;
 
+
             const value =
-              Number(event.target.value);
+              Number(
+                event.target.value
+              );
 
 
-            if (key === "trimStart") {
+            if (
+              key ===
+              "trimStart"
+            ) {
 
               clip.trimStart =
                 Math.max(
                   0,
                   Math.min(
                     value,
-                    clip.trimEnd - 0.05
+                    clip.trimEnd -
+                    0.05
                   )
                 );
             }
 
-            else if (key === "trimEnd") {
+
+            else if (
+              key ===
+              "trimEnd"
+            ) {
 
               clip.trimEnd =
                 Math.max(
-                  clip.trimStart + 0.05,
+                  clip.trimStart +
+                  0.05,
+
                   Math.min(
                     value,
                     clip.sourceDuration
@@ -566,273 +689,819 @@ export class VideoEditor {
                 );
             }
 
+
             else {
-              clip[key] = value;
+
+              clip[key] =
+                value;
             }
 
 
             this.refreshInspectorLabels();
+
             this.renderTimeline();
-            this.syncPreview(true);
+
+            this.syncPreview(
+              true
+            );
+
             this.renderFrame();
-          });
+          }
+        );
+
+
+        control.addEventListener(
+          "change",
+          () =>
+            this.commit()
+        );
       }
     );
 
 
+    document
+      .getElementById(
+        "clipSpeed"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const clip =
+            this.getSelectedClip();
+
+          if (!clip) return;
+
+
+          clip.speed =
+            Number(
+              event.target.value
+            );
+
+
+          this.renderTimeline();
+
+          this.syncPreview(
+            true
+          );
+
+
+          this.commit();
+        }
+      );
+
 
     document
-      .getElementById("clipSpeed")
-      .addEventListener("change", event => {
+      .getElementById(
+        "clipVolume"
+      )
+      .addEventListener(
+        "input",
+        event => {
 
-        const clip =
-          this.getSelectedClip();
+          const clip =
+            this.getSelectedClip();
 
-        if (!clip) return;
+          if (!clip) return;
 
-        clip.speed =
-          Number(event.target.value);
 
-        this.renderTimeline();
-        this.syncPreview(true);
-      });
+          clip.volume =
+            Number(
+              event.target.value
+            );
 
+
+          document
+            .getElementById(
+              "clipVolumeValue"
+            )
+            .textContent =
+            `${clip.volume}%`;
+
+
+          this.video.volume =
+            clip.volume /
+            100;
+
+
+          if (
+            this.videoGain
+          ) {
+
+            this.videoGain
+              .gain
+              .value =
+              clip.volume /
+              100;
+          }
+        }
+      );
 
 
     document
-      .getElementById("clipVolume")
-      .addEventListener("input", event => {
+      .getElementById(
+        "clipVolume"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
 
-        const clip =
-          this.getSelectedClip();
 
-        if (!clip) return;
+    [
+      [
+        "clipTransitionIn",
+        "transitionIn"
+      ],
 
-        clip.volume =
-          Number(event.target.value);
+      [
+        "clipTransitionOut",
+        "transitionOut"
+      ]
+
+    ].forEach(
+      ([id,key]) => {
 
         document
-          .getElementById("clipVolumeValue")
-          .textContent =
-          `${clip.volume}%`;
+          .getElementById(id)
+          .addEventListener(
+            "change",
+            event => {
 
-        this.video.volume =
-          clip.volume / 100;
+              const clip =
+                this.getSelectedClip();
 
-        if (this.videoGain) {
-          this.videoGain.gain.value =
-            clip.volume / 100;
-        }
-      });
+              if (!clip) return;
 
 
-
-    document
-      .getElementById("clipTransitionIn")
-      .addEventListener("change", event => {
-
-        const clip =
-          this.getSelectedClip();
-
-        if (!clip) return;
-
-        clip.transitionIn =
-          event.target.value;
-
-        this.renderFrame();
-      });
+              clip[key] =
+                event.target.value;
 
 
+              this.renderFrame();
 
-    document
-      .getElementById("clipTransitionOut")
-      .addEventListener("change", event => {
-
-        const clip =
-          this.getSelectedClip();
-
-        if (!clip) return;
-
-        clip.transitionOut =
-          event.target.value;
-
-        this.renderFrame();
-      });
+              this.commit();
+            }
+          );
+      }
+    );
   }
 
 
 
-  async handleVideoFiles(files) {
+  bindGraphics() {
 
-    for (const file of files) {
+    this.bindProjectText(
+      "videoTitleText",
+      "title"
+    );
+
+
+    this.bindProjectText(
+      "videoSubtitleText",
+      "subtitle"
+    );
+
+
+    this.bindProjectText(
+      "videoScoreText",
+      "score"
+    );
+
+
+    document
+      .getElementById(
+        "videoTextStart"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.project
+            .text
+            .start =
+            Math.max(
+              0,
+              Number(
+                event.target.value
+              )
+            );
+
+
+          if (
+            this.project.text.end <
+            this.project.text.start
+          ) {
+
+            this.project
+              .text
+              .end =
+              this.project
+                .text
+                .start +
+              1;
+          }
+
+
+          this.renderTimeline();
+
+          this.renderFrame();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoTextEnd"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.project
+            .text
+            .end =
+            Math.max(
+              this.project
+                .text
+                .start +
+              0.1,
+
+              Number(
+                event.target.value
+              )
+            );
+
+
+          this.renderTimeline();
+
+          this.renderFrame();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoTextAnimation"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.project
+            .text
+            .animation =
+            event.target.value;
+
+          this.renderFrame();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoAddMatchTitleBtn"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          this.applyTextPreset(
+            "MATCH DAY",
+            "FWCWL • TAMPA, FLORIDA",
+            "",
+            "rise"
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoAddPlayerTitleBtn"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          this.applyTextPreset(
+            "PLAYER NAME",
+            "FWCWL • PLAYER PROFILE",
+            "BATSMAN",
+            "slide"
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoAddScoreTitleBtn"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          this.applyTextPreset(
+            "LIVE SCORE",
+            "15.2 OVERS",
+            "142/3",
+            "pop"
+          );
+        }
+      );
+  }
+
+
+
+  bindProjectText(
+    id,
+    key
+  ) {
+
+    document
+      .getElementById(id)
+      .addEventListener(
+        "input",
+        event => {
+
+          this.project
+            .text[key] =
+            event.target.value;
+
+          this.renderFrame();
+        }
+      );
+
+
+    document
+      .getElementById(id)
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+  }
+
+
+
+  bindBrand() {
+
+    document
+      .getElementById(
+        "videoShowLogo"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.project
+            .logoVisible =
+            event.target.checked;
+
+          this.renderFrame();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoLogoSize"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          this.project
+            .logoSize =
+            Number(
+              event.target.value
+            );
+
+
+          document
+            .getElementById(
+              "videoLogoSizeValue"
+            )
+            .textContent =
+            `${this.project.logoSize}%`;
+
+
+          this.renderFrame();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoLogoSize"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    document
+      .getElementById(
+        "videoMusicVolume"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          this.project
+            .musicVolume =
+            Number(
+              event.target.value
+            );
+
+
+          document
+            .getElementById(
+              "videoMusicVolumeValue"
+            )
+            .textContent =
+            `${this.project.musicVolume}%`;
+
+
+          this.audio.volume =
+            this.project
+              .musicVolume /
+            100;
+
+
+          if (
+            this.musicGain
+          ) {
+
+            this.musicGain
+              .gain
+              .value =
+              this.project
+                .musicVolume /
+              100;
+          }
+        }
+      );
+
+
+    document
+      .getElementById(
+        "videoMusicVolume"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+  }
+
+
+
+  bindExport() {
+
+    document
+      .getElementById(
+        "videoExportBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.exportVideo()
+      );
+
+
+    document
+      .getElementById(
+        "videoExportTopBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.exportVideo()
+      );
+  }
+
+
+
+  /* =====================================================
+     MEDIA
+  ====================================================== */
+
+  async handleVideoFiles(
+    files
+  ) {
+
+    for (
+      const file of files
+    ) {
 
       const url =
-        URL.createObjectURL(file);
+        URL.createObjectURL(
+          file
+        );
+
 
       const duration =
-        await this.getVideoDuration(url);
+        await this
+          .getVideoDuration(
+            url
+          );
+
 
       const media = {
-        id: crypto.randomUUID(),
-        type: "video",
-        name: file.name,
+
+        id:
+          crypto.randomUUID(),
+
+        type:
+          "video",
+
+        name:
+          file.name,
+
         url,
+
         duration
+
       };
 
-      this.media.push(media);
 
-      this.addVideoClip(media);
+      this.media.push(
+        media
+      );
+
+
+      this.addVideoClip(
+        media,
+        false
+      );
     }
 
+
     this.renderMediaLibrary();
+
+    this.commit();
   }
 
 
 
-  async handleImageFiles(files) {
+  async handleImageFiles(
+    files
+  ) {
 
-    for (const file of files) {
+    for (
+      const file of files
+    ) {
 
       const url =
-        URL.createObjectURL(file);
+        URL.createObjectURL(
+          file
+        );
+
 
       const image =
-        await this.loadImage(url);
+        await this.loadImage(
+          url
+        );
 
-      const media = {
-        id: crypto.randomUUID(),
-        type: "image",
-        name: file.name,
+
+      this.media.push({
+
+        id:
+          crypto.randomUUID(),
+
+        type:
+          "image",
+
+        name:
+          file.name,
+
         url,
-        image
-      };
 
-      this.media.push(media);
+        image
+
+      });
     }
 
+
     this.renderMediaLibrary();
+
+    this.commit();
   }
 
 
 
-  handleAudioFile(file) {
+  handleAudioFile(
+    file
+  ) {
 
     const url =
-      URL.createObjectURL(file);
+      URL.createObjectURL(
+        file
+      );
+
 
     const media = {
-      id: crypto.randomUUID(),
-      type: "audio",
-      name: file.name,
+
+      id:
+        crypto.randomUUID(),
+
+      type:
+        "audio",
+
+      name:
+        file.name,
+
       url
+
     };
 
-    this.media.push(media);
+
+    this.media.push(
+      media
+    );
 
 
-    this.audioTrack = media;
+    this.audioTrack =
+      media;
 
-    this.audio.src = url;
-    this.audio.loop = true;
+
+    this.audio.src =
+      url;
+
+
+    this.audio.loop =
+      true;
+
 
     this.audio.volume =
-      this.project.musicVolume / 100;
+      this.project
+        .musicVolume /
+      100;
 
 
     document
-      .getElementById("audioStatusCard")
+      .getElementById(
+        "audioStatusCard"
+      )
       .textContent =
       file.name;
 
 
     this.renderMediaLibrary();
+
     this.renderTimeline();
+
+    this.commit();
   }
 
 
 
-  getVideoDuration(url) {
+  getVideoDuration(
+    url
+  ) {
 
-    return new Promise(resolve => {
+    return new Promise(
+      resolve => {
 
-      const video =
-        document.createElement("video");
-
-      video.preload = "metadata";
-      video.src = url;
-
-      video.onloadedmetadata = () => {
-
-        resolve(
-          Number.isFinite(video.duration)
-            ? video.duration
-            : 1
-        );
-      };
-    });
-  }
+        const video =
+          document.createElement(
+            "video"
+          );
 
 
-
-  addVideoClip(media) {
-
-    const clip = {
-
-      id: crypto.randomUUID(),
-
-      mediaId: media.id,
-
-      name: media.name,
-      url: media.url,
-
-      sourceDuration: media.duration,
-
-      trimStart: 0,
-      trimEnd: media.duration,
-
-      speed: 1,
-      volume: 100,
-
-      scale: 100,
-      x: 50,
-      y: 50,
-      rotation: 0,
-
-      brightness: 100,
-      saturation: 100,
-      contrast: 100,
-
-      transitionIn: "fade",
-      transitionOut: "fade"
-    };
+        video.preload =
+          "metadata";
 
 
-    this.clips.push(clip);
-
-    this.selectedClipId =
-      clip.id;
+        video.src =
+          url;
 
 
-    if (
-      this.project.text.end <= 5 &&
-      this.getDuration() > 5
-    ) {
-      this.project.text.end = 5;
-    }
+        video.onloadedmetadata =
+          () => {
 
-
-    this.updateInspector();
-    this.renderTimeline();
-
-    this.seek(
-      this.getClipStart(clip.id)
+            resolve(
+              Number.isFinite(
+                video.duration
+              )
+                ? video.duration
+                : 1
+            );
+          };
+      }
     );
   }
 
 
 
-  addImageOverlay(media) {
+  addVideoClip(
+    media,
+    save = true
+  ) {
+
+    const clip = {
+
+      id:
+        crypto.randomUUID(),
+
+      mediaId:
+        media.id,
+
+      name:
+        media.name,
+
+      url:
+        media.url,
+
+      sourceDuration:
+        media.duration,
+
+      trimStart:
+        0,
+
+      trimEnd:
+        media.duration,
+
+      speed:
+        1,
+
+      volume:
+        100,
+
+      scale:
+        100,
+
+      x:
+        50,
+
+      y:
+        50,
+
+      rotation:
+        0,
+
+      brightness:
+        100,
+
+      saturation:
+        100,
+
+      contrast:
+        100,
+
+      transitionIn:
+        "fade",
+
+      transitionOut:
+        "fade"
+
+    };
+
+
+    this.clips.push(
+      clip
+    );
+
+
+    this.selectedClipId =
+      clip.id;
+
+
+    this.updateInspector();
+
+    this.renderTimeline();
+
+
+    this.seek(
+      this.getClipStart(
+        clip.id
+      )
+    );
+
+
+    if (save) {
+      this.commit();
+    }
+  }
+
+
+
+  addImageOverlay(
+    media
+  ) {
 
     const duration =
       Math.max(
@@ -840,21 +1509,27 @@ export class VideoEditor {
         5
       );
 
+
     const start =
       Math.min(
         this.currentTime,
         duration
       );
 
+
     this.images.push({
 
-      id: crypto.randomUUID(),
+      id:
+        crypto.randomUUID(),
 
-      mediaId: media.id,
+      mediaId:
+        media.id,
 
-      name: media.name,
+      name:
+        media.name,
 
-      image: media.image,
+      image:
+        media.image,
 
       start,
 
@@ -864,17 +1539,26 @@ export class VideoEditor {
           start + 5
         ),
 
-      x: 50,
-      y: 55,
+      x:
+        50,
 
-      scale: 42,
+      y:
+        53,
 
-      opacity: 1
+      scale:
+        42,
+
+      opacity:
+        1
+
     });
 
 
     this.renderTimeline();
+
     this.renderFrame();
+
+    this.commit();
   }
 
 
@@ -882,168 +1566,264 @@ export class VideoEditor {
   renderMediaLibrary() {
 
     const container =
-      document.getElementById("videoMediaLibrary");
+      document.getElementById(
+        "videoMediaLibrary"
+      );
 
 
-    document.getElementById("videoMediaCount").textContent =
-      `${this.media.length} item${this.media.length === 1 ? "" : "s"}`;
+    document
+      .getElementById(
+        "videoMediaCount"
+      )
+      .textContent =
+      `${this.media.length} item${
+        this.media.length === 1
+          ? ""
+          : "s"
+      }`;
 
 
-    if (!this.media.length) {
+    if (
+      !this.media.length
+    ) {
 
-      container.innerHTML = `
+      container.innerHTML =
+        `
         <div class="empty-state">
-          <div class="empty-state-icon">▶</div>
-          <strong>Add your first clip</strong>
+
+          <div class="empty-state-icon">
+            ▶
+          </div>
+
+          <strong>
+            No media yet
+          </strong>
+
           <span>
-            Videos, photos and audio will appear here.
+            Upload match clips, player photos or music.
           </span>
+
         </div>
-      `;
+        `;
 
       return;
     }
 
 
     container.innerHTML =
-      this.media.map(media => {
+      this.media
+        .map(media => {
 
-        const icon =
-          media.type === "video"
-            ? "▶"
-            : media.type === "image"
-              ? "▧"
-              : "♫";
+          const icon =
+            media.type === "video"
+              ? "▶"
+              : media.type === "image"
+                ? "▧"
+                : "♫";
 
-        const action =
-          media.type === "video"
-            ? "Add"
-            : media.type === "image"
-              ? "Overlay"
-              : "Music";
 
-        return `
-          <div class="media-library-card">
+          const action =
+            media.type === "video"
+              ? "Add"
+              : media.type === "image"
+                ? "Overlay"
+                : "Use";
 
-            <div class="media-library-icon">
-              ${icon}
+
+          return `
+            <div class="media-library-card">
+
+              <div class="media-library-icon">
+                ${icon}
+              </div>
+
+              <div class="media-library-info">
+
+                <strong>
+                  ${this.escapeHtml(
+                    media.name
+                  )}
+                </strong>
+
+                <span>
+                  ${media.type}
+                </span>
+
+              </div>
+
+              <button
+                type="button"
+                data-media-action="${media.id}"
+              >
+                ${action}
+              </button>
+
             </div>
-
-            <div class="media-library-info">
-              <strong>${this.escapeHtml(media.name)}</strong>
-              <span>${media.type}</span>
-            </div>
-
-            <button
-              type="button"
-              data-media-action="${media.id}"
-            >
-              ${action}
-            </button>
-
-          </div>
-        `;
-      }).join("");
+          `;
+        })
+        .join("");
 
 
     container
-      .querySelectorAll("[data-media-action]")
+      .querySelectorAll(
+        "[data-media-action]"
+      )
       .forEach(button => {
 
-        button.addEventListener("click", () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          const media =
-            this.media.find(
-              item =>
-                item.id === button.dataset.mediaAction
-            );
+            const media =
+              this.media.find(
+                item =>
+                  item.id ===
+                  button.dataset
+                    .mediaAction
+              );
 
-          if (!media) return;
+
+            if (!media) return;
 
 
-          if (media.type === "video") {
-            this.addVideoClip(media);
+            if (
+              media.type ===
+              "video"
+            ) {
+
+              this.addVideoClip(
+                media
+              );
+            }
+
+
+            if (
+              media.type ===
+              "image"
+            ) {
+
+              this.addImageOverlay(
+                media
+              );
+            }
+
+
+            if (
+              media.type ===
+              "audio"
+            ) {
+
+              this.audioTrack =
+                media;
+
+
+              this.audio.src =
+                media.url;
+
+
+              document
+                .getElementById(
+                  "audioStatusCard"
+                )
+                .textContent =
+                media.name;
+
+
+              this.renderTimeline();
+
+              this.commit();
+            }
           }
-
-          if (media.type === "image") {
-            this.addImageOverlay(media);
-          }
-
-          if (media.type === "audio") {
-
-            this.audioTrack = media;
-
-            this.audio.src =
-              media.url;
-
-            document
-              .getElementById("audioStatusCard")
-              .textContent =
-              media.name;
-
-            this.renderTimeline();
-          }
-        });
+        );
       });
   }
 
 
 
+  /* =====================================================
+     PRESETS
+  ====================================================== */
+
   renderVideoPresets() {
 
     const grid =
-      document.getElementById("videoPresetGrid");
+      document.getElementById(
+        "videoPresetGrid"
+      );
 
 
     grid.innerHTML =
-      VIDEO_PRESETS.map(
-        preset => `
+      VIDEO_PRESETS
+        .map(
+          preset => `
           <button
             class="video-preset-card"
             data-video-preset="${preset.id}"
             type="button"
           >
+
             <img
               src="assets/fwcwl-logo.jpeg"
               alt=""
             />
 
-            <span>FWCWL</span>
+            <span>
+              FWCWL
+            </span>
 
             <strong>
-              ${preset.title}
+              ${this.escapeHtml(
+                preset.title
+              )}
             </strong>
 
             <small>
-              ${preset.name}
+              ${this.escapeHtml(
+                preset.name
+              )}
             </small>
+
           </button>
         `
-      ).join("");
+        )
+        .join("");
 
 
     grid
-      .querySelectorAll("[data-video-preset]")
+      .querySelectorAll(
+        "[data-video-preset]"
+      )
       .forEach(button => {
 
-        button.addEventListener("click", () => {
+        button.addEventListener(
+          "click",
+          () => {
 
-          const preset =
-            VIDEO_PRESETS.find(
-              item =>
-                item.id === button.dataset.videoPreset
+            const preset =
+              VIDEO_PRESETS.find(
+                item =>
+                  item.id ===
+                  button.dataset
+                    .videoPreset
+              );
+
+
+            if (!preset) return;
+
+
+            this.applyTextPreset(
+
+              preset.title,
+
+              preset.subtitle,
+
+              preset.score,
+
+              preset.animation
+
             );
-
-          if (!preset) return;
-
-
-          this.applyTextPreset(
-            preset.title,
-            preset.subtitle,
-            preset.score,
-            preset.animation
-          );
-        });
+          }
+        );
       });
   }
 
@@ -1062,53 +1842,106 @@ export class VideoEditor {
         5
       );
 
+
     this.project.text = {
 
       title,
+
       subtitle,
+
       score,
 
-      start: this.currentTime,
+      start:
+        this.currentTime,
 
       end:
         Math.min(
           duration,
-          this.currentTime + 5
+          this.currentTime +
+          5
         ),
 
       animation
+
     };
 
 
-    document.getElementById("videoTitleText").value =
+    document
+      .getElementById(
+        "videoTitleText"
+      )
+      .value =
       title;
 
-    document.getElementById("videoSubtitleText").value =
+
+    document
+      .getElementById(
+        "videoSubtitleText"
+      )
+      .value =
       subtitle;
 
-    document.getElementById("videoScoreText").value =
+
+    document
+      .getElementById(
+        "videoScoreText"
+      )
+      .value =
       score;
 
-    document.getElementById("videoTextStart").value =
-      this.project.text.start.toFixed(1);
 
-    document.getElementById("videoTextEnd").value =
-      this.project.text.end.toFixed(1);
+    document
+      .getElementById(
+        "videoTextStart"
+      )
+      .value =
+      this.project
+        .text
+        .start
+        .toFixed(1);
 
-    document.getElementById("videoTextAnimation").value =
+
+    document
+      .getElementById(
+        "videoTextEnd"
+      )
+      .value =
+      this.project
+        .text
+        .end
+        .toFixed(1);
+
+
+    document
+      .getElementById(
+        "videoTextAnimation"
+      )
+      .value =
       animation;
 
 
     this.renderTimeline();
+
     this.renderFrame();
+
+    this.commit();
   }
 
 
 
-  getClipDuration(clip) {
+  /* =====================================================
+     CLIPS
+  ====================================================== */
+
+  getClipDuration(
+    clip
+  ) {
 
     return (
-      (clip.trimEnd - clip.trimStart) /
+      (
+        clip.trimEnd -
+        clip.trimStart
+      ) /
       clip.speed
     );
   }
@@ -1118,51 +1951,82 @@ export class VideoEditor {
   getDuration() {
 
     return this.clips.reduce(
-      (total, clip) =>
-        total + this.getClipDuration(clip),
+      (
+        total,
+        clip
+      ) =>
+        total +
+        this.getClipDuration(
+          clip
+        ),
       0
     );
   }
 
 
 
-  getClipStart(clipId) {
+  getClipStart(
+    clipId
+  ) {
 
-    let time = 0;
+    let time =
+      0;
 
-    for (const clip of this.clips) {
 
-      if (clip.id === clipId) {
+    for (
+      const clip of
+      this.clips
+    ) {
+
+      if (
+        clip.id ===
+        clipId
+      ) {
+
         return time;
       }
 
+
       time +=
-        this.getClipDuration(clip);
+        this.getClipDuration(
+          clip
+        );
     }
+
 
     return 0;
   }
 
 
 
-  getClipAtTime(time) {
+  getClipAtTime(
+    time
+  ) {
 
-    let start = 0;
+    let start =
+      0;
+
 
     for (
       let index = 0;
-      index < this.clips.length;
+      index <
+      this.clips.length;
       index++
     ) {
 
       const clip =
         this.clips[index];
 
+
       const duration =
-        this.getClipDuration(clip);
+        this.getClipDuration(
+          clip
+        );
+
 
       const end =
-        start + duration;
+        start +
+        duration;
 
 
       if (
@@ -1170,27 +2034,39 @@ export class VideoEditor {
         (
           time < end ||
           (
-            index === this.clips.length - 1 &&
+            index ===
+              this.clips.length -
+              1 &&
             time === end
           )
         )
       ) {
 
         return {
+
           clip,
+
           index,
+
           start,
+
           end,
+
           local:
             Math.max(
               0,
-              time - start
+              time -
+              start
             )
+
         };
       }
 
-      start = end;
+
+      start =
+        end;
     }
+
 
     return null;
   }
@@ -1199,124 +2075,29 @@ export class VideoEditor {
 
   getSelectedClip() {
 
-    return this.clips.find(
-      clip =>
-        clip.id === this.selectedClipId
-    ) || null;
+    return (
+      this.clips.find(
+        clip =>
+          clip.id ===
+          this.selectedClipId
+      ) ||
+      null
+    );
   }
 
 
 
-  selectClip(id) {
+  selectClip(
+    id
+  ) {
 
-    this.selectedClipId = id;
+    this.selectedClipId =
+      id;
+
 
     this.updateInspector();
+
     this.renderTimeline();
-  }
-
-
-
-  updateInspector() {
-
-    const clip =
-      this.getSelectedClip();
-
-
-    document
-      .getElementById("selectedClipBadge")
-      .textContent =
-      clip
-        ? clip.name
-        : "None";
-
-
-    if (!clip) return;
-
-
-    document.getElementById("clipTrimStart").value =
-      clip.trimStart.toFixed(2);
-
-    document.getElementById("clipTrimEnd").value =
-      clip.trimEnd.toFixed(2);
-
-    document.getElementById("clipTrimEnd").max =
-      clip.sourceDuration;
-
-
-    document.getElementById("clipSpeed").value =
-      String(clip.speed);
-
-    document.getElementById("clipVolume").value =
-      clip.volume;
-
-
-    document.getElementById("clipScale").value =
-      clip.scale;
-
-    document.getElementById("clipX").value =
-      clip.x;
-
-    document.getElementById("clipY").value =
-      clip.y;
-
-    document.getElementById("clipRotation").value =
-      clip.rotation;
-
-
-    document.getElementById("clipBrightness").value =
-      clip.brightness;
-
-    document.getElementById("clipSaturation").value =
-      clip.saturation;
-
-    document.getElementById("clipContrast").value =
-      clip.contrast;
-
-
-    document.getElementById("clipTransitionIn").value =
-      clip.transitionIn;
-
-    document.getElementById("clipTransitionOut").value =
-      clip.transitionOut;
-
-
-    this.refreshInspectorLabels();
-  }
-
-
-
-  refreshInspectorLabels() {
-
-    const clip =
-      this.getSelectedClip();
-
-    if (!clip) return;
-
-
-    document.getElementById("clipVolumeValue").textContent =
-      `${clip.volume}%`;
-
-    document.getElementById("clipScaleValue").textContent =
-      `${clip.scale}%`;
-
-    document.getElementById("clipXValue").textContent =
-      `${clip.x}%`;
-
-    document.getElementById("clipYValue").textContent =
-      `${clip.y}%`;
-
-    document.getElementById("clipRotationValue").textContent =
-      `${clip.rotation}°`;
-
-    document.getElementById("clipBrightnessValue").textContent =
-      `${clip.brightness}%`;
-
-    document.getElementById("clipSaturationValue").textContent =
-      `${clip.saturation}%`;
-
-    document.getElementById("clipContrastValue").textContent =
-      `${clip.contrast}%`;
   }
 
 
@@ -1326,51 +2107,74 @@ export class VideoEditor {
     const clip =
       this.getSelectedClip();
 
+
     if (!clip) return;
 
 
     const start =
-      this.getClipStart(clip.id);
+      this.getClipStart(
+        clip.id
+      );
 
-    const localTimelineTime =
-      this.currentTime - start;
+
+    const localTimeline =
+      this.currentTime -
+      start;
 
 
-    const clipDuration =
-      this.getClipDuration(clip);
+    const duration =
+      this.getClipDuration(
+        clip
+      );
 
 
     if (
-      localTimelineTime <= 0.05 ||
-      localTimelineTime >= clipDuration - 0.05
+      localTimeline <= .05 ||
+      localTimeline >=
+        duration - .05
     ) {
+
       return;
     }
 
 
     const sourceSplit =
       clip.trimStart +
-      localTimelineTime * clip.speed;
+      localTimeline *
+      clip.speed;
 
 
     const first = {
+
       ...clip,
-      id: crypto.randomUUID(),
-      trimEnd: sourceSplit
+
+      id:
+        crypto.randomUUID(),
+
+      trimEnd:
+        sourceSplit
+
     };
 
 
     const second = {
+
       ...clip,
-      id: crypto.randomUUID(),
-      trimStart: sourceSplit
+
+      id:
+        crypto.randomUUID(),
+
+      trimStart:
+        sourceSplit
+
     };
 
 
     const index =
       this.clips.findIndex(
         item =>
-          item.id === clip.id
+          item.id ===
+          clip.id
       );
 
 
@@ -1387,8 +2191,14 @@ export class VideoEditor {
 
 
     this.updateInspector();
+
     this.renderTimeline();
-    this.syncPreview(true);
+
+    this.syncPreview(
+      true
+    );
+
+    this.commit();
   }
 
 
@@ -1398,20 +2208,28 @@ export class VideoEditor {
     const clip =
       this.getSelectedClip();
 
+
     if (!clip) return;
 
 
     const duplicate = {
+
       ...clip,
-      id: crypto.randomUUID(),
-      name: `${clip.name} Copy`
+
+      id:
+        crypto.randomUUID(),
+
+      name:
+        `${clip.name} Copy`
+
     };
 
 
     const index =
       this.clips.findIndex(
         item =>
-          item.id === clip.id
+          item.id ===
+          clip.id
       );
 
 
@@ -1427,7 +2245,10 @@ export class VideoEditor {
 
 
     this.updateInspector();
+
     this.renderTimeline();
+
+    this.commit();
   }
 
 
@@ -1437,19 +2258,29 @@ export class VideoEditor {
     const index =
       this.clips.findIndex(
         item =>
-          item.id === this.selectedClipId
+          item.id ===
+          this.selectedClipId
       );
 
 
-    if (index === -1) return;
+    if (
+      index === -1
+    ) {
+      return;
+    }
 
 
-    this.clips.splice(index, 1);
+    this.clips.splice(
+      index,
+      1
+    );
 
 
     this.selectedClipId =
       this.clips[index]?.id ||
-      this.clips[index - 1]?.id ||
+      this.clips[
+        index - 1
+      ]?.id ||
       null;
 
 
@@ -1457,29 +2288,285 @@ export class VideoEditor {
       this.getDuration();
 
 
-    if (this.currentTime > duration) {
-      this.currentTime = duration;
+    if (
+      this.currentTime >
+      duration
+    ) {
+
+      this.currentTime =
+        duration;
     }
 
 
     this.updateInspector();
+
     this.renderTimeline();
-    this.syncPreview(true);
+
+    this.syncPreview(
+      true
+    );
+
     this.renderFrame();
+
+    this.commit();
   }
 
 
 
-  resizeCanvas() {
+  moveClip(
+    fromIndex,
+    toIndex
+  ) {
 
-    const size =
-      VIDEO_SIZES[this.project.aspect];
+    if (
+      fromIndex ===
+      toIndex
+    ) {
+      return;
+    }
 
-    this.canvas.width =
-      size.width;
 
-    this.canvas.height =
-      size.height;
+    const [clip] =
+      this.clips.splice(
+        fromIndex,
+        1
+      );
+
+
+    this.clips.splice(
+      toIndex,
+      0,
+      clip
+    );
+
+
+    this.renderTimeline();
+
+    this.syncPreview(
+      true
+    );
+
+    this.commit();
+  }
+
+
+
+  /* =====================================================
+     INSPECTOR
+  ====================================================== */
+
+  updateInspector() {
+
+    const clip =
+      this.getSelectedClip();
+
+
+    document
+      .getElementById(
+        "selectedClipBadge"
+      )
+      .textContent =
+      clip
+        ? clip.name
+        : "None selected";
+
+
+    if (!clip) {
+      return;
+    }
+
+
+    document
+      .getElementById(
+        "clipTrimStart"
+      )
+      .value =
+      clip.trimStart
+        .toFixed(2);
+
+
+    document
+      .getElementById(
+        "clipTrimEnd"
+      )
+      .value =
+      clip.trimEnd
+        .toFixed(2);
+
+
+    document
+      .getElementById(
+        "clipTrimEnd"
+      )
+      .max =
+      clip.sourceDuration;
+
+
+    document
+      .getElementById(
+        "clipSpeed"
+      )
+      .value =
+      String(
+        clip.speed
+      );
+
+
+    document
+      .getElementById(
+        "clipVolume"
+      )
+      .value =
+      clip.volume;
+
+
+    document
+      .getElementById(
+        "clipScale"
+      )
+      .value =
+      clip.scale;
+
+
+    document
+      .getElementById(
+        "clipX"
+      )
+      .value =
+      clip.x;
+
+
+    document
+      .getElementById(
+        "clipY"
+      )
+      .value =
+      clip.y;
+
+
+    document
+      .getElementById(
+        "clipRotation"
+      )
+      .value =
+      clip.rotation;
+
+
+    document
+      .getElementById(
+        "clipBrightness"
+      )
+      .value =
+      clip.brightness;
+
+
+    document
+      .getElementById(
+        "clipSaturation"
+      )
+      .value =
+      clip.saturation;
+
+
+    document
+      .getElementById(
+        "clipContrast"
+      )
+      .value =
+      clip.contrast;
+
+
+    document
+      .getElementById(
+        "clipTransitionIn"
+      )
+      .value =
+      clip.transitionIn;
+
+
+    document
+      .getElementById(
+        "clipTransitionOut"
+      )
+      .value =
+      clip.transitionOut;
+
+
+    this.refreshInspectorLabels();
+  }
+
+
+
+  refreshInspectorLabels() {
+
+    const clip =
+      this.getSelectedClip();
+
+
+    if (!clip) return;
+
+
+    const labels = {
+
+      clipVolumeValue:
+        `${clip.volume}%`,
+
+      clipScaleValue:
+        `${clip.scale}%`,
+
+      clipXValue:
+        `${clip.x}%`,
+
+      clipYValue:
+        `${clip.y}%`,
+
+      clipRotationValue:
+        `${clip.rotation}°`,
+
+      clipBrightnessValue:
+        `${clip.brightness}%`,
+
+      clipSaturationValue:
+        `${clip.saturation}%`,
+
+      clipContrastValue:
+        `${clip.contrast}%`
+
+    };
+
+
+    Object.entries(
+      labels
+    )
+      .forEach(
+        ([id,value]) => {
+
+          document
+            .getElementById(id)
+            .textContent =
+            value;
+        }
+      );
+  }
+
+
+
+  /* =====================================================
+     PLAYBACK
+  ====================================================== */
+
+  togglePlayback() {
+
+    if (
+      this.playing
+    ) {
+
+      this.pause();
+
+    } else {
+
+      this.play();
+    }
   }
 
 
@@ -1490,43 +2577,65 @@ export class VideoEditor {
       this.getDuration();
 
 
-    if (!duration) return;
-
-
     if (
-      this.currentTime >= duration
+      !duration
     ) {
-      this.currentTime = 0;
+      return;
     }
 
 
-    this.playing = true;
+    if (
+      this.currentTime >=
+      duration
+    ) {
+
+      this.currentTime =
+        0;
+    }
 
 
-    document.getElementById("videoPlayBtn").textContent =
+    this.playing =
+      true;
+
+
+    document
+      .getElementById(
+        "videoPlayBtn"
+      )
+      .textContent =
       "❚❚";
 
 
     this.playStartTimestamp =
       performance.now() -
-      this.currentTime * 1000;
+      this.currentTime *
+      1000;
 
 
-    await this.syncPreview(true);
+    await this.syncPreview(
+      true
+    );
 
 
-    if (this.audioTrack) {
+    if (
+      this.audioTrack
+    ) {
 
       try {
 
         if (
-          Number.isFinite(this.audio.duration) &&
-          this.audio.duration > 0
+          Number.isFinite(
+            this.audio.duration
+          ) &&
+          this.audio.duration >
+          0
         ) {
+
           this.audio.currentTime =
             this.currentTime %
             this.audio.duration;
         }
+
 
         await this.audio.play();
 
@@ -1535,7 +2644,8 @@ export class VideoEditor {
 
 
     requestAnimationFrame(
-      () => this.tick()
+      () =>
+        this.tick()
     );
   }
 
@@ -1543,12 +2653,20 @@ export class VideoEditor {
 
   pause() {
 
-    this.playing = false;
+    this.playing =
+      false;
+
 
     this.video.pause();
+
     this.audio.pause();
 
-    document.getElementById("videoPlayBtn").textContent =
+
+    document
+      .getElementById(
+        "videoPlayBtn"
+      )
+      .textContent =
       "▶";
   }
 
@@ -1556,7 +2674,11 @@ export class VideoEditor {
 
   async tick() {
 
-    if (!this.playing) return;
+    if (
+      !this.playing
+    ) {
+      return;
+    }
 
 
     const duration =
@@ -1564,43 +2686,76 @@ export class VideoEditor {
 
 
     this.currentTime =
-      (performance.now() - this.playStartTimestamp) /
+      (
+        performance.now() -
+        this.playStartTimestamp
+      ) /
       1000;
 
 
     if (
-      this.currentTime >= duration
+      this.currentTime >=
+      duration
     ) {
 
-      this.currentTime = duration;
+      this.currentTime =
+        duration;
+
 
       this.pause();
 
       this.renderFrame();
+
       this.updatePlaybackUi();
 
-      if (this.exporting) {
-        this.onExportPlaybackFinished?.();
+
+      if (
+        this.exporting
+      ) {
+
+        this
+          .onExportPlaybackFinished
+          ?.();
       }
+
 
       return;
     }
 
 
-    await this.syncPreview(false);
+    await this.syncPreview(
+      false
+    );
+
 
     this.renderFrame();
+
     this.updatePlaybackUi();
 
 
     requestAnimationFrame(
-      () => this.tick()
+      () =>
+        this.tick()
     );
   }
 
 
 
-  seek(time) {
+  seekRelative(
+    delta
+  ) {
+
+    this.seek(
+      this.currentTime +
+      delta
+    );
+  }
+
+
+
+  seek(
+    time
+  ) {
 
     const duration =
       this.getDuration();
@@ -1616,25 +2771,35 @@ export class VideoEditor {
       );
 
 
-    if (this.playing) {
+    if (
+      this.playing
+    ) {
 
       this.playStartTimestamp =
         performance.now() -
-        this.currentTime * 1000;
+        this.currentTime *
+        1000;
     }
 
 
-    this.syncPreview(true);
+    this.syncPreview(
+      true
+    );
+
 
     this.syncAudioToTime();
 
+
     this.renderFrame();
+
     this.updatePlaybackUi();
   }
 
 
 
-  async syncPreview(forceSeek = false) {
+  async syncPreview(
+    forceSeek = false
+  ) {
 
     const active =
       this.getClipAtTime(
@@ -1645,67 +2810,85 @@ export class VideoEditor {
     if (!active) {
 
       this.video.pause();
+
       return;
     }
 
 
-    const { clip, local } =
+    const {
+      clip,
+      local
+    } =
       active;
 
 
     const sourceTime =
       clip.trimStart +
-      local * clip.speed;
+      local *
+      clip.speed;
 
 
-    const sourceChanged =
+    const changed =
       this.activeSourceUrl !==
       clip.url;
 
 
-    if (sourceChanged) {
+    if (changed) {
 
       this.video.pause();
 
+
       this.video.src =
         clip.url;
+
 
       this.activeSourceUrl =
         clip.url;
 
 
-      await new Promise(resolve => {
+      await new Promise(
+        resolve => {
 
-        if (
-          this.video.readyState >= 1
-        ) {
-          resolve();
-        } else {
+          if (
+            this.video.readyState >=
+            1
+          ) {
 
-          this.video.onloadedmetadata =
-            () => resolve();
+            resolve();
+
+          } else {
+
+            this.video
+              .onloadedmetadata =
+              () => resolve();
+          }
         }
-      });
+      );
 
 
-      this.video.currentTime =
-        Math.min(
-          clip.trimEnd,
-          sourceTime
-        );
+      try {
+
+        this.video.currentTime =
+          sourceTime;
+
+      } catch {}
     }
+
 
     else if (
       forceSeek ||
       Math.abs(
         this.video.currentTime -
         sourceTime
-      ) > 0.18
+      ) >
+      .14
     ) {
 
       try {
+
         this.video.currentTime =
           sourceTime;
+
       } catch {}
     }
 
@@ -1713,13 +2896,21 @@ export class VideoEditor {
     this.video.playbackRate =
       clip.speed;
 
+
     this.video.volume =
-      clip.volume / 100;
+      clip.volume /
+      100;
 
 
-    if (this.videoGain) {
-      this.videoGain.gain.value =
-        clip.volume / 100;
+    if (
+      this.videoGain
+    ) {
+
+      this.videoGain
+        .gain
+        .value =
+        clip.volume /
+        100;
     }
 
 
@@ -1729,7 +2920,9 @@ export class VideoEditor {
     ) {
 
       try {
+
         await this.video.play();
+
       } catch {}
     }
   }
@@ -1738,12 +2931,19 @@ export class VideoEditor {
 
   syncAudioToTime() {
 
-    if (!this.audioTrack) return;
+    if (
+      !this.audioTrack
+    ) {
+      return;
+    }
 
 
     if (
-      Number.isFinite(this.audio.duration) &&
-      this.audio.duration > 0
+      Number.isFinite(
+        this.audio.duration
+      ) &&
+      this.audio.duration >
+      0
     ) {
 
       this.audio.currentTime =
@@ -1754,11 +2954,53 @@ export class VideoEditor {
 
 
 
+  /* =====================================================
+     RENDER
+  ====================================================== */
+
+  resizeCanvas() {
+
+    const size =
+      VIDEO_SIZES[
+        this.project.aspect
+      ];
+
+
+    this.canvas.width =
+      size.width;
+
+
+    this.canvas.height =
+      size.height;
+
+
+    const shell =
+      document.querySelector(
+        ".video-preview-shell"
+      );
+
+
+    shell.style.aspectRatio =
+      `${size.width} / ${size.height}`;
+
+
+    this.renderFrame();
+  }
+
+
+
   renderFrame() {
 
-    const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
+    const ctx =
+      this.ctx;
+
+
+    const w =
+      this.canvas.width;
+
+
+    const h =
+      this.canvas.height;
 
 
     ctx.clearRect(
@@ -1769,7 +3011,7 @@ export class VideoEditor {
     );
 
 
-    const bg =
+    const gradient =
       ctx.createLinearGradient(
         0,
         0,
@@ -1777,12 +3019,29 @@ export class VideoEditor {
         h
       );
 
-    bg.addColorStop(0, "#111318");
-    bg.addColorStop(1, "#050607");
 
-    ctx.fillStyle = bg;
+    gradient.addColorStop(
+      0,
+      "#12151a"
+    );
 
-    ctx.fillRect(0, 0, w, h);
+
+    gradient.addColorStop(
+      1,
+      "#040506"
+    );
+
+
+    ctx.fillStyle =
+      gradient;
+
+
+    ctx.fillRect(
+      0,
+      0,
+      w,
+      h
+    );
 
 
     const active =
@@ -1792,8 +3051,11 @@ export class VideoEditor {
 
 
     document
-      .getElementById("videoEmptyPreview")
-      .classList.toggle(
+      .getElementById(
+        "videoEmptyPreview"
+      )
+      .classList
+      .toggle(
         "hidden",
         Boolean(active)
       );
@@ -1801,17 +3063,24 @@ export class VideoEditor {
 
     if (
       active &&
-      this.video.readyState >= 2
+      this.video.readyState >=
+      2
     ) {
 
-      this.drawVideoClip(active);
+      this.drawVideoClip(
+        active
+      );
     }
 
 
     this.drawImageOverlays();
 
 
-    if (this.project.logoVisible) {
+    if (
+      this.project
+        .logoVisible
+    ) {
+
       this.drawOfficialLogo();
     }
 
@@ -1824,40 +3093,59 @@ export class VideoEditor {
 
 
 
-  drawVideoClip(active) {
+  drawVideoClip(
+    active
+  ) {
 
-    const { clip, local } =
+    const {
+      clip,
+      local
+    } =
       active;
 
 
-    const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
+    const ctx =
+      this.ctx;
 
 
-    const videoW =
-      this.video.videoWidth || w;
+    const w =
+      this.canvas.width;
 
-    const videoH =
-      this.video.videoHeight || h;
+
+    const h =
+      this.canvas.height;
+
+
+    const sourceW =
+      this.video.videoWidth ||
+      w;
+
+
+    const sourceH =
+      this.video.videoHeight ||
+      h;
 
 
     let scale =
       Math.max(
-        w / videoW,
-        h / videoH
+        w / sourceW,
+        h / sourceH
       );
 
 
     scale *=
-      clip.scale / 100;
+      clip.scale /
+      100;
 
 
     const dw =
-      videoW * scale;
+      sourceW *
+      scale;
+
 
     const dh =
-      videoH * scale;
+      sourceH *
+      scale;
 
 
     const overflowX =
@@ -1865,6 +3153,7 @@ export class VideoEditor {
         0,
         dw - w
       );
+
 
     const overflowY =
       Math.max(
@@ -1874,91 +3163,167 @@ export class VideoEditor {
 
 
     let x =
-      -(overflowX * (clip.x / 100));
-
-    let y =
-      -(overflowY * (clip.y / 100));
-
-
-    const duration =
-      this.getClipDuration(clip);
-
-
-    const transitionDuration =
-      Math.min(
-        0.45,
-        duration / 3
+      -(
+        overflowX *
+        (
+          clip.x /
+          100
+        )
       );
 
 
-    let alpha = 1;
-    let effectScale = 1;
-    let offsetX = 0;
+    let y =
+      -(
+        overflowY *
+        (
+          clip.y /
+          100
+        )
+      );
+
+
+    const duration =
+      this.getClipDuration(
+        clip
+      );
+
+
+    const transition =
+      Math.min(
+        .45,
+        duration /
+        3
+      );
+
+
+    let alpha =
+      1;
+
+
+    let effectScale =
+      1;
+
+
+    let offsetX =
+      0;
 
 
     if (
-      local < transitionDuration
+      local <
+      transition
     ) {
 
-      const progress =
+      const p =
         local /
-        transitionDuration;
+        transition;
 
-      if (clip.transitionIn === "fade") {
-        alpha *= progress;
+
+      if (
+        clip.transitionIn ===
+        "fade"
+      ) {
+
+        alpha *=
+          p;
       }
 
-      if (clip.transitionIn === "zoom") {
-        alpha *= progress;
+
+      if (
+        clip.transitionIn ===
+        "zoom"
+      ) {
+
+        alpha *=
+          p;
+
         effectScale =
           1.14 -
-          0.14 * progress;
+          .14 *
+          this.easeOutCubic(
+            p
+          );
       }
 
-      if (clip.transitionIn === "slide") {
-        alpha *= progress;
+
+      if (
+        clip.transitionIn ===
+        "slide"
+      ) {
+
+        alpha *=
+          p;
+
         offsetX =
-          (1 - progress) *
+          (
+            1 -
+            this.easeOutCubic(
+              p
+            )
+          ) *
           w *
-          0.12;
-      }
-
-      if (clip.transitionIn === "flash") {
-        alpha *= progress;
+          .14;
       }
     }
 
 
     const remaining =
-      duration - local;
+      duration -
+      local;
 
 
     if (
       remaining <
-      transitionDuration
+      transition
     ) {
 
-      const progress =
+      const p =
         remaining /
-        transitionDuration;
+        transition;
 
-      if (clip.transitionOut === "fade") {
-        alpha *= progress;
+
+      if (
+        clip.transitionOut ===
+        "fade"
+      ) {
+
+        alpha *=
+          p;
       }
 
-      if (clip.transitionOut === "zoom") {
-        alpha *= progress;
+
+      if (
+        clip.transitionOut ===
+        "zoom"
+      ) {
+
+        alpha *=
+          p;
+
         effectScale =
           1 +
-          (1 - progress) * 0.12;
+          (
+            1 -
+            p
+          ) *
+          .10;
       }
 
-      if (clip.transitionOut === "slide") {
-        alpha *= progress;
+
+      if (
+        clip.transitionOut ===
+        "slide"
+      ) {
+
+        alpha *=
+          p;
+
         offsetX =
-          -(1 - progress) *
+          -(
+            1 -
+            p
+          ) *
           w *
-          0.12;
+          .12;
       }
     }
 
@@ -1977,9 +3342,11 @@ export class VideoEditor {
 
 
     ctx.filter =
-      `brightness(${clip.brightness}%)
-       saturate(${clip.saturation}%)
-       contrast(${clip.contrast}%)`;
+      `
+      brightness(${clip.brightness}%)
+      saturate(${clip.saturation}%)
+      contrast(${clip.contrast}%)
+      `;
 
 
     ctx.translate(
@@ -2020,19 +3387,33 @@ export class VideoEditor {
 
 
     if (
-      clip.transitionIn === "flash" &&
-      local < transitionDuration
+      clip.transitionIn ===
+        "flash" &&
+      local <
+        transition
     ) {
 
       const flash =
         1 -
         local /
-        transitionDuration;
+        transition;
+
 
       ctx.fillStyle =
-        `rgba(255,255,255,${flash * 0.7})`;
+        `rgba(
+          255,
+          245,
+          215,
+          ${flash * .72}
+        )`;
 
-      ctx.fillRect(0, 0, w, h);
+
+      ctx.fillRect(
+        0,
+        0,
+        w,
+        h
+      );
     }
   }
 
@@ -2043,100 +3424,147 @@ export class VideoEditor {
     const w =
       this.canvas.width;
 
+
     const h =
       this.canvas.height;
 
 
-    this.images.forEach(item => {
+    this.images.forEach(
+      item => {
 
-      if (
-        this.currentTime < item.start ||
-        this.currentTime > item.end
-      ) {
-        return;
+        if (
+          this.currentTime <
+            item.start ||
+          this.currentTime >
+            item.end
+        ) {
+
+          return;
+        }
+
+
+        const maxWidth =
+          w *
+          (
+            item.scale /
+            100
+          );
+
+
+        const ratio =
+          item.image.width /
+          item.image.height;
+
+
+        let width =
+          maxWidth;
+
+
+        let height =
+          width /
+          ratio;
+
+
+        if (
+          height >
+          h *
+          .75
+        ) {
+
+          height =
+            h *
+            .75;
+
+
+          width =
+            height *
+            ratio;
+        }
+
+
+        const x =
+          w *
+          (
+            item.x /
+            100
+          ) -
+          width /
+          2;
+
+
+        const y =
+          h *
+          (
+            item.y /
+            100
+          ) -
+          height /
+          2;
+
+
+        this.ctx.save();
+
+
+        this.ctx.globalAlpha =
+          item.opacity;
+
+
+        this.ctx.shadowColor =
+          "rgba(0,0,0,.48)";
+
+
+        this.ctx.shadowBlur =
+          38;
+
+
+        this.ctx.drawImage(
+          item.image,
+          x,
+          y,
+          width,
+          height
+        );
+
+
+        this.ctx.restore();
       }
-
-
-      const maxWidth =
-        w * (item.scale / 100);
-
-
-      const ratio =
-        item.image.width /
-        item.image.height;
-
-
-      let width =
-        maxWidth;
-
-      let height =
-        width / ratio;
-
-
-      if (height > h * 0.75) {
-
-        height =
-          h * 0.75;
-
-        width =
-          height * ratio;
-      }
-
-
-      const x =
-        w *
-        (item.x / 100) -
-        width / 2;
-
-
-      const y =
-        h *
-        (item.y / 100) -
-        height / 2;
-
-
-      this.ctx.save();
-
-      this.ctx.globalAlpha =
-        item.opacity;
-
-      this.ctx.shadowColor =
-        "rgba(0,0,0,.45)";
-
-      this.ctx.shadowBlur = 35;
-
-
-      this.ctx.drawImage(
-        item.image,
-        x,
-        y,
-        width,
-        height
-      );
-
-
-      this.ctx.restore();
-    });
+    );
   }
 
 
 
   drawOfficialLogo() {
 
-    if (!this.officialLogo) return;
+    if (
+      !this.officialLogo
+    ) {
+      return;
+    }
 
 
     const w =
       this.canvas.width;
 
+
     const h =
       this.canvas.height;
 
 
-    const baseSize =
-      Math.min(w, h) *
-      0.105 *
-      (this.project.logoSize / 100);
+    const short =
+      Math.min(
+        w,
+        h
+      );
+
+
+    const maxHeight =
+      short *
+      .105 *
+      (
+        this.project
+          .logoSize /
+        100
+      );
 
 
     const ratio =
@@ -2144,45 +3572,57 @@ export class VideoEditor {
       this.officialLogo.height;
 
 
-    let width;
-    let height;
+    let logoWidth;
+    let logoHeight;
 
 
-    if (ratio >= 1) {
+    if (
+      ratio >=
+      1
+    ) {
 
-      width = baseSize;
+      logoWidth =
+        maxHeight *
+        ratio;
 
-      height =
-        width / ratio;
+
+      logoHeight =
+        maxHeight;
 
     } else {
 
-      height = baseSize;
+      logoHeight =
+        maxHeight;
 
-      width =
-        height * ratio;
+
+      logoWidth =
+        maxHeight *
+        ratio;
     }
 
 
     const margin =
-      Math.min(w, h) * 0.045;
+      short *
+      .045;
 
 
     this.ctx.save();
 
 
     this.ctx.shadowColor =
-      "rgba(0,0,0,.55)";
+      "rgba(0,0,0,.58)";
 
-    this.ctx.shadowBlur = 28;
+
+    this.ctx.shadowBlur =
+      30;
 
 
     this.ctx.drawImage(
       this.officialLogo,
       margin,
       margin,
-      width,
-      height
+      logoWidth,
+      logoHeight
     );
 
 
@@ -2198,9 +3638,12 @@ export class VideoEditor {
 
 
     if (
-      this.currentTime < text.start ||
-      this.currentTime > text.end
+      this.currentTime <
+        text.start ||
+      this.currentTime >
+        text.end
     ) {
+
       return;
     }
 
@@ -2208,15 +3651,9 @@ export class VideoEditor {
     const w =
       this.canvas.width;
 
+
     const h =
       this.canvas.height;
-
-
-    const visibleDuration =
-      Math.max(
-        0.1,
-        text.end - text.start
-      );
 
 
     const local =
@@ -2227,15 +3664,19 @@ export class VideoEditor {
     const intro =
       Math.min(
         1,
-        local / 0.45
+        local /
+        .45
       );
 
 
     const outro =
       Math.min(
         1,
-        (text.end - this.currentTime) /
-        0.35
+        (
+          text.end -
+          this.currentTime
+        ) /
+        .35
       );
 
 
@@ -2246,44 +3687,72 @@ export class VideoEditor {
       );
 
 
-    let offsetY = 0;
-    let scale = 1;
-    let offsetX = 0;
+    let offsetY =
+      0;
+
+
+    let offsetX =
+      0;
+
+
+    let scale =
+      1;
 
 
     if (
-      text.animation === "rise"
+      text.animation ===
+      "rise"
     ) {
+
       offsetY =
-        (1 - intro) *
-        80;
+        (
+          1 -
+          this.easeOutCubic(
+            intro
+          )
+        ) *
+        75;
     }
 
 
     if (
-      text.animation === "pop"
+      text.animation ===
+      "slide"
     ) {
-      scale =
-        0.72 +
-        0.28 *
-        this.easeOutBack(intro);
-    }
 
-
-    if (
-      text.animation === "slide"
-    ) {
       offsetX =
-        -(1 - intro) *
+        -(
+          1 -
+          this.easeOutCubic(
+            intro
+          )
+        ) *
         w *
-        0.15;
+        .15;
     }
 
 
     if (
-      text.animation === "none"
+      text.animation ===
+      "pop"
     ) {
-      alpha = 1;
+
+      scale =
+        .72 +
+        .28 *
+        this.easeOutBack(
+          intro
+        );
+    }
+
+
+    if (
+      text.animation ===
+      "none"
+    ) {
+
+      alpha =
+        1;
     }
 
 
@@ -2300,9 +3769,14 @@ export class VideoEditor {
       );
 
 
+    const centerY =
+      h *
+      .70;
+
+
     this.ctx.translate(
       w / 2,
-      h * 0.71 + offsetY
+      centerY
     );
 
 
@@ -2314,61 +3788,76 @@ export class VideoEditor {
 
     this.ctx.translate(
       -w / 2,
-      -(h * 0.71 + offsetY)
+      -centerY
     );
 
 
-    const cardWidth =
-      w * 0.86;
+    const width =
+      w *
+      .86;
 
 
-    const cardX =
-      (w - cardWidth) / 2 +
+    const x =
+      (
+        w -
+        width
+      ) /
+      2 +
       offsetX;
 
 
-    const cardY =
-      h * 0.68 +
+    const y =
+      h *
+      .67 +
       offsetY;
 
 
-    const cardHeight =
+    const height =
       text.score
         ? 300
-        : 245;
+        : 242;
 
 
-    const gradient =
-      this.ctx.createLinearGradient(
-        cardX,
-        cardY,
-        cardX + cardWidth,
-        cardY + cardHeight
-      );
+    const panel =
+      this.ctx
+        .createLinearGradient(
+          x,
+          y,
+          x + width,
+          y + height
+        );
 
 
-    gradient.addColorStop(
+    panel.addColorStop(
       0,
-      "rgba(93,17,24,.93)"
+      "rgba(105,19,29,.94)"
     );
 
-    gradient.addColorStop(
+
+    panel.addColorStop(
+      .58,
+      "rgba(52,13,18,.93)"
+    );
+
+
+    panel.addColorStop(
       1,
-      "rgba(9,12,16,.93)"
+      "rgba(8,10,13,.94)"
     );
 
 
     this.roundRect(
-      cardX,
-      cardY,
-      cardWidth,
-      cardHeight,
+      x,
+      y,
+      width,
+      height,
       24
     );
 
 
     this.ctx.fillStyle =
-      gradient;
+      panel;
+
 
     this.ctx.fill();
 
@@ -2376,16 +3865,20 @@ export class VideoEditor {
     this.ctx.fillStyle =
       "#F0C34C";
 
+
     this.ctx.fillRect(
-      cardX,
-      cardY,
-      cardWidth,
+      x,
+      y,
+      width,
       8
     );
 
 
+    /* KICKER */
+
     this.ctx.textAlign =
       "left";
+
 
     this.ctx.textBaseline =
       "top";
@@ -2394,49 +3887,99 @@ export class VideoEditor {
     this.ctx.fillStyle =
       "#F0C34C";
 
+
     this.ctx.font =
-      `800 ${Math.round(w * 0.025)}px "DM Sans"`;
+      `800 ${
+        Math.round(
+          w *
+          .023
+        )
+      }px "Inter"`;
 
 
     this.ctx.fillText(
-      text.subtitle.toUpperCase(),
-      cardX + 45,
-      cardY + 38
+      text.subtitle
+        .toUpperCase(),
+
+      x + 45,
+
+      y + 38
     );
 
+
+    /* TITLE */
 
     this.ctx.fillStyle =
       "#FFFFFF";
 
+
     this.ctx.font =
-      `900 ${Math.round(w * 0.067)}px "Montserrat"`;
+      `900 ${
+        Math.round(
+          w *
+          .064
+        )
+      }px "Montserrat"`;
 
 
     this.ctx.fillText(
-      text.title.toUpperCase(),
-      cardX + 45,
-      cardY + 82
+      text.title
+        .toUpperCase(),
+
+      x + 45,
+
+      y + 80
     );
 
 
-    if (text.score) {
+    /* SCORE */
+
+    if (
+      text.score
+    ) {
 
       this.ctx.fillStyle =
         "#F0C34C";
 
+
       this.ctx.font =
-        `900 ${Math.round(w * 0.052)}px "Montserrat"`;
+        `900 ${
+          Math.round(
+            w *
+            .05
+          )
+        }px "Montserrat"`;
 
 
       this.ctx.fillText(
-        text.score.toUpperCase(),
-        cardX + 45,
-        cardY + 175
+        text.score
+          .toUpperCase(),
+
+        x + 45,
+
+        y + 170
       );
     }
 
 
     this.ctx.restore();
+  }
+
+
+
+  /* =====================================================
+     TIMELINE
+  ====================================================== */
+
+  getPixelsPerSecond() {
+
+    return (
+      60 *
+      (
+        this.timelineZoom /
+        100
+      )
+    );
   }
 
 
@@ -2450,231 +3993,75 @@ export class VideoEditor {
       );
 
 
-    const basePixelsPerSecond = 60;
-
-    const pixelsPerSecond =
-      basePixelsPerSecond *
-      (this.timelineZoom / 100);
+    const pps =
+      this.getPixelsPerSecond();
 
 
     const width =
       Math.max(
         900,
         duration *
-        pixelsPerSecond
+        pps
       );
 
 
     document
-      .getElementById("timelineContent")
+      .getElementById(
+        "timelineContent"
+      )
       .style.width =
-      `${width + 90}px`;
+      `${width + 92}px`;
 
 
     this.renderRuler(
       duration,
-      pixelsPerSecond
+      pps
     );
 
 
-    const videoTrack =
-      document.getElementById("videoTrack");
+    this.renderVideoTrack(
+      pps
+    );
 
 
-    let runningStart = 0;
+    this.renderImageTrack(
+      pps
+    );
 
 
-    videoTrack.innerHTML =
-      this.clips.map(clip => {
-
-        const clipDuration =
-          this.getClipDuration(clip);
+    this.renderTextTrack(
+      pps
+    );
 
 
-        const left =
-          runningStart *
-          pixelsPerSecond;
+    this.renderBrandTrack(
+      duration,
+      pps
+    );
 
 
-        const blockWidth =
-          Math.max(
-            36,
-            clipDuration *
-            pixelsPerSecond
-          );
-
-
-        runningStart +=
-          clipDuration;
-
-
-        const active =
-          clip.id === this.selectedClipId
-            ? "selected"
-            : "";
-
-
-        return `
-          <button
-            class="timeline-block video-block ${active}"
-            data-clip-id="${clip.id}"
-            type="button"
-            style="
-              left:${left}px;
-              width:${blockWidth}px;
-            "
-          >
-            <span class="timeline-block-icon">▶</span>
-
-            <strong>
-              ${this.escapeHtml(clip.name)}
-            </strong>
-
-            <small>
-              ${clipDuration.toFixed(1)}s
-            </small>
-          </button>
-        `;
-      }).join("");
-
-
-    videoTrack
-      .querySelectorAll("[data-clip-id]")
-      .forEach(block => {
-
-        block.addEventListener(
-          "click",
-          event => {
-
-            event.stopPropagation();
-
-            this.selectClip(
-              block.dataset.clipId
-            );
-
-            this.seek(
-              this.getClipStart(
-                block.dataset.clipId
-              )
-            );
-          }
-        );
-      });
-
-
-
-    const imageTrack =
-      document.getElementById("imageTrack");
-
-
-    imageTrack.innerHTML =
-      this.images.map(item => {
-
-        const left =
-          item.start *
-          pixelsPerSecond;
-
-        const blockWidth =
-          Math.max(
-            30,
-            (item.end - item.start) *
-            pixelsPerSecond
-          );
-
-
-        return `
-          <div
-            class="timeline-block image-block"
-            style="
-              left:${left}px;
-              width:${blockWidth}px;
-            "
-          >
-            ▧ ${this.escapeHtml(item.name)}
-          </div>
-        `;
-      }).join("");
-
-
-
-    const text =
-      this.project.text;
-
-
-    const textLeft =
-      text.start *
-      pixelsPerSecond;
-
-
-    const textWidth =
-      Math.max(
-        30,
-        (
-          Math.max(
-            text.end,
-            text.start
-          ) -
-          text.start
-        ) *
-        pixelsPerSecond
-      );
+    this.renderAudioTrack(
+      duration,
+      pps
+    );
 
 
     document
-      .getElementById("textTrack")
-      .innerHTML =
-      text.title
-        ? `
-          <div
-            class="timeline-block text-block"
-            style="
-              left:${textLeft}px;
-              width:${textWidth}px;
-            "
-          >
-            T ${this.escapeHtml(text.title)}
-          </div>
-        `
-        : "";
-
-
-
-    document
-      .getElementById("logoTimelineBlock")
-      .style.width =
-      `${duration * pixelsPerSecond}px`;
-
-
-
-    document
-      .getElementById("audioTrack")
-      .innerHTML =
-      this.audioTrack
-        ? `
-          <div
-            class="timeline-block audio-block"
-            style="
-              left:0;
-              width:${duration * pixelsPerSecond}px;
-            "
-          >
-            ♫ ${this.escapeHtml(this.audioTrack.name)}
-          </div>
-        `
-        : "";
-
-
-
-    document
-      .getElementById("timelineDurationLabel")
+      .getElementById(
+        "timelineDurationLabel"
+      )
       .textContent =
       `${duration.toFixed(1)} sec`;
 
 
     document
-      .getElementById("videoDuration")
+      .getElementById(
+        "videoDuration"
+      )
       .textContent =
-      this.formatTime(duration);
+      this.formatTime(
+        duration
+      );
 
 
     this.updateTimelinePlayhead();
@@ -2684,72 +4071,864 @@ export class VideoEditor {
 
   renderRuler(
     duration,
-    pixelsPerSecond
+    pps
   ) {
 
     const ruler =
-      document.getElementById("timelineRuler");
+      document.getElementById(
+        "timelineRuler"
+      );
 
 
-    let html = "";
+    let html =
+      "";
 
 
     const step =
-      duration > 30
-        ? 5
-        : duration > 15
-          ? 2
-          : 1;
+      duration > 60
+        ? 10
+        : duration > 30
+          ? 5
+          : duration > 15
+            ? 2
+            : 1;
 
 
     for (
       let second = 0;
-      second <= Math.ceil(duration);
-      second += step
+      second <=
+      Math.ceil(
+        duration
+      );
+      second +=
+      step
     ) {
 
       html += `
         <span
           class="ruler-tick"
-          style="left:${second * pixelsPerSecond}px"
+          style="
+            left:${
+              second *
+              pps
+            }px
+          "
         >
-          ${this.formatTime(second)}
+          ${this.formatTime(
+            second
+          )}
         </span>
       `;
     }
 
 
-    ruler.innerHTML = html;
+    ruler.innerHTML =
+      html;
 
 
-    ruler.onclick = event => {
+    ruler.onclick =
+      event => {
 
-      const rect =
-        ruler.getBoundingClientRect();
+        const rect =
+          ruler
+            .getBoundingClientRect();
 
-      const x =
-        event.clientX - rect.left;
 
-      const time =
-        x / pixelsPerSecond;
+        const x =
+          event.clientX -
+          rect.left;
 
-      this.seek(time);
-    };
+
+        this.seek(
+          x /
+          pps
+        );
+      };
   }
 
 
 
-  updateTimelinePlayhead() {
+  renderVideoTrack(
+    pps
+  ) {
 
-    const pixelsPerSecond =
-      60 *
-      (this.timelineZoom / 100);
+    const track =
+      document.getElementById(
+        "videoTrack"
+      );
+
+
+    let runningStart =
+      0;
+
+
+    track.innerHTML =
+      this.clips
+        .map(
+          (
+            clip,
+            index
+          ) => {
+
+            const duration =
+              this.getClipDuration(
+                clip
+              );
+
+
+            const left =
+              runningStart *
+              pps;
+
+
+            const width =
+              Math.max(
+                38,
+                duration *
+                pps
+              );
+
+
+            runningStart +=
+              duration;
+
+
+            const selected =
+              clip.id ===
+              this.selectedClipId
+                ? "selected"
+                : "";
+
+
+            return `
+              <div
+                class="timeline-block video-block ${selected}"
+                draggable="true"
+                data-clip-id="${clip.id}"
+                data-clip-index="${index}"
+                style="
+                  left:${left}px;
+                  width:${width}px;
+                "
+              >
+
+                <div
+                  class="timeline-trim-handle left"
+                  data-trim-side="left"
+                ></div>
+
+                <span class="timeline-block-icon">
+                  ▶
+                </span>
+
+                <strong>
+                  ${this.escapeHtml(
+                    clip.name
+                  )}
+                </strong>
+
+                <small>
+                  ${duration.toFixed(1)}s
+                </small>
+
+                <div
+                  class="timeline-trim-handle right"
+                  data-trim-side="right"
+                ></div>
+
+              </div>
+            `;
+          }
+        )
+        .join("");
+
+
+    track
+      .querySelectorAll(
+        "[data-clip-id]"
+      )
+      .forEach(block => {
+
+        const id =
+          block.dataset.clipId;
+
+
+        block.addEventListener(
+          "click",
+          event => {
+
+            if (
+              event.target
+                .closest(
+                  "[data-trim-side]"
+                )
+            ) {
+
+              return;
+            }
+
+
+            this.selectClip(
+              id
+            );
+
+
+            this.seek(
+              this.getClipStart(
+                id
+              )
+            );
+          }
+        );
+
+
+        block.addEventListener(
+          "dragstart",
+          event => {
+
+            event.dataTransfer
+              .setData(
+                "text/plain",
+                block.dataset
+                  .clipIndex
+              );
+
+
+            event.dataTransfer
+              .effectAllowed =
+              "move";
+          }
+        );
+
+
+        block.addEventListener(
+          "dragover",
+          event => {
+
+            event.preventDefault();
+
+            event.dataTransfer
+              .dropEffect =
+              "move";
+          }
+        );
+
+
+        block.addEventListener(
+          "drop",
+          event => {
+
+            event.preventDefault();
+
+
+            const from =
+              Number(
+                event
+                  .dataTransfer
+                  .getData(
+                    "text/plain"
+                  )
+              );
+
+
+            const to =
+              Number(
+                block.dataset
+                  .clipIndex
+              );
+
+
+            this.moveClip(
+              from,
+              to
+            );
+          }
+        );
+
+
+        block
+          .querySelectorAll(
+            "[data-trim-side]"
+          )
+          .forEach(handle => {
+
+            handle.addEventListener(
+              "pointerdown",
+              event => {
+
+                event.stopPropagation();
+
+                event.preventDefault();
+
+
+                this.startTrimDrag(
+
+                  event,
+
+                  id,
+
+                  handle.dataset
+                    .trimSide
+
+                );
+              }
+            );
+          });
+      });
+  }
+
+
+
+  renderImageTrack(
+    pps
+  ) {
+
+    document
+      .getElementById(
+        "imageTrack"
+      )
+      .innerHTML =
+      this.images
+        .map(item => {
+
+          const left =
+            item.start *
+            pps;
+
+
+          const width =
+            Math.max(
+              30,
+              (
+                item.end -
+                item.start
+              ) *
+              pps
+            );
+
+
+          return `
+            <div
+              class="timeline-block image-block"
+              style="
+                left:${left}px;
+                width:${width}px;
+              "
+            >
+              ▧
+              ${this.escapeHtml(
+                item.name
+              )}
+            </div>
+          `;
+        })
+        .join("");
+  }
+
+
+
+  renderTextTrack(
+    pps
+  ) {
+
+    const text =
+      this.project.text;
+
+
+    if (
+      !text.title
+    ) {
+
+      document
+        .getElementById(
+          "textTrack"
+        )
+        .innerHTML =
+        "";
+
+      return;
+    }
+
+
+    const left =
+      text.start *
+      pps;
+
+
+    const width =
+      Math.max(
+        30,
+        (
+          text.end -
+          text.start
+        ) *
+        pps
+      );
 
 
     document
-      .getElementById("timelinePlayhead")
+      .getElementById(
+        "textTrack"
+      )
+      .innerHTML =
+      `
+      <div
+        class="timeline-block text-block"
+        style="
+          left:${left}px;
+          width:${width}px;
+        "
+      >
+        T
+        ${this.escapeHtml(
+          text.title
+        )}
+      </div>
+      `;
+  }
+
+
+
+  renderBrandTrack(
+    duration,
+    pps
+  ) {
+
+    document
+      .getElementById(
+        "logoTimelineBlock"
+      )
+      .style.width =
+      `${duration * pps}px`;
+  }
+
+
+
+  renderAudioTrack(
+    duration,
+    pps
+  ) {
+
+    document
+      .getElementById(
+        "audioTrack"
+      )
+      .innerHTML =
+      this.audioTrack
+        ? `
+          <div
+            class="timeline-block audio-block"
+            style="
+              left:0;
+              width:${
+                duration *
+                pps
+              }px;
+            "
+          >
+            ♫
+            ${this.escapeHtml(
+              this.audioTrack.name
+            )}
+          </div>
+        `
+        : "";
+  }
+
+
+
+  fitTimeline() {
+
+    const duration =
+      this.getDuration();
+
+
+    if (
+      !duration
+    ) {
+      return;
+    }
+
+
+    const scroll =
+      document.getElementById(
+        "timelineScroll"
+      );
+
+
+    const available =
+      Math.max(
+        500,
+        scroll.clientWidth -
+        120
+      );
+
+
+    const targetPps =
+      available /
+      duration;
+
+
+    this.timelineZoom =
+      Math.max(
+        45,
+        Math.min(
+          240,
+          (
+            targetPps /
+            60
+          ) *
+          100
+        )
+      );
+
+
+    document
+      .getElementById(
+        "timelineZoom"
+      )
+      .value =
+      this.timelineZoom;
+
+
+    this.renderTimeline();
+  }
+
+
+
+  /* =====================================================
+     TRIM DRAG
+  ====================================================== */
+
+  startTrimDrag(
+    event,
+    clipId,
+    side
+  ) {
+
+    const clip =
+      this.clips.find(
+        item =>
+          item.id ===
+          clipId
+      );
+
+
+    if (!clip) return;
+
+
+    this.selectClip(
+      clipId
+    );
+
+
+    const startX =
+      event.clientX;
+
+
+    const originalStart =
+      clip.trimStart;
+
+
+    const originalEnd =
+      clip.trimEnd;
+
+
+    const pps =
+      this.getPixelsPerSecond();
+
+
+    const onMove =
+      moveEvent => {
+
+        const deltaPixels =
+          moveEvent.clientX -
+          startX;
+
+
+        const deltaTimeline =
+          deltaPixels /
+          pps;
+
+
+        const deltaSource =
+          deltaTimeline *
+          clip.speed;
+
+
+        if (
+          side ===
+          "left"
+        ) {
+
+          clip.trimStart =
+            Math.max(
+              0,
+              Math.min(
+                originalStart +
+                deltaSource,
+
+                clip.trimEnd -
+                .05
+              )
+            );
+        }
+
+
+        else {
+
+          clip.trimEnd =
+            Math.min(
+              clip.sourceDuration,
+
+              Math.max(
+                clip.trimStart +
+                .05,
+
+                originalEnd +
+                deltaSource
+              )
+            );
+        }
+
+
+        this.updateInspector();
+
+        this.renderTimeline();
+
+        this.syncPreview(
+          true
+        );
+
+        this.renderFrame();
+      };
+
+
+    const onUp =
+      () => {
+
+        window
+          .removeEventListener(
+            "pointermove",
+            onMove
+          );
+
+
+        window
+          .removeEventListener(
+            "pointerup",
+            onUp
+          );
+
+
+        this.commit();
+      };
+
+
+    window
+      .addEventListener(
+        "pointermove",
+        onMove
+      );
+
+
+    window
+      .addEventListener(
+        "pointerup",
+        onUp
+      );
+  }
+
+
+
+  /* =====================================================
+     PLAYHEAD DRAG
+  ====================================================== */
+
+  startPlayheadDrag(
+    event
+  ) {
+
+    this.pause();
+
+
+    const timeline =
+      document.getElementById(
+        "timelineContent"
+      );
+
+
+    const rect =
+      timeline
+        .getBoundingClientRect();
+
+
+    const pps =
+      this.getPixelsPerSecond();
+
+
+    const update =
+      moveEvent => {
+
+        let x =
+          moveEvent.clientX -
+          rect.left -
+          92;
+
+
+        x =
+          Math.max(
+            0,
+            x
+          );
+
+
+        let time =
+          x /
+          pps;
+
+
+        if (
+          this.snapEnabled
+        ) {
+
+          time =
+            this.snapTime(
+              time
+            );
+        }
+
+
+        this.seek(
+          time
+        );
+      };
+
+
+    update(
+      event
+    );
+
+
+    const onUp =
+      () => {
+
+        window
+          .removeEventListener(
+            "pointermove",
+            update
+          );
+
+
+        window
+          .removeEventListener(
+            "pointerup",
+            onUp
+          );
+      };
+
+
+    window
+      .addEventListener(
+        "pointermove",
+        update
+      );
+
+
+    window
+      .addEventListener(
+        "pointerup",
+        onUp
+      );
+  }
+
+
+
+  snapTime(
+    time
+  ) {
+
+    const snapDistance =
+      .12;
+
+
+    const points =
+      [
+        0,
+        this.getDuration(),
+        this.project.text.start,
+        this.project.text.end
+      ];
+
+
+    let running =
+      0;
+
+
+    this.clips.forEach(
+      clip => {
+
+        points.push(
+          running
+        );
+
+
+        running +=
+          this.getClipDuration(
+            clip
+          );
+
+
+        points.push(
+          running
+        );
+      }
+    );
+
+
+    for (
+      const point of
+      points
+    ) {
+
+      if (
+        Math.abs(
+          point -
+          time
+        ) <=
+        snapDistance
+      ) {
+
+        return point;
+      }
+    }
+
+
+    return time;
+  }
+
+
+
+  /* =====================================================
+     UI
+  ====================================================== */
+
+  updateTimelinePlayhead() {
+
+    const pps =
+      this.getPixelsPerSecond();
+
+
+    document
+      .getElementById(
+        "timelinePlayhead"
+      )
       .style.left =
-      `${90 + this.currentTime * pixelsPerSecond}px`;
+      `${
+        92 +
+        this.currentTime *
+        pps
+      }px`;
   }
 
 
@@ -2760,19 +4939,37 @@ export class VideoEditor {
       this.getDuration();
 
 
-    document.getElementById("videoCurrentTime").textContent =
-      this.formatTime(this.currentTime);
+    document
+      .getElementById(
+        "videoCurrentTime"
+      )
+      .textContent =
+      this.formatTime(
+        this.currentTime
+      );
 
 
-    document.getElementById("videoDuration").textContent =
-      this.formatTime(duration);
+    document
+      .getElementById(
+        "videoDuration"
+      )
+      .textContent =
+      this.formatTime(
+        duration
+      );
 
 
-    document.getElementById("videoSeekRange").value =
+    document
+      .getElementById(
+        "videoSeekRange"
+      )
+      .value =
       duration
         ? Math.round(
-            this.currentTime /
-            duration *
+            (
+              this.currentTime /
+              duration
+            ) *
             1000
           )
         : 0;
@@ -2781,49 +4978,858 @@ export class VideoEditor {
     this.updateTimelinePlayhead();
 
 
-    if (this.exporting) {
+    if (
+      this.exporting
+    ) {
 
       const progress =
         duration
           ? Math.min(
               100,
-              this.currentTime /
-              duration *
+              (
+                this.currentTime /
+                duration
+              ) *
               100
             )
           : 0;
 
 
       document
-        .getElementById("videoExportProgressBar")
+        .getElementById(
+          "videoExportProgressBar"
+        )
         .style.width =
         `${progress}%`;
 
 
       document
-        .getElementById("videoExportProgressLabel")
+        .getElementById(
+          "videoExportProgressLabel"
+        )
         .textContent =
-        `${Math.round(progress)}%`;
+        `${Math.round(
+          progress
+        )}%`;
     }
   }
 
 
 
-  formatTime(seconds) {
+  /* =====================================================
+     HISTORY
+  ====================================================== */
 
-    if (!Number.isFinite(seconds)) {
-      return "00:00.0";
+  getSerializableState() {
+
+    return {
+
+      clips:
+        this.clips.map(
+          clip => ({
+            ...clip
+          })
+        ),
+
+      images:
+        this.images.map(
+          item => ({
+            id:
+              item.id,
+
+            mediaId:
+              item.mediaId,
+
+            name:
+              item.name,
+
+            start:
+              item.start,
+
+            end:
+              item.end,
+
+            x:
+              item.x,
+
+            y:
+              item.y,
+
+            scale:
+              item.scale,
+
+            opacity:
+              item.opacity
+          })
+        ),
+
+      selectedClipId:
+        this.selectedClipId,
+
+      project:
+        JSON.parse(
+          JSON.stringify(
+            this.project
+          )
+        )
+
+    };
+  }
+
+
+
+  pushHistory() {
+
+    const state =
+      JSON.stringify(
+        this.getSerializableState()
+      );
+
+
+    const current =
+      this.history[
+        this.historyIndex
+      ];
+
+
+    if (
+      current ===
+      state
+    ) {
+      return;
     }
 
-    const minutes =
-      Math.floor(seconds / 60);
 
-    const secs =
-      seconds - minutes * 60;
+    this.history =
+      this.history.slice(
+        0,
+        this.historyIndex +
+        1
+      );
+
+
+    this.history.push(
+      state
+    );
+
+
+    if (
+      this.history.length >
+      60
+    ) {
+
+      this.history.shift();
+
+    } else {
+
+      this.historyIndex++;
+    }
+  }
+
+
+
+  commit() {
+
+    this.pushHistory();
+  }
+
+
+
+  undo() {
+
+    if (
+      this.historyIndex <=
+      0
+    ) {
+
+      return;
+    }
+
+
+    this.historyIndex--;
+
+
+    this.restoreHistory(
+      this.history[
+        this.historyIndex
+      ]
+    );
+  }
+
+
+
+  redo() {
+
+    if (
+      this.historyIndex >=
+      this.history.length -
+      1
+    ) {
+
+      return;
+    }
+
+
+    this.historyIndex++;
+
+
+    this.restoreHistory(
+      this.history[
+        this.historyIndex
+      ]
+    );
+  }
+
+
+
+  restoreHistory(
+    serialized
+  ) {
+
+    const saved =
+      JSON.parse(
+        serialized
+      );
+
+
+    this.clips =
+      saved.clips;
+
+
+    this.selectedClipId =
+      saved.selectedClipId;
+
+
+    this.project =
+      saved.project;
+
+
+    /* restore image references */
+
+    this.images =
+      saved.images.map(
+        savedImage => {
+
+          const media =
+            this.media.find(
+              item =>
+                item.id ===
+                savedImage.mediaId
+            );
+
+
+          return {
+
+            ...savedImage,
+
+            image:
+              media?.image ||
+              null
+
+          };
+        }
+      )
+      .filter(
+        item =>
+          item.image
+      );
+
+
+    document
+      .getElementById(
+        "videoAspectSelect"
+      )
+      .value =
+      this.project.aspect;
+
+
+    document
+      .getElementById(
+        "videoShowLogo"
+      )
+      .checked =
+      this.project
+        .logoVisible;
+
+
+    document
+      .getElementById(
+        "videoLogoSize"
+      )
+      .value =
+      this.project
+        .logoSize;
+
+
+    document
+      .getElementById(
+        "videoTitleText"
+      )
+      .value =
+      this.project
+        .text
+        .title;
+
+
+    document
+      .getElementById(
+        "videoSubtitleText"
+      )
+      .value =
+      this.project
+        .text
+        .subtitle;
+
+
+    document
+      .getElementById(
+        "videoScoreText"
+      )
+      .value =
+      this.project
+        .text
+        .score;
+
+
+    this.resizeCanvas();
+
+    this.updateInspector();
+
+    this.renderTimeline();
+
+    this.seek(
+      Math.min(
+        this.currentTime,
+        this.getDuration()
+      )
+    );
+  }
+
+
+
+  /* =====================================================
+     EXPORT AUDIO GRAPH
+  ====================================================== */
+
+  async ensureAudioGraph() {
+
+    if (
+      this.audioContext
+    ) {
+
+      await this.audioContext
+        .resume();
+
+      return;
+    }
+
+
+    this.audioContext =
+      new AudioContext();
+
+
+    this.audioDestination =
+      this.audioContext
+        .createMediaStreamDestination();
+
+
+    this.mixGain =
+      this.audioContext
+        .createGain();
+
+
+    this.previewGain =
+      this.audioContext
+        .createGain();
+
+
+    this.videoGain =
+      this.audioContext
+        .createGain();
+
+
+    this.musicGain =
+      this.audioContext
+        .createGain();
+
+
+    this.videoSourceNode =
+      this.audioContext
+        .createMediaElementSource(
+          this.video
+        );
+
+
+    this.audioSourceNode =
+      this.audioContext
+        .createMediaElementSource(
+          this.audio
+        );
+
+
+    this.videoSourceNode
+      .connect(
+        this.videoGain
+      );
+
+
+    this.audioSourceNode
+      .connect(
+        this.musicGain
+      );
+
+
+    this.videoGain
+      .connect(
+        this.mixGain
+      );
+
+
+    this.musicGain
+      .connect(
+        this.mixGain
+      );
+
+
+    this.mixGain
+      .connect(
+        this.audioDestination
+      );
+
+
+    this.mixGain
+      .connect(
+        this.previewGain
+      );
+
+
+    this.previewGain
+      .connect(
+        this.audioContext
+          .destination
+      );
+
+
+    this.musicGain
+      .gain
+      .value =
+      this.project
+        .musicVolume /
+      100;
+
+
+    await this.audioContext
+      .resume();
+  }
+
+
+
+  /* =====================================================
+     EXPORT
+  ====================================================== */
+
+  async exportVideo() {
+
+    const duration =
+      this.getDuration();
+
+
+    if (
+      !duration
+    ) {
+
+      alert(
+        "Add at least one video clip before exporting."
+      );
+
+      return;
+    }
+
+
+    if (
+      typeof MediaRecorder ===
+      "undefined"
+    ) {
+
+      alert(
+        "This browser does not support browser video export."
+      );
+
+      return;
+    }
+
+
+    const fps =
+      Number(
+        document
+          .getElementById(
+            "videoExportFps"
+          )
+          .value
+      );
+
+
+    const quality =
+      document
+        .getElementById(
+          "videoExportQuality"
+        )
+        .value;
+
+
+    const bitrateMap = {
+
+      standard:
+        5_000_000,
+
+      high:
+        10_000_000,
+
+      maximum:
+        18_000_000
+
+    };
+
+
+    const bitrate =
+      bitrateMap[
+        quality
+      ];
+
+
+    await this.ensureAudioGraph();
+
+
+    const mp4Supported =
+      MediaRecorder
+        .isTypeSupported(
+          "video/mp4;codecs=h264,aac"
+        );
+
+
+    const webmVp9 =
+      MediaRecorder
+        .isTypeSupported(
+          "video/webm;codecs=vp9,opus"
+        );
+
+
+    const mimeType =
+      mp4Supported
+        ? "video/mp4;codecs=h264,aac"
+        : webmVp9
+          ? "video/webm;codecs=vp9,opus"
+          : "video/webm";
+
+
+    const extension =
+      mimeType.startsWith(
+        "video/mp4"
+      )
+        ? "mp4"
+        : "webm";
+
+
+    document
+      .getElementById(
+        "videoExportTypeLabel"
+      )
+      .textContent =
+      `${extension.toUpperCase()} • ${fps} FPS`;
+
+
+    const canvasStream =
+      this.canvas
+        .captureStream(
+          fps
+        );
+
+
+    const tracks =
+      [
+        ...canvasStream
+          .getVideoTracks()
+      ];
+
+
+    const audioTracks =
+      this.audioDestination
+        .stream
+        .getAudioTracks();
+
+
+    if (
+      audioTracks.length
+    ) {
+
+      tracks.push(
+        ...audioTracks
+      );
+    }
+
+
+    const stream =
+      new MediaStream(
+        tracks
+      );
+
+
+    const recorder =
+      new MediaRecorder(
+        stream,
+        {
+          mimeType,
+
+          videoBitsPerSecond:
+            bitrate
+        }
+      );
+
+
+    const chunks =
+      [];
+
+
+    recorder.ondataavailable =
+      event => {
+
+        if (
+          event.data &&
+          event.data.size
+        ) {
+
+          chunks.push(
+            event.data
+          );
+        }
+      };
+
+
+    const finished =
+      new Promise(
+        resolve => {
+
+          recorder.onstop =
+            resolve;
+        }
+      );
+
+
+    this.exporting =
+      true;
+
+
+    document
+      .getElementById(
+        "videoExportProgressWrap"
+      )
+      .classList.remove(
+        "hidden"
+      );
+
+
+    this.previewGain
+      .gain
+      .value =
+      0;
+
+
+    this.seek(
+      0
+    );
+
+
+    recorder.start(
+      400
+    );
+
+
+    await new Promise(
+      resolve => {
+
+        this
+          .onExportPlaybackFinished =
+          resolve;
+
+
+        this.play();
+      }
+    );
+
+
+    recorder.stop();
+
+
+    await finished;
+
+
+    this
+      .onExportPlaybackFinished =
+      null;
+
+
+    this.exporting =
+      false;
+
+
+    this.previewGain
+      .gain
+      .value =
+      1;
+
+
+    const blob =
+      new Blob(
+        chunks,
+        {
+          type:
+            mimeType
+        }
+      );
+
+
+    const url =
+      URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    const projectName =
+      document
+        .getElementById(
+          "projectName"
+        )
+        .value
+        .trim()
+        .replace(
+          /[^a-z0-9-_]+/gi,
+          "-"
+        )
+        .replace(
+          /-+/g,
+          "-"
+        )
+        .replace(
+          /^-|-$|_/g,
+          ""
+        )
+        .toLowerCase() ||
+      "fwcwl-video";
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      `${projectName}.${extension}`;
+
+
+    document.body
+      .appendChild(
+        link
+      );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    setTimeout(
+      () =>
+        URL.revokeObjectURL(
+          url
+        ),
+      3000
+    );
+
+
+    document
+      .getElementById(
+        "videoExportProgressBar"
+      )
+      .style.width =
+      "100%";
+
+
+    document
+      .getElementById(
+        "videoExportProgressLabel"
+      )
+      .textContent =
+      "100%";
+
+
+    setTimeout(
+      () => {
+
+        document
+          .getElementById(
+            "videoExportProgressWrap"
+          )
+          .classList.add(
+            "hidden"
+          );
+
+      },
+      1400
+    );
+  }
+
+
+
+  /* =====================================================
+     UTILITIES
+  ====================================================== */
+
+  easeOutBack(
+    x
+  ) {
+
+    const c1 =
+      1.70158;
+
+
+    const c3 =
+      c1 +
+      1;
+
 
     return (
-      `${String(minutes).padStart(2, "0")}:` +
-      `${secs.toFixed(1).padStart(4, "0")}`
+      1 +
+      c3 *
+      Math.pow(
+        x - 1,
+        3
+      ) +
+      c1 *
+      Math.pow(
+        x - 1,
+        2
+      )
+    );
+  }
+
+
+
+  easeOutCubic(
+    x
+  ) {
+
+    return (
+      1 -
+      Math.pow(
+        1 - x,
+        3
+      )
     );
   }
 
@@ -2840,20 +5846,26 @@ export class VideoEditor {
     const ctx =
       this.ctx;
 
+
     const r =
       Math.min(
         radius,
-        width / 2,
-        height / 2
+        width /
+        2,
+        height /
+        2
       );
 
+
     ctx.beginPath();
+
 
     ctx.moveTo(
       x + r,
       y
     );
 
+
     ctx.arcTo(
       x + width,
       y,
@@ -2861,6 +5873,7 @@ export class VideoEditor {
       y + height,
       r
     );
+
 
     ctx.arcTo(
       x + width,
@@ -2870,6 +5883,7 @@ export class VideoEditor {
       r
     );
 
+
     ctx.arcTo(
       x,
       y + height,
@@ -2878,6 +5892,7 @@ export class VideoEditor {
       r
     );
 
+
     ctx.arcTo(
       x,
       y,
@@ -2885,341 +5900,81 @@ export class VideoEditor {
       y,
       r
     );
+
 
     ctx.closePath();
   }
 
 
 
-  easeOutBack(x) {
+  formatTime(
+    seconds
+  ) {
 
-    const c1 = 1.70158;
-    const c3 = c1 + 1;
+    if (
+      !Number.isFinite(
+        seconds
+      )
+    ) {
+
+      return "00:00.0";
+    }
+
+
+    const minutes =
+      Math.floor(
+        seconds /
+        60
+      );
+
+
+    const secs =
+      seconds -
+      minutes *
+      60;
+
 
     return (
-      1 +
-      c3 *
-      Math.pow(x - 1, 3) +
-      c1 *
-      Math.pow(x - 1, 2)
+      `${String(
+        minutes
+      ).padStart(
+        2,
+        "0"
+      )}:` +
+      `${secs
+        .toFixed(1)
+        .padStart(
+          4,
+          "0"
+        )}`
     );
   }
 
 
 
-  escapeHtml(value) {
+  escapeHtml(
+    value
+  ) {
 
-    return String(value)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+    return String(
+      value
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      );
   }
 
-
-
-  async ensureAudioGraph() {
-
-    if (this.audioContext) {
-
-      await this.audioContext.resume();
-      return;
-    }
-
-
-    this.audioContext =
-      new AudioContext();
-
-
-    this.audioDestination =
-      this.audioContext.createMediaStreamDestination();
-
-
-    this.mixGain =
-      this.audioContext.createGain();
-
-
-    this.previewGain =
-      this.audioContext.createGain();
-
-
-    this.videoGain =
-      this.audioContext.createGain();
-
-
-    this.musicGain =
-      this.audioContext.createGain();
-
-
-    this.videoSourceNode =
-      this.audioContext.createMediaElementSource(
-        this.video
-      );
-
-
-    this.audioSourceNode =
-      this.audioContext.createMediaElementSource(
-        this.audio
-      );
-
-
-    this.videoSourceNode.connect(
-      this.videoGain
-    );
-
-
-    this.audioSourceNode.connect(
-      this.musicGain
-    );
-
-
-    this.videoGain.connect(
-      this.mixGain
-    );
-
-
-    this.musicGain.connect(
-      this.mixGain
-    );
-
-
-    this.mixGain.connect(
-      this.audioDestination
-    );
-
-
-    this.mixGain.connect(
-      this.previewGain
-    );
-
-
-    this.previewGain.connect(
-      this.audioContext.destination
-    );
-
-
-    this.musicGain.gain.value =
-      this.project.musicVolume / 100;
-
-
-    await this.audioContext.resume();
-  }
-
-
-
-  async exportVideo() {
-
-    const duration =
-      this.getDuration();
-
-
-    if (!duration) {
-
-      alert(
-        "Add at least one video clip before exporting."
-      );
-
-      return;
-    }
-
-
-    if (
-      typeof MediaRecorder === "undefined"
-    ) {
-
-      alert(
-        "Video export is not supported by this browser."
-      );
-
-      return;
-    }
-
-
-    await this.ensureAudioGraph();
-
-
-    const supportedMp4 =
-      MediaRecorder.isTypeSupported(
-        "video/mp4;codecs=h264,aac"
-      );
-
-
-    const mimeType =
-      supportedMp4
-        ? "video/mp4;codecs=h264,aac"
-        : MediaRecorder.isTypeSupported(
-            "video/webm;codecs=vp9,opus"
-          )
-          ? "video/webm;codecs=vp9,opus"
-          : "video/webm";
-
-
-    const extension =
-      mimeType.startsWith("video/mp4")
-        ? "mp4"
-        : "webm";
-
-
-    document
-      .getElementById("videoExportTypeLabel")
-      .textContent =
-      extension.toUpperCase();
-
-
-    const canvasStream =
-      this.canvas.captureStream(30);
-
-
-    const tracks = [
-      ...canvasStream.getVideoTracks()
-    ];
-
-
-    if (
-      this.audioDestination
-        .stream
-        .getAudioTracks()
-        .length
-    ) {
-
-      tracks.push(
-        ...this.audioDestination
-          .stream
-          .getAudioTracks()
-      );
-    }
-
-
-    const stream =
-      new MediaStream(tracks);
-
-
-    const recorder =
-      new MediaRecorder(
-        stream,
-        {
-          mimeType,
-          videoBitsPerSecond: 10_000_000
-        }
-      );
-
-
-    const chunks = [];
-
-
-    recorder.ondataavailable = event => {
-
-      if (
-        event.data &&
-        event.data.size
-      ) {
-        chunks.push(event.data);
-      }
-    };
-
-
-    const finished =
-      new Promise(resolve => {
-
-        recorder.onstop =
-          () => resolve();
-      });
-
-
-    this.exporting = true;
-
-
-    document
-      .getElementById("videoExportProgressWrap")
-      .classList.remove("hidden");
-
-
-    this.previewGain.gain.value = 0;
-
-
-    this.seek(0);
-
-
-    recorder.start(500);
-
-
-    await new Promise(resolve => {
-
-      this.onExportPlaybackFinished =
-        resolve;
-
-      this.play();
-    });
-
-
-    recorder.stop();
-
-
-    await finished;
-
-
-    this.onExportPlaybackFinished = null;
-
-
-    this.exporting = false;
-
-
-    this.previewGain.gain.value = 1;
-
-
-    const blob =
-      new Blob(
-        chunks,
-        { type: mimeType }
-      );
-
-
-    const url =
-      URL.createObjectURL(blob);
-
-
-    const link =
-      document.createElement("a");
-
-
-    link.href = url;
-
-
-    link.download =
-      `fwcwl-video-${Date.now()}.${extension}`;
-
-
-    document.body.appendChild(link);
-
-    link.click();
-
-    link.remove();
-
-
-    setTimeout(
-      () => URL.revokeObjectURL(url),
-      3000
-    );
-
-
-    document
-      .getElementById("videoExportProgressBar")
-      .style.width =
-      "100%";
-
-
-    document
-      .getElementById("videoExportProgressLabel")
-      .textContent =
-      "100%";
-
-
-    setTimeout(() => {
-
-      document
-        .getElementById("videoExportProgressWrap")
-        .classList.add("hidden");
-
-    }, 1200);
-  }
 }
