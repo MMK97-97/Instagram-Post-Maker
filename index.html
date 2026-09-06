@@ -4,68 +4,102 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>Instagram Post Maker</title>
+  <title>FWCWL Cricket Post Studio</title>
+
   <meta
     name="description"
-    content="Premium Instagram poster and social media creative studio."
+    content="FWCWL professional cricket Instagram poster and social media creative studio."
   />
 
+  <!-- =========================================================
+       GOOGLE FONTS
+  ========================================================== -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&family=Poppins:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet"
   />
 
   <link rel="stylesheet" href="styles.css" />
 </head>
 
+
 <body>
+
   <div class="app-shell">
 
+
     <!-- =========================================================
-         TOP BAR
+         TOP NAVIGATION
     ========================================================== -->
     <header class="topbar">
+
+      <!-- BRAND -->
       <div class="brand">
+
         <div class="brand-mark">
-          <svg viewBox="0 0 24 24" aria-hidden="true">
-            <path
-              d="M4.5 4.5h15v15h-15zM8 15.8l2.5-3 2.3 2.1 3.1-4 2.1 2.7"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linejoin="round"
-              stroke-linecap="round"
-            />
-            <circle cx="9" cy="9" r="1.2" fill="currentColor" />
-          </svg>
+          <img
+            src="assets/fwcwl-logo.jpeg"
+            alt="FWCWL"
+            style="
+              width: 100%;
+              height: 100%;
+              object-fit: contain;
+              border-radius: 8px;
+            "
+          />
         </div>
 
         <div>
-          <div class="brand-title">POST STUDIO</div>
-          <div class="brand-subtitle">Instagram Creative Workspace</div>
+          <div class="brand-title">
+            FWCWL POST STUDIO
+          </div>
+
+          <div class="brand-subtitle">
+            Cricket Creative Workspace
+          </div>
         </div>
+
       </div>
 
+
+      <!-- PROJECT NAME -->
       <div class="topbar-center">
+
         <label class="project-name-wrap">
-          <span>Project</span>
+
+          <span>
+            Project
+          </span>
+
           <input
             id="projectName"
             type="text"
-            value="Untitled Campaign"
+            value="FWCWL Cricket Campaign"
             maxlength="80"
+            autocomplete="off"
           />
+
         </label>
+
       </div>
 
+
+      <!-- TOP ACTIONS -->
       <div class="topbar-actions">
-        <button class="icon-button" id="undoBtn" title="Undo">
+
+        <button
+          class="icon-button"
+          id="undoBtn"
+          type="button"
+          title="Undo"
+          aria-label="Undo"
+        >
           <svg viewBox="0 0 24 24">
             <path
-              d="M9 7H5v-4M5.5 7.5C7.2 5.7 9.3 5 12 5c4.4 0 8 3.6 8 8s-3.6 8-8 8a8 8 0 0 1-7.3-4.7"
+              d="M9 7H5V3M5.5 7.5C7.2 5.7 9.3 5 12 5c4.4 0 8 3.6 8 8s-3.6 8-8 8a8 8 0 0 1-7.3-4.7"
               fill="none"
               stroke="currentColor"
               stroke-width="1.8"
@@ -75,10 +109,17 @@
           </svg>
         </button>
 
-        <button class="icon-button" id="redoBtn" title="Redo">
+
+        <button
+          class="icon-button"
+          id="redoBtn"
+          type="button"
+          title="Redo"
+          aria-label="Redo"
+        >
           <svg viewBox="0 0 24 24">
             <path
-              d="M15 7h4v-4m-.5 4.5C16.8 5.7 14.7 5 12 5c-4.4 0-8 3.6-8 8s3.6 8 8 8a8 8 0 0 0 7.3-4.7"
+              d="M15 7h4V3m-.5 4.5C16.8 5.7 14.7 5 12 5c-4.4 0-8 3.6-8 8s3.6 8 8 8a8 8 0 0 0 7.3-4.7"
               fill="none"
               stroke="currentColor"
               stroke-width="1.8"
@@ -88,11 +129,21 @@
           </svg>
         </button>
 
-        <button class="secondary-button" id="resetBtn">
+
+        <button
+          class="secondary-button"
+          id="resetBtn"
+          type="button"
+        >
           Reset
         </button>
 
-        <button class="export-button" id="exportTopBtn">
+
+        <button
+          class="export-button"
+          id="exportTopBtn"
+          type="button"
+        >
           <svg viewBox="0 0 24 24">
             <path
               d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"
@@ -103,118 +154,1227 @@
               stroke-linejoin="round"
             />
           </svg>
+
           Export
         </button>
+
       </div>
+
     </header>
 
 
+
     <!-- =========================================================
-         MAIN WORKSPACE
+         MAIN APPLICATION WORKSPACE
     ========================================================== -->
     <main class="workspace">
 
+
       <!-- =======================================================
-           LEFT PANEL
+           LEFT SIDEBAR
       ======================================================== -->
       <aside class="sidebar left-sidebar">
+
+
+        <!-- LEFT NAVIGATION -->
         <nav class="sidebar-tabs">
-          <button class="sidebar-tab active" data-panel="templatesPanel">
-            <span class="tab-icon">✦</span>
+
+          <button
+            class="sidebar-tab active"
+            data-panel="templatesPanel"
+            type="button"
+          >
+            <span class="tab-icon">
+              ✦
+            </span>
+
             Templates
           </button>
 
-          <button class="sidebar-tab" data-panel="mediaPanel">
-            <span class="tab-icon">▧</span>
+
+          <button
+            class="sidebar-tab"
+            data-panel="mediaPanel"
+            type="button"
+          >
+            <span class="tab-icon">
+              ▧
+            </span>
+
             Media
           </button>
 
-          <button class="sidebar-tab" data-panel="brandPanel">
-            <span class="tab-icon">◈</span>
+
+          <button
+            class="sidebar-tab"
+            data-panel="brandPanel"
+            type="button"
+          >
+            <span class="tab-icon">
+              ◈
+            </span>
+
             Brand
           </button>
+
         </nav>
 
+
+
+        <!-- =====================================================
+             LEFT SIDEBAR CONTENT
+        ====================================================== -->
         <div class="sidebar-content">
 
-          <!-- Templates -->
-          <section class="side-panel active" id="templatesPanel">
-            <div class="panel-header">
+
+          <!-- ===================================================
+               CRICKET TEMPLATES
+          ==================================================== -->
+          <section
+            class="side-panel active"
+            id="templatesPanel"
+          >
+
+            <div class="panel-header cricket-template-header">
+
               <div>
-                <h2>Templates</h2>
-                <p>Start with a professional layout.</p>
+
+                <h2>
+                  Cricket Templates
+                </h2>
+
+                <p>
+                  Professional FWCWL social media creatives.
+                </p>
+
               </div>
-            </div>
 
-            <div class="template-grid">
 
-              <button class="template-card active" data-template="midnight">
-                <div class="template-preview midnight-preview">
-                  <span class="preview-kicker">NEW DROP</span>
-                  <strong>MAKE<br />IT BOLD.</strong>
-                  <small>Premium Collection</small>
-                </div>
-                <span>Midnight</span>
-              </button>
-
-              <button class="template-card" data-template="editorial">
-                <div class="template-preview editorial-preview">
-                  <span>THE</span>
-                  <strong>EDIT</strong>
-                  <small>Issue No. 01</small>
-                </div>
-                <span>Editorial</span>
-              </button>
-
-              <button class="template-card" data-template="sale">
-                <div class="template-preview sale-preview">
-                  <span>LIMITED</span>
-                  <strong>40%</strong>
-                  <small>OFF TODAY</small>
-                </div>
-                <span>Sale</span>
-              </button>
-
-              <button class="template-card" data-template="event">
-                <div class="template-preview event-preview">
-                  <small>OCT 18</small>
-                  <strong>THE<br />EVENT</strong>
-                  <span>MIAMI • FL</span>
-                </div>
-                <span>Event</span>
-              </button>
-
-              <button class="template-card" data-template="minimal">
-                <div class="template-preview minimal-preview">
-                  <small>INTRODUCING</small>
-                  <strong>LESS,<br />BETTER.</strong>
-                  <span>01 / 04</span>
-                </div>
-                <span>Minimal</span>
-              </button>
-
-              <button class="template-card" data-template="gradient">
-                <div class="template-preview gradient-preview">
-                  <span>CREATE</span>
-                  <strong>YOUR<br />MOMENT</strong>
-                </div>
-                <span>Gradient</span>
-              </button>
+              <div
+                class="template-count"
+                id="templateCount"
+              >
+                24 DESIGNS
+              </div>
 
             </div>
+
+
+
+            <!-- TEMPLATE SEARCH -->
+            <div class="template-search">
+
+              <svg viewBox="0 0 24 24">
+                <circle
+                  cx="11"
+                  cy="11"
+                  r="6.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                />
+
+                <path
+                  d="m16 16 4 4"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+
+              <input
+                id="templateSearch"
+                type="text"
+                placeholder="Search cricket templates..."
+                autocomplete="off"
+              />
+
+            </div>
+
+
+
+            <!-- TEMPLATE CATEGORY FILTER -->
+            <div class="template-filters">
+
+              <button
+                class="template-filter active"
+                data-template-filter="all"
+                type="button"
+              >
+                All
+              </button>
+
+              <button
+                class="template-filter"
+                data-template-filter="match"
+                type="button"
+              >
+                Match
+              </button>
+
+              <button
+                class="template-filter"
+                data-template-filter="team"
+                type="button"
+              >
+                Team
+              </button>
+
+              <button
+                class="template-filter"
+                data-template-filter="result"
+                type="button"
+              >
+                Results
+              </button>
+
+              <button
+                class="template-filter"
+                data-template-filter="event"
+                type="button"
+              >
+                Events
+              </button>
+
+              <button
+                class="template-filter"
+                data-template-filter="social"
+                type="button"
+              >
+                Social
+              </button>
+
+            </div>
+
+
+
+            <!-- =================================================
+                 TEMPLATE GRID
+            ================================================== -->
+            <div class="template-grid cricket-template-grid">
+
+
+              <!-- ===============================================
+                   01 MATCH DAY
+              ================================================ -->
+              <button
+                class="template-card active"
+                data-template="matchday"
+                data-category="match"
+                data-search="match day cricket game today versus vs"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-matchday">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <div class="preview-top-tag">
+                    MATCH DAY
+                  </div>
+
+                  <div class="preview-vs">
+
+                    <b>
+                      TAMPA
+                    </b>
+
+                    <em>
+                      VS
+                    </em>
+
+                    <b>
+                      RIVALS
+                    </b>
+
+                  </div>
+
+                  <small>
+                    SAT • 10:00 AM
+                  </small>
+
+                </div>
+
+                <span>
+                  Match Day
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   02 BIG VS
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="versus"
+                data-category="match"
+                data-search="versus vs matchup opponent cricket match"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-versus">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span class="mini-label">
+                    FWCWL
+                  </span>
+
+                  <strong>
+                    VS
+                  </strong>
+
+                  <small>
+                    GAME NIGHT
+                  </small>
+
+                </div>
+
+                <span>
+                  Big VS
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   03 NEXT FIXTURE
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="fixture"
+                data-category="match"
+                data-search="fixture schedule next upcoming match cricket"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-fixture">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    NEXT
+                  </span>
+
+                  <strong>
+                    FIXTURE
+                  </strong>
+
+                  <div class="preview-date">
+                    OCT 18
+                  </div>
+
+                </div>
+
+                <span>
+                  Next Fixture
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   04 GAME DAY
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="gameday"
+                data-category="match"
+                data-search="game day match today cricket"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-gameday">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <strong>
+                    GAME
+                    <br />
+                    DAY
+                  </strong>
+
+                  <small>
+                    READY FOR BATTLE
+                  </small>
+
+                </div>
+
+                <span>
+                  Game Day
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   05 THE FINAL
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="final"
+                data-category="event"
+                data-search="final championship trophy final match cricket"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-final">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    THE
+                  </span>
+
+                  <strong>
+                    FINAL
+                  </strong>
+
+                  <small>
+                    ONE GAME. ONE CHAMPION.
+                  </small>
+
+                </div>
+
+                <span>
+                  The Final
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   06 SEMI FINAL
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="semifinal"
+                data-category="event"
+                data-search="semi final semifinal knockout playoff cricket"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-semifinal">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    ROAD TO GLORY
+                  </span>
+
+                  <strong>
+                    SEMI
+                    <br />
+                    FINAL
+                  </strong>
+
+                </div>
+
+                <span>
+                  Semi Final
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   07 PLAYING XI
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="playingxi"
+                data-category="team"
+                data-search="playing xi lineup eleven squad starting eleven"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-playingxi">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    OFFICIAL
+                  </span>
+
+                  <strong>
+                    PLAYING
+                    <br />
+                    XI
+                  </strong>
+
+                  <small>
+                    TODAY'S LINEUP
+                  </small>
+
+                </div>
+
+                <span>
+                  Playing XI
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   08 TEAM SQUAD
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="squad"
+                data-category="team"
+                data-search="team squad roster players cricket team"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-squad">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <strong>
+                    THE
+                    <br />
+                    SQUAD
+                  </strong>
+
+                  <small>
+                    FWCWL 2026
+                  </small>
+
+                </div>
+
+                <span>
+                  Team Squad
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   09 PLAYER SIGNING
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="playerannouncement"
+                data-category="team"
+                data-search="player signing announcement new player welcome"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-player">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    WELCOME
+                  </span>
+
+                  <strong>
+                    NEW
+                    <br />
+                    SIGNING
+                  </strong>
+
+                </div>
+
+                <span>
+                  Player Signing
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   10 CAPTAIN
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="captain"
+                data-category="team"
+                data-search="captain announcement team leadership cricket"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-captain">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <small>
+                    INTRODUCING
+                  </small>
+
+                  <strong>
+                    CAPTAIN
+                  </strong>
+
+                  <span>
+                    2026
+                  </span>
+
+                </div>
+
+                <span>
+                  Captain
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   11 MVP
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="mvp"
+                data-category="result"
+                data-search="mvp most valuable player game award"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-mvp">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <strong>
+                    MVP
+                  </strong>
+
+                  <span>
+                    PLAYER OF THE GAME
+                  </span>
+
+                </div>
+
+                <span>
+                  MVP
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   12 PLAYER OF MATCH
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="motm"
+                data-category="result"
+                data-search="player of match man of match award performance"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-motm">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    PLAYER
+                  </span>
+
+                  <strong>
+                    OF THE
+                    <br />
+                    MATCH
+                  </strong>
+
+                </div>
+
+                <span>
+                  Player of Match
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   13 MATCH RESULT
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="result"
+                data-category="result"
+                data-search="match result winner win won cricket final result"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-result">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    FULL TIME
+                  </span>
+
+                  <strong>
+                    WE
+                    <br />
+                    WON
+                  </strong>
+
+                </div>
+
+                <span>
+                  Match Result
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   14 SCORECARD
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="scorecard"
+                data-category="result"
+                data-search="score scorecard innings runs wickets cricket result"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-scorecard">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    FINAL SCORE
+                  </span>
+
+                  <strong>
+                    186/5
+                  </strong>
+
+                  <small>
+                    20 OVERS
+                  </small>
+
+                </div>
+
+                <span>
+                  Scorecard
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   15 LIVE SCORE
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="live"
+                data-category="result"
+                data-search="live score live cricket innings update"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-live">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    ● LIVE
+                  </span>
+
+                  <strong>
+                    142/3
+                  </strong>
+
+                  <small>
+                    15.2 OVERS
+                  </small>
+
+                </div>
+
+                <span>
+                  Live Score
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   16 CHAMPIONS
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="champions"
+                data-category="result"
+                data-search="champions winner trophy champion league cricket"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-champions">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <small>
+                    2026
+                  </small>
+
+                  <strong>
+                    CHAMPIONS
+                  </strong>
+
+                  <span>
+                    ★ ★ ★
+                  </span>
+
+                </div>
+
+                <span>
+                  Champions
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   17 TOURNAMENT
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="tournament"
+                data-category="event"
+                data-search="tournament winter league cricket competition event"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-tournament">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    FWCWL
+                  </span>
+
+                  <strong>
+                    WINTER
+                    <br />
+                    LEAGUE
+                  </strong>
+
+                </div>
+
+                <span>
+                  Tournament
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   18 REGISTRATION
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="registration"
+                data-category="event"
+                data-search="registration open register tournament team entry"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-registration">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <strong>
+                    REGISTRATION
+                  </strong>
+
+                  <span>
+                    NOW OPEN
+                  </span>
+
+                </div>
+
+                <span>
+                  Registration
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   19 TRYOUTS
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="tryouts"
+                data-category="event"
+                data-search="tryouts trials player recruitment cricket open"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-tryout">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    THINK YOU HAVE IT?
+                  </span>
+
+                  <strong>
+                    TRYOUTS
+                  </strong>
+
+                  <small>
+                    REGISTER TODAY
+                  </small>
+
+                </div>
+
+                <span>
+                  Tryouts
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   20 PLAYER AUCTION
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="auction"
+                data-category="event"
+                data-search="player auction cricket auction draft bidding"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-auction">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    PLAYER
+                  </span>
+
+                  <strong>
+                    AUCTION
+                  </strong>
+
+                  <small>
+                    LIVE • SATURDAY
+                  </small>
+
+                </div>
+
+                <span>
+                  Player Auction
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   21 MILESTONE
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="milestone"
+                data-category="social"
+                data-search="milestone 100 runs wickets century fifty cricket achievement"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-milestone">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    MILESTONE
+                  </span>
+
+                  <strong>
+                    100
+                  </strong>
+
+                  <small>
+                    CAREER WICKETS
+                  </small>
+
+                </div>
+
+                <span>
+                  Milestone
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   22 BIRTHDAY
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="birthday"
+                data-category="social"
+                data-search="birthday happy birthday cricket player celebration"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-birthday">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    HAPPY
+                  </span>
+
+                  <strong>
+                    BIRTHDAY
+                  </strong>
+
+                  <small>
+                    CHAMP!
+                  </small>
+
+                </div>
+
+                <span>
+                  Birthday
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   23 SPONSOR / PARTNER
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="sponsor"
+                data-category="social"
+                data-search="sponsor sponsorship partner partnership announcement"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-sponsor">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <span>
+                    OFFICIAL
+                  </span>
+
+                  <strong>
+                    PARTNER
+                  </strong>
+
+                  <small>
+                    WELCOME ABOARD
+                  </small>
+
+                </div>
+
+                <span>
+                  Sponsor
+                </span>
+
+              </button>
+
+
+
+              <!-- ===============================================
+                   24 THANK YOU
+              ================================================ -->
+              <button
+                class="template-card"
+                data-template="thankyou"
+                data-category="social"
+                data-search="thank you fans supporters volunteers cricket appreciation"
+                type="button"
+              >
+
+                <div class="template-preview cricket-preview preview-thankyou">
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    class="template-logo"
+                    alt="FWCWL"
+                  />
+
+                  <strong>
+                    THANK
+                    <br />
+                    YOU
+                  </strong>
+
+                  <small>
+                    FWCWL FAMILY
+                  </small>
+
+                </div>
+
+                <span>
+                  Thank You
+                </span>
+
+              </button>
+
+
+            </div>
+
+
+            <!-- NO RESULTS -->
+            <div
+              class="template-empty hidden"
+              id="templateEmpty"
+            >
+              No cricket templates found.
+            </div>
+
           </section>
 
 
-          <!-- Media -->
-          <section class="side-panel" id="mediaPanel">
+
+          <!-- ===================================================
+               MEDIA PANEL
+          ==================================================== -->
+          <section
+            class="side-panel"
+            id="mediaPanel"
+          >
+
             <div class="panel-header">
+
               <div>
-                <h2>Media</h2>
-                <p>Add photos and brand assets.</p>
+
+                <h2>
+                  Media
+                </h2>
+
+                <p>
+                  Add player photos and cricket assets.
+                </p>
+
               </div>
+
             </div>
 
-            <div class="upload-zone" id="backgroundUploadZone">
+
+
+            <!-- BACKGROUND / PLAYER IMAGE -->
+            <div
+              class="upload-zone"
+              id="backgroundUploadZone"
+            >
+
               <input
                 id="backgroundInput"
                 type="file"
@@ -222,7 +1382,9 @@
                 hidden
               />
 
+
               <div class="upload-icon">
+
                 <svg viewBox="0 0 24 24">
                   <path
                     d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5h14v-5"
@@ -233,28 +1395,59 @@
                     stroke-linejoin="round"
                   />
                 </svg>
+
               </div>
 
-              <strong>Upload background</strong>
-              <span>PNG, JPG or WEBP</span>
+
+              <strong>
+                Upload Player / Match Photo
+              </strong>
+
+              <span>
+                PNG, JPG or WEBP
+              </span>
+
             </div>
 
-            <div class="media-thumb-wrap hidden" id="backgroundPreviewWrap">
-              <img id="backgroundPreview" alt="Background preview" />
+
+
+            <!-- BACKGROUND PREVIEW -->
+            <div
+              class="media-thumb-wrap hidden"
+              id="backgroundPreviewWrap"
+            >
+
+              <img
+                id="backgroundPreview"
+                alt="Uploaded cricket image"
+              />
 
               <button
                 class="remove-media"
                 id="removeBackgroundBtn"
-                title="Remove background"
+                type="button"
+                title="Remove image"
               >
                 ×
               </button>
+
             </div>
 
+
+
+            <!-- IMAGE SCALE -->
             <div class="control-group">
+
               <div class="control-label">
-                <span>Image Zoom</span>
-                <span id="imageScaleValue">100%</span>
+
+                <span>
+                  Image Zoom
+                </span>
+
+                <span id="imageScaleValue">
+                  100%
+                </span>
+
               </div>
 
               <input
@@ -265,12 +1458,24 @@
                 step="1"
                 value="100"
               />
+
             </div>
 
+
+
+            <!-- IMAGE X -->
             <div class="control-group">
+
               <div class="control-label">
-                <span>Horizontal Position</span>
-                <span id="imageXValue">50%</span>
+
+                <span>
+                  Horizontal Position
+                </span>
+
+                <span id="imageXValue">
+                  50%
+                </span>
+
               </div>
 
               <input
@@ -280,12 +1485,24 @@
                 max="100"
                 value="50"
               />
+
             </div>
 
+
+
+            <!-- IMAGE Y -->
             <div class="control-group">
+
               <div class="control-label">
-                <span>Vertical Position</span>
-                <span id="imageYValue">50%</span>
+
+                <span>
+                  Vertical Position
+                </span>
+
+                <span id="imageYValue">
+                  50%
+                </span>
+
               </div>
 
               <input
@@ -295,13 +1512,25 @@
                 max="100"
                 value="50"
               />
+
             </div>
+
 
             <div class="panel-divider"></div>
 
-            <div class="section-label">Logo</div>
 
-            <button class="upload-button" id="logoUploadBtn">
+            <!-- OPTIONAL SECONDARY LOGO -->
+            <div class="section-label">
+              Team / Sponsor Logo
+            </div>
+
+
+            <button
+              class="upload-button"
+              id="logoUploadBtn"
+              type="button"
+            >
+
               <input
                 id="logoInput"
                 type="file"
@@ -319,274 +1548,694 @@
                 />
               </svg>
 
-              Upload Logo
+              Upload Team / Sponsor Logo
+
             </button>
 
-            <div class="logo-preview-card hidden" id="logoPreviewWrap">
+
+
+            <div
+              class="logo-preview-card hidden"
+              id="logoPreviewWrap"
+            >
+
               <div class="logo-preview-inner">
-                <img id="logoPreview" alt="Logo preview" />
+
+                <img
+                  id="logoPreview"
+                  alt="Team or sponsor logo"
+                />
+
               </div>
 
-              <button id="removeLogoBtn">Remove</button>
+              <button
+                id="removeLogoBtn"
+                type="button"
+              >
+                Remove
+              </button>
+
             </div>
+
+
+            <div class="panel-divider"></div>
+
+
+            <!-- BRANDING INFORMATION -->
+            <div
+              style="
+                padding: 12px;
+                border: 1px solid rgba(238,192,78,.14);
+                background: rgba(238,192,78,.035);
+                border-radius: 10px;
+              "
+            >
+
+              <div
+                style="
+                  color: #efc34e;
+                  font-size: 9px;
+                  font-weight: 800;
+                  margin-bottom: 5px;
+                "
+              >
+                FWCWL BRANDING
+              </div>
+
+              <div
+                style="
+                  color: #777a81;
+                  font-size: 8px;
+                  line-height: 1.5;
+                "
+              >
+                The official FWCWL logo remains on the
+                top-left of every poster. An optional team
+                or sponsor logo can be added separately.
+              </div>
+
+            </div>
+
           </section>
 
 
-          <!-- Brand -->
-          <section class="side-panel" id="brandPanel">
+
+          <!-- ===================================================
+               BRAND PANEL
+          ==================================================== -->
+          <section
+            class="side-panel"
+            id="brandPanel"
+          >
+
             <div class="panel-header">
+
               <div>
-                <h2>Brand Kit</h2>
-                <p>Control the visual identity.</p>
+
+                <h2>
+                  Brand Kit
+                </h2>
+
+                <p>
+                  Customize FWCWL poster styling.
+                </p>
+
               </div>
+
             </div>
 
+
+
+            <!-- BRAND NAME -->
             <div class="field">
-              <label for="brandName">Brand Name</label>
+
+              <label for="brandName">
+                Display Name
+              </label>
+
               <input
                 id="brandName"
                 type="text"
-                value="YOUR BRAND"
+                value="FWCWL"
                 maxlength="50"
+                autocomplete="off"
               />
+
             </div>
 
+
+
+            <!-- PRIMARY COLOR -->
             <div class="field">
-              <label>Primary Color</label>
+
+              <label>
+                Accent Color
+              </label>
+
               <div class="color-control">
-                <input id="primaryColor" type="color" value="#f6ff63" />
+
+                <input
+                  id="primaryColor"
+                  type="color"
+                  value="#f1c34d"
+                />
+
                 <input
                   id="primaryColorText"
                   type="text"
-                  value="#F6FF63"
+                  value="#F1C34D"
                   maxlength="7"
                 />
+
               </div>
+
             </div>
 
+
+
+            <!-- TEXT COLOR -->
             <div class="field">
-              <label>Text Color</label>
+
+              <label>
+                Main Text Color
+              </label>
+
               <div class="color-control">
-                <input id="textColor" type="color" value="#ffffff" />
+
+                <input
+                  id="textColor"
+                  type="color"
+                  value="#ffffff"
+                />
+
                 <input
                   id="textColorText"
                   type="text"
                   value="#FFFFFF"
                   maxlength="7"
                 />
+
               </div>
+
             </div>
 
+
+
+            <!-- BACKGROUND -->
             <div class="field">
-              <label>Background Color</label>
+
+              <label>
+                Background Color
+              </label>
+
               <div class="color-control">
-                <input id="backgroundColor" type="color" value="#0b0b0c" />
+
+                <input
+                  id="backgroundColor"
+                  type="color"
+                  value="#230b0e"
+                />
+
                 <input
                   id="backgroundColorText"
                   type="text"
-                  value="#0B0B0C"
+                  value="#230B0E"
                   maxlength="7"
                 />
+
               </div>
+
             </div>
+
+
+            <!-- OFFICIAL LOGO NOTE -->
+            <div
+              style="
+                margin-top: 22px;
+                padding: 14px;
+                border-radius: 12px;
+                background:
+                  linear-gradient(
+                    145deg,
+                    rgba(239,195,78,.07),
+                    rgba(255,255,255,.018)
+                  );
+                border: 1px solid rgba(239,195,78,.12);
+              "
+            >
+
+              <img
+                src="assets/fwcwl-logo.jpeg"
+                alt="Official FWCWL Logo"
+                style="
+                  width: 64px;
+                  height: 64px;
+                  object-fit: contain;
+                  display: block;
+                  margin-bottom: 10px;
+                  border-radius: 8px;
+                "
+              />
+
+              <strong
+                style="
+                  font-size: 10px;
+                  display: block;
+                  margin-bottom: 4px;
+                "
+              >
+                Official FWCWL Logo
+              </strong>
+
+              <span
+                style="
+                  color: #6d7077;
+                  font-size: 8px;
+                  line-height: 1.5;
+                  display: block;
+                "
+              >
+                Locked to the upper-left corner of all
+                FWCWL templates and exported creatives.
+              </span>
+
+            </div>
+
           </section>
 
         </div>
+
       </aside>
 
 
+
       <!-- =======================================================
-           CANVAS AREA
+           CENTER CANVAS WORKSPACE
       ======================================================== -->
       <section class="canvas-workspace">
 
+
+        <!-- CANVAS TOOLBAR -->
         <div class="canvas-toolbar">
 
+
           <div class="canvas-toolbar-left">
+
             <select id="canvasSize">
-              <option value="portrait">Instagram Portrait · 1080 × 1350</option>
-              <option value="square">Instagram Square · 1080 × 1080</option>
-              <option value="story">Story / Reel Cover · 1080 × 1920</option>
+
+              <option value="portrait">
+                Instagram Portrait · 1080 × 1350
+              </option>
+
+              <option value="square">
+                Instagram Square · 1080 × 1080
+              </option>
+
+              <option value="story">
+                Story / Reel Cover · 1080 × 1920
+              </option>
+
             </select>
+
           </div>
 
+
+
           <div class="canvas-toolbar-right">
-            <button class="toolbar-toggle" id="safeZoneBtn">
+
+
+            <!-- SAFE ZONE -->
+            <button
+              class="toolbar-toggle"
+              id="safeZoneBtn"
+              type="button"
+            >
+
               <span class="toggle-dot"></span>
+
               Safe Zone
+
             </button>
 
+
+
+            <!-- ZOOM -->
             <div class="zoom-control">
-              <button id="zoomOutBtn">−</button>
-              <span id="zoomLabel">70%</span>
-              <button id="zoomInBtn">+</button>
+
+              <button
+                id="zoomOutBtn"
+                type="button"
+                aria-label="Zoom out"
+              >
+                −
+              </button>
+
+              <span id="zoomLabel">
+                70%
+              </span>
+
+              <button
+                id="zoomInBtn"
+                type="button"
+                aria-label="Zoom in"
+              >
+                +
+              </button>
+
             </div>
+
           </div>
 
         </div>
 
+
+
+        <!-- CANVAS -->
         <div class="stage-scroll">
-          <div class="stage" id="stage">
+
+          <div
+            class="stage"
+            id="stage"
+          >
+
             <canvas
               id="posterCanvas"
               width="1080"
               height="1350"
             ></canvas>
+
           </div>
+
         </div>
 
+
+
+        <!-- CANVAS FOOTER -->
         <div class="canvas-statusbar">
+
           <div>
+
             <span class="status-dot"></span>
+
             Auto-saved locally
+
           </div>
 
           <div id="canvasDimensions">
             1080 × 1350 px
           </div>
+
         </div>
 
       </section>
 
 
+
       <!-- =======================================================
-           RIGHT PANEL
+           RIGHT PROPERTIES SIDEBAR
       ======================================================== -->
       <aside class="sidebar right-sidebar">
 
+
+        <!-- HEADER -->
         <div class="properties-heading">
+
           <div>
-            <h2>Content</h2>
-            <p>Customize your poster.</p>
+
+            <h2>
+              Poster Content
+            </h2>
+
+            <p>
+              Customize your cricket creative.
+            </p>
+
           </div>
+
         </div>
 
+
+
+        <!-- RIGHT SCROLL AREA -->
         <div class="properties-scroll">
 
-          <!-- Main content -->
+
+          <!-- ===================================================
+               MAIN CONTENT
+          ==================================================== -->
           <div class="property-section">
-            <button class="section-toggle active">
-              <span>Main Content</span>
-              <span>⌃</span>
+
+            <button
+              class="section-toggle active"
+              type="button"
+            >
+
+              <span>
+                Main Content
+              </span>
+
+              <span>
+                ⌃
+              </span>
+
             </button>
+
 
             <div class="section-content">
 
+
+              <!-- EYEBROW -->
               <div class="field">
-                <label for="kickerText">Eyebrow</label>
+
+                <label for="kickerText">
+                  Eyebrow / Category
+                </label>
+
                 <input
                   id="kickerText"
                   type="text"
-                  value="NEW COLLECTION"
-                  maxlength="60"
+                  value="FWCWL • MATCH DAY"
+                  maxlength="80"
+                  autocomplete="off"
                 />
+
               </div>
 
+
+
+              <!-- HEADLINE -->
               <div class="field">
-                <label for="headlineText">Headline</label>
+
+                <label for="headlineText">
+                  Main Headline
+                </label>
+
                 <textarea
                   id="headlineText"
                   rows="3"
-                  maxlength="130"
-                >DESIGNED
-TO STAND OUT.</textarea>
+                  maxlength="150"
+                >TAMPA
+VS RIVALS</textarea>
+
               </div>
 
+
+
+              <!-- SUB HEADLINE -->
               <div class="field">
-                <label for="subheadlineText">Subheadline</label>
+
+                <label for="subheadlineText">
+                  Match / Event Details
+                </label>
+
                 <textarea
                   id="subheadlineText"
-                  rows="2"
-                  maxlength="160"
-                >Premium design for people who refuse to blend in.</textarea>
+                  rows="3"
+                  maxlength="200"
+                >Saturday • 10:00 AM • Tampa, Florida</textarea>
+
               </div>
 
             </div>
+
           </div>
 
 
-          <!-- CTA -->
+
+          <!-- ===================================================
+               CALL TO ACTION
+          ==================================================== -->
           <div class="property-section">
-            <button class="section-toggle active">
-              <span>Call to Action</span>
-              <span>⌃</span>
+
+            <button
+              class="section-toggle active"
+              type="button"
+            >
+
+              <span>
+                Call to Action
+              </span>
+
+              <span>
+                ⌃
+              </span>
+
             </button>
+
 
             <div class="section-content">
 
+
               <div class="field">
-                <label for="ctaText">CTA Text</label>
+
+                <label for="ctaText">
+                  CTA
+                </label>
+
                 <input
                   id="ctaText"
                   type="text"
-                  value="SHOP NOW"
-                  maxlength="40"
+                  value="MATCH DETAILS"
+                  maxlength="50"
+                  autocomplete="off"
                 />
+
               </div>
 
+
+
               <div class="field">
-                <label for="footerText">Footer / Handle</label>
+
+                <label for="footerText">
+                  Footer
+                </label>
+
                 <input
                   id="footerText"
                   type="text"
-                  value="@yourbrand"
-                  maxlength="60"
+                  value="FLORIDA WEST COAST WINTER LEAGUE"
+                  maxlength="100"
+                  autocomplete="off"
                 />
+
               </div>
 
             </div>
+
           </div>
 
 
-          <!-- Typography -->
+
+          <!-- ===================================================
+               TYPOGRAPHY
+          ==================================================== -->
           <div class="property-section">
-            <button class="section-toggle active">
-              <span>Typography</span>
-              <span>⌃</span>
+
+            <button
+              class="section-toggle active"
+              type="button"
+            >
+
+              <span>
+                Typography
+              </span>
+
+              <span>
+                ⌃
+              </span>
+
             </button>
+
 
             <div class="section-content">
 
+
+              <!-- HEADLINE FONT -->
               <div class="field">
-                <label for="headlineFont">Headline Font</label>
+
+                <label for="headlineFont">
+                  Headline Font
+                </label>
+
                 <select id="headlineFont">
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Bebas Neue">Bebas Neue</option>
-                  <option value="Playfair Display">Playfair Display</option>
-                  <option value="Poppins">Poppins</option>
-                  <option value="DM Sans">DM Sans</option>
+
+                  <option value="Montserrat">
+                    Montserrat
+                  </option>
+
+                  <option value="Bebas Neue">
+                    Bebas Neue
+                  </option>
+
+                  <option value="Playfair Display">
+                    Playfair Display
+                  </option>
+
+                  <option value="Poppins">
+                    Poppins
+                  </option>
+
+                  <option value="DM Sans">
+                    DM Sans
+                  </option>
+
                 </select>
+
               </div>
 
+
+
+              <!-- BODY FONT -->
               <div class="field">
-                <label for="bodyFont">Body Font</label>
+
+                <label for="bodyFont">
+                  Supporting Font
+                </label>
+
                 <select id="bodyFont">
-                  <option value="DM Sans">DM Sans</option>
-                  <option value="Montserrat">Montserrat</option>
-                  <option value="Poppins">Poppins</option>
-                  <option value="Playfair Display">Playfair Display</option>
+
+                  <option value="DM Sans">
+                    DM Sans
+                  </option>
+
+                  <option value="Montserrat">
+                    Montserrat
+                  </option>
+
+                  <option value="Poppins">
+                    Poppins
+                  </option>
+
+                  <option value="Playfair Display">
+                    Playfair Display
+                  </option>
+
                 </select>
+
               </div>
 
+
+
+              <!-- HEADLINE SIZE -->
               <div class="control-group">
+
                 <div class="control-label">
-                  <span>Headline Size</span>
-                  <span id="headlineSizeValue">108</span>
+
+                  <span>
+                    Headline Size
+                  </span>
+
+                  <span id="headlineSizeValue">
+                    112
+                  </span>
+
                 </div>
 
                 <input
                   id="headlineSize"
                   type="range"
                   min="60"
-                  max="180"
-                  value="108"
+                  max="190"
+                  value="112"
                 />
+
               </div>
 
+
+
+              <!-- VERTICAL POSITION -->
               <div class="control-group">
+
                 <div class="control-label">
-                  <span>Content Position</span>
-                  <span id="contentYValue">58%</span>
+
+                  <span>
+                    Content Position
+                  </span>
+
+                  <span id="contentYValue">
+                    56%
+                  </span>
+
                 </div>
 
                 <input
@@ -594,41 +2243,88 @@ TO STAND OUT.</textarea>
                   type="range"
                   min="20"
                   max="78"
-                  value="58"
+                  value="56"
                 />
+
               </div>
 
+
+
+              <!-- ALIGNMENT -->
               <div class="alignment-buttons">
-                <button data-align="left" class="align-button active">
+
+                <button
+                  data-align="left"
+                  class="align-button active"
+                  type="button"
+                  title="Align left"
+                >
                   ≡
                 </button>
 
-                <button data-align="center" class="align-button">
+                <button
+                  data-align="center"
+                  class="align-button"
+                  type="button"
+                  title="Align center"
+                >
                   ≡
                 </button>
 
-                <button data-align="right" class="align-button">
+                <button
+                  data-align="right"
+                  class="align-button"
+                  type="button"
+                  title="Align right"
+                >
                   ≡
                 </button>
+
               </div>
 
             </div>
+
           </div>
 
 
-          <!-- Image effects -->
+
+          <!-- ===================================================
+               IMAGE EFFECTS
+          ==================================================== -->
           <div class="property-section">
-            <button class="section-toggle active">
-              <span>Image & Effects</span>
-              <span>⌃</span>
+
+            <button
+              class="section-toggle active"
+              type="button"
+            >
+
+              <span>
+                Photo & Effects
+              </span>
+
+              <span>
+                ⌃
+              </span>
+
             </button>
+
 
             <div class="section-content">
 
+
+              <!-- OVERLAY -->
               <div class="control-group">
+
                 <div class="control-label">
-                  <span>Dark Overlay</span>
-                  <span id="overlayValue">35%</span>
+
+                  <span>
+                    Dark Overlay
+                  </span>
+
+                  <span id="overlayValue">
+                    37%
+                  </span>
+
                 </div>
 
                 <input
@@ -636,14 +2332,26 @@ TO STAND OUT.</textarea>
                   type="range"
                   min="0"
                   max="85"
-                  value="35"
+                  value="37"
                 />
+
               </div>
 
+
+
+              <!-- BRIGHTNESS -->
               <div class="control-group">
+
                 <div class="control-label">
-                  <span>Image Brightness</span>
-                  <span id="brightnessValue">100%</span>
+
+                  <span>
+                    Photo Brightness
+                  </span>
+
+                  <span id="brightnessValue">
+                    100%
+                  </span>
+
                 </div>
 
                 <input
@@ -653,12 +2361,24 @@ TO STAND OUT.</textarea>
                   max="140"
                   value="100"
                 />
+
               </div>
 
+
+
+              <!-- SATURATION -->
               <div class="control-group">
+
                 <div class="control-label">
-                  <span>Image Saturation</span>
-                  <span id="saturationValue">100%</span>
+
+                  <span>
+                    Photo Saturation
+                  </span>
+
+                  <span id="saturationValue">
+                    100%
+                  </span>
+
                 </div>
 
                 <input
@@ -668,30 +2388,69 @@ TO STAND OUT.</textarea>
                   max="180"
                   value="100"
                 />
+
               </div>
 
+
+
+              <!-- ACCENT GLOW -->
               <label class="switch-row">
+
                 <div>
-                  <strong>Accent Glow</strong>
-                  <span>Add a subtle premium glow.</span>
+
+                  <strong>
+                    Gold Accent Glow
+                  </strong>
+
+                  <span>
+                    Adds FWCWL-style highlight.
+                  </span>
+
                 </div>
 
-                <input id="accentGlow" type="checkbox" checked />
+                <input
+                  id="accentGlow"
+                  type="checkbox"
+                  checked
+                />
+
                 <span class="switch"></span>
+
               </label>
 
             </div>
+
           </div>
+
 
         </div>
 
 
+
+        <!-- =====================================================
+             DOWNLOAD AREA
+        ====================================================== -->
         <div class="right-sidebar-footer">
-          <button class="download-button" id="downloadPngBtn">
+
+
+          <button
+            class="download-button"
+            id="downloadPngBtn"
+            type="button"
+          >
+
             <span>
-              <strong>Download PNG</strong>
-              <small>Best quality · 1080px</small>
+
+              <strong>
+                Download PNG
+              </strong>
+
+              <small>
+                Instagram quality · 1080px
+              </small>
+
             </span>
+
 
             <svg viewBox="0 0 24 24">
               <path
@@ -703,30 +2462,55 @@ TO STAND OUT.</textarea>
                 stroke-linejoin="round"
               />
             </svg>
+
           </button>
 
-          <button class="jpg-button" id="downloadJpgBtn">
+
+
+          <button
+            class="jpg-button"
+            id="downloadJpgBtn"
+            type="button"
+          >
             Download JPG
           </button>
+
         </div>
+
 
       </aside>
 
+
     </main>
+
   </div>
+
 
 
   <!-- =========================================================
        EXPORT MODAL
   ========================================================== -->
-  <div class="modal-backdrop hidden" id="exportModal">
+  <div
+    class="modal-backdrop hidden"
+    id="exportModal"
+  >
+
     <div class="export-modal">
 
-      <button class="modal-close" id="closeExportModal">
+
+      <button
+        class="modal-close"
+        id="closeExportModal"
+        type="button"
+        aria-label="Close export window"
+      >
         ×
       </button>
 
+
+
       <div class="modal-icon">
+
         <svg viewBox="0 0 24 24">
           <path
             d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"
@@ -737,38 +2521,118 @@ TO STAND OUT.</textarea>
             stroke-linejoin="round"
           />
         </svg>
+
       </div>
 
-      <h2>Export Poster</h2>
-      <p>Choose the format for your final Instagram creative.</p>
+
+
+      <h2>
+        Export FWCWL Poster
+      </h2>
+
+
+      <p>
+        Choose the format for your final cricket creative.
+      </p>
+
+
 
       <div class="export-options">
-        <button class="export-option" data-export-format="png">
-          <strong>PNG</strong>
-          <span>Maximum quality</span>
+
+
+        <button
+          class="export-option"
+          data-export-format="png"
+          type="button"
+        >
+
+          <strong>
+            PNG
+          </strong>
+
+          <span>
+            Maximum quality · recommended
+          </span>
+
         </button>
 
-        <button class="export-option" data-export-format="jpg">
-          <strong>JPG</strong>
-          <span>Smaller file size</span>
+
+
+        <button
+          class="export-option"
+          data-export-format="jpg"
+          type="button"
+        >
+
+          <strong>
+            JPG
+          </strong>
+
+          <span>
+            Smaller file size
+          </span>
+
         </button>
+
+
       </div>
+
+
 
       <div class="export-meta">
-        <div>
-          <span>Resolution</span>
-          <strong id="exportResolution">1080 × 1350</strong>
-        </div>
+
 
         <div>
-          <span>Color</span>
-          <strong>RGB</strong>
+
+          <span>
+            Resolution
+          </span>
+
+          <strong id="exportResolution">
+            1080 × 1350
+          </strong>
+
         </div>
+
+
+        <div>
+
+          <span>
+            Branding
+          </span>
+
+          <strong>
+            FWCWL
+          </strong>
+
+        </div>
+
+
+        <div>
+
+          <span>
+            Color
+          </span>
+
+          <strong>
+            RGB
+          </strong>
+
+        </div>
+
+
       </div>
+
     </div>
+
   </div>
 
 
+
+  <!-- =========================================================
+       APP SCRIPT
+  ========================================================== -->
   <script src="app.js"></script>
+
 </body>
 </html>
