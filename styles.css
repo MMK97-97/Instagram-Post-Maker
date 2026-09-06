@@ -1396,3 +1396,1229 @@ input[type="range"]::-webkit-slider-thumb {
     display: none;
   }
 }
+/* =========================================================
+   FWCWL CRICKET TEMPLATE LIBRARY
+========================================================= */
+
+.cricket-template-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.template-count {
+  padding: 5px 7px;
+
+  border: 1px solid rgba(239, 190, 70, .18);
+  border-radius: 6px;
+
+  color: #eec052;
+  background: rgba(238, 192, 82, .06);
+
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: .11em;
+}
+
+
+/* SEARCH */
+
+.template-search {
+  height: 36px;
+
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  margin-bottom: 12px;
+  padding: 0 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  background: #0b0c0e;
+}
+
+.template-search svg {
+  width: 14px;
+  flex: 0 0 auto;
+
+  color: #676970;
+}
+
+.template-search input {
+  width: 100%;
+
+  border: 0;
+  outline: 0;
+
+  color: #ddd;
+  background: transparent;
+
+  font-size: 9px;
+}
+
+.template-search input::placeholder {
+  color: #565960;
+}
+
+
+/* FILTERS */
+
+.template-filters {
+  display: flex;
+  gap: 5px;
+
+  margin-bottom: 15px;
+
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.template-filters::-webkit-scrollbar {
+  display: none;
+}
+
+.template-filter {
+  flex: 0 0 auto;
+
+  height: 28px;
+  padding: 0 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 7px;
+
+  color: #777a80;
+  background: rgba(255,255,255,.02);
+
+  font-size: 8px;
+  font-weight: 700;
+
+  transition: .18s ease;
+}
+
+.template-filter:hover {
+  color: #ddd;
+  border-color: rgba(255,255,255,.18);
+}
+
+.template-filter.active {
+  color: #131313;
+  border-color: #efbf4e;
+  background: #efbf4e;
+}
+
+
+/* TEMPLATE GRID */
+
+.cricket-template-grid {
+  gap: 14px 11px;
+}
+
+.cricket-template-grid .template-card > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+/* SHARED CRICKET PREVIEW */
+
+.cricket-preview {
+  isolation: isolate;
+
+  position: relative;
+
+  font-family: "Montserrat", sans-serif;
+}
+
+.cricket-preview::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: -1;
+
+  pointer-events: none;
+}
+
+
+/* LOGO ON EVERY TEMPLATE */
+
+.template-logo {
+  position: absolute;
+  z-index: 10;
+
+  top: 9px;
+  left: 9px;
+
+  width: 30px;
+  height: 30px;
+
+  object-fit: contain;
+
+  border-radius: 5px;
+
+  filter:
+    drop-shadow(
+      0 3px 7px rgba(0,0,0,.45)
+    );
+}
+
+
+/* =========================================================
+   01 MATCH DAY
+========================================================= */
+
+.preview-matchday {
+  background:
+    radial-gradient(
+      circle at 80% 15%,
+      rgba(238,190,69,.26),
+      transparent 28%
+    ),
+    linear-gradient(
+      145deg,
+      #5c1118,
+      #17191d 64%,
+      #090a0c
+    );
+}
+
+.preview-matchday::after {
+  background:
+    linear-gradient(
+      110deg,
+      transparent 46%,
+      rgba(238,190,69,.09) 46.5%,
+      transparent 47%
+    );
+}
+
+.preview-matchday .preview-top-tag {
+  margin-top: 32px;
+
+  color: #eec34f;
+
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+
+.preview-vs {
+  position: absolute;
+
+  left: 11px;
+  right: 11px;
+  bottom: 32px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  font-size: 8px;
+}
+
+.preview-vs em {
+  width: 26px;
+  height: 26px;
+
+  display: grid;
+  place-items: center;
+
+  border: 1px solid #eec34f;
+  border-radius: 50%;
+
+  color: #eec34f;
+
+  font-style: normal;
+  font-size: 7px;
+}
+
+.preview-matchday small {
+  position: absolute;
+  left: 11px;
+  bottom: 13px;
+
+  color: #8e9299;
+
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   02 VS
+========================================================= */
+
+.preview-versus {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #8e2027,
+      #291014 55%,
+      #090a0c
+    );
+}
+
+.preview-versus::after {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 13px,
+      rgba(255,255,255,.025) 14px,
+      transparent 15px
+    );
+}
+
+.preview-versus .mini-label {
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .2em;
+}
+
+.preview-versus strong {
+  margin-top: 4px;
+
+  color: #fff;
+
+  font-size: 38px;
+  font-style: italic;
+  letter-spacing: -.08em;
+}
+
+.preview-versus small {
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .15em;
+}
+
+
+/* =========================================================
+   03 FIXTURE
+========================================================= */
+
+.preview-fixture {
+  background:
+    linear-gradient(
+      160deg,
+      #121417 0%,
+      #192535 52%,
+      #70131b 100%
+    );
+}
+
+.preview-fixture > span {
+  display: block;
+
+  margin-top: 37px;
+
+  color: #9ca3ad;
+
+  font-size: 6px;
+  letter-spacing: .23em;
+}
+
+.preview-fixture strong {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 20px;
+  letter-spacing: -.05em;
+}
+
+.preview-date {
+  position: absolute;
+
+  left: 11px;
+  bottom: 12px;
+
+  padding: 6px 8px;
+
+  color: #101010;
+  background: #eec34f;
+
+  font-size: 8px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   04 GAME DAY
+========================================================= */
+
+.preview-gameday {
+  background:
+    linear-gradient(
+      135deg,
+      #67141c,
+      #210d11 54%,
+      #050607
+    );
+}
+
+.preview-gameday::after {
+  clip-path: polygon(
+    62% 0,
+    100% 0,
+    100% 100%,
+    34% 100%
+  );
+
+  background:
+    linear-gradient(
+      160deg,
+      rgba(238,190,69,.16),
+      transparent
+    );
+}
+
+.preview-gameday strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 28px;
+
+  font-size: 24px;
+  line-height: .8;
+  letter-spacing: -.07em;
+}
+
+.preview-gameday small {
+  position: absolute;
+
+  left: 11px;
+  bottom: 12px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .12em;
+}
+
+
+/* =========================================================
+   05 FINAL
+========================================================= */
+
+.preview-final {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #90331d,
+      #4b1114 46%,
+      #10090a
+    );
+}
+
+.preview-final::after {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 48%,
+      rgba(238,190,69,.18) 49%,
+      transparent 51%
+    );
+}
+
+.preview-final > span {
+  color: #eec34f;
+
+  font-size: 6px;
+  letter-spacing: .3em;
+}
+
+.preview-final strong {
+  font-family: "Bebas Neue";
+
+  color: #fff;
+
+  font-size: 37px;
+  line-height: .9;
+}
+
+.preview-final small {
+  margin-top: 4px;
+
+  color: #c6a551;
+
+  font-size: 4px;
+  letter-spacing: .12em;
+}
+
+
+/* =========================================================
+   06 SEMI FINAL
+========================================================= */
+
+.preview-semifinal {
+  background:
+    linear-gradient(
+      150deg,
+      #090b0f,
+      #102439 55%,
+      #721722
+    );
+}
+
+.preview-semifinal > span {
+  position: absolute;
+
+  left: 11px;
+  bottom: 59px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .15em;
+}
+
+.preview-semifinal strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 14px;
+
+  font-size: 22px;
+  line-height: .84;
+}
+
+
+/* =========================================================
+   07 PLAYING XI
+========================================================= */
+
+.preview-playingxi {
+  background:
+    linear-gradient(
+      170deg,
+      #071318,
+      #0d3941 52%,
+      #5d151c
+    );
+}
+
+.preview-playingxi > span {
+  position: absolute;
+
+  right: 10px;
+  top: 11px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .12em;
+}
+
+.preview-playingxi strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 29px;
+
+  font-size: 23px;
+  line-height: .84;
+}
+
+.preview-playingxi small {
+  position: absolute;
+
+  left: 11px;
+  bottom: 12px;
+
+  color: #8ca4aa;
+
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   08 SQUAD
+========================================================= */
+
+.preview-squad {
+  background:
+    radial-gradient(
+      circle at center 70%,
+      #711a23,
+      transparent 39%
+    ),
+    #090d12;
+}
+
+.preview-squad strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 28px;
+
+  color: white;
+
+  font-size: 25px;
+  line-height: .84;
+}
+
+.preview-squad small {
+  position: absolute;
+
+  left: 11px;
+  bottom: 12px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   09 PLAYER
+========================================================= */
+
+.preview-player {
+  background:
+    linear-gradient(
+      155deg,
+      #72171e,
+      #1d1115 51%,
+      #07121c
+    );
+}
+
+.preview-player > span {
+  position: absolute;
+
+  left: 11px;
+  bottom: 58px;
+
+  color: #eec34f;
+
+  font-size: 6px;
+  letter-spacing: .18em;
+}
+
+.preview-player strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 14px;
+
+  font-size: 20px;
+  line-height: .86;
+}
+
+
+/* =========================================================
+   10 CAPTAIN
+========================================================= */
+
+.preview-captain {
+  text-align: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      #0d1116,
+      #671720
+    );
+}
+
+.preview-captain small {
+  display: block;
+
+  margin-top: 39px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .17em;
+}
+
+.preview-captain strong {
+  display: block;
+
+  margin-top: 4px;
+
+  font-size: 20px;
+}
+
+.preview-captain > span {
+  font-family: "Playfair Display";
+
+  color: #eec34f;
+
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   11 MVP
+========================================================= */
+
+.preview-mvp {
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      rgba(247,202,78,.25),
+      transparent 43%
+    ),
+    #090a0c;
+}
+
+.preview-mvp strong {
+  display: block;
+
+  margin-top: 47px;
+
+  color: #f0c44f;
+
+  font-size: 40px;
+  font-style: italic;
+  letter-spacing: -.09em;
+}
+
+.preview-mvp span {
+  color: #fff;
+
+  font-size: 5px;
+  letter-spacing: .13em;
+}
+
+
+/* =========================================================
+   12 MOTM
+========================================================= */
+
+.preview-motm {
+  background:
+    linear-gradient(
+      135deg,
+      #09131b,
+      #163b4d,
+      #741621
+    );
+}
+
+.preview-motm > span {
+  position: absolute;
+
+  left: 11px;
+  bottom: 62px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+}
+
+.preview-motm strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 14px;
+
+  font-size: 21px;
+  line-height: .88;
+}
+
+
+/* =========================================================
+   13 RESULT
+========================================================= */
+
+.preview-result {
+  background:
+    radial-gradient(
+      circle at 80% 20%,
+      rgba(238,190,69,.19),
+      transparent 25%
+    ),
+    linear-gradient(
+      145deg,
+      #64131b,
+      #090a0c 72%
+    );
+}
+
+.preview-result > span {
+  display: block;
+
+  margin-top: 41px;
+
+  color: #a3a4a8;
+
+  font-size: 5px;
+  letter-spacing: .15em;
+}
+
+.preview-result strong {
+  display: block;
+
+  color: #fff;
+
+  font-size: 29px;
+  line-height: .8;
+}
+
+.preview-result strong::first-line {
+  color: #eec34f;
+}
+
+
+/* =========================================================
+   14 SCORECARD
+========================================================= */
+
+.preview-scorecard {
+  background:
+    linear-gradient(
+      180deg,
+      #0d1218,
+      #111a24
+    );
+}
+
+.preview-scorecard > span {
+  display: block;
+
+  margin-top: 42px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .16em;
+}
+
+.preview-scorecard strong {
+  display: block;
+
+  margin-top: 2px;
+
+  font-size: 29px;
+}
+
+.preview-scorecard small {
+  color: #77818c;
+
+  font-size: 6px;
+}
+
+
+/* =========================================================
+   15 LIVE
+========================================================= */
+
+.preview-live {
+  background:
+    linear-gradient(
+      150deg,
+      #090c10,
+      #232a33
+    );
+}
+
+.preview-live > span {
+  position: absolute;
+
+  right: 10px;
+  top: 11px;
+
+  color: #ff5252;
+
+  font-size: 5px;
+  font-weight: 800;
+}
+
+.preview-live strong {
+  display: block;
+
+  margin-top: 47px;
+
+  font-size: 29px;
+}
+
+.preview-live small {
+  color: #eec34f;
+
+  font-size: 6px;
+}
+
+
+/* =========================================================
+   16 CHAMPIONS
+========================================================= */
+
+.preview-champions {
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center 50%,
+      rgba(241,194,62,.30),
+      transparent 43%
+    ),
+    linear-gradient(
+      150deg,
+      #59141c,
+      #090a0c
+    );
+}
+
+.preview-champions small {
+  display: block;
+
+  margin-top: 38px;
+
+  color: #eec34f;
+
+  font-size: 7px;
+}
+
+.preview-champions strong {
+  display: block;
+
+  margin-top: 3px;
+
+  color: white;
+
+  font-size: 15px;
+}
+
+.preview-champions > span {
+  color: #eec34f;
+
+  font-size: 8px;
+  letter-spacing: .1em;
+}
+
+
+/* =========================================================
+   17 TOURNAMENT
+========================================================= */
+
+.preview-tournament {
+  background:
+    linear-gradient(
+      160deg,
+      #65151b,
+      #201115 58%,
+      #07131d
+    );
+}
+
+.preview-tournament > span {
+  display: block;
+
+  margin-top: 39px;
+
+  color: #eec34f;
+
+  font-size: 6px;
+  letter-spacing: .15em;
+}
+
+.preview-tournament strong {
+  display: block;
+
+  font-size: 21px;
+  line-height: .85;
+}
+
+
+/* =========================================================
+   18 REGISTRATION
+========================================================= */
+
+.preview-registration {
+  background:
+    linear-gradient(
+      145deg,
+      #07151e,
+      #165361 54%,
+      #6c151c
+    );
+}
+
+.preview-registration strong {
+  display: block;
+
+  margin-top: 48px;
+
+  font-size: 13px;
+}
+
+.preview-registration > span {
+  display: inline-block;
+
+  margin-top: 4px;
+  padding: 4px 6px;
+
+  color: #101010;
+  background: #eec34f;
+
+  font-size: 6px;
+  font-weight: 900;
+}
+
+
+/* =========================================================
+   19 TRYOUT
+========================================================= */
+
+.preview-tryout {
+  background:
+    linear-gradient(
+      145deg,
+      #73141d,
+      #090c10 65%
+    );
+}
+
+.preview-tryout > span {
+  display: block;
+
+  margin-top: 39px;
+
+  color: #b59e65;
+
+  font-size: 5px;
+}
+
+.preview-tryout strong {
+  display: block;
+
+  color: #eec34f;
+
+  font-size: 27px;
+  letter-spacing: -.07em;
+}
+
+.preview-tryout small {
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   20 AUCTION
+========================================================= */
+
+.preview-auction {
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle,
+      #24364e,
+      #0a0e14 68%
+    );
+}
+
+.preview-auction > span {
+  display: block;
+
+  margin-top: 43px;
+
+  color: #eec34f;
+
+  font-size: 6px;
+  letter-spacing: .15em;
+}
+
+.preview-auction strong {
+  display: block;
+
+  font-size: 22px;
+}
+
+.preview-auction small {
+  color: #89909a;
+
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   21 MILESTONE
+========================================================= */
+
+.preview-milestone {
+  text-align: center;
+
+  background:
+    linear-gradient(
+      140deg,
+      #6f161e,
+      #111216
+    );
+}
+
+.preview-milestone > span {
+  display: block;
+
+  margin-top: 38px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .2em;
+}
+
+.preview-milestone strong {
+  display: block;
+
+  font-family: "Bebas Neue";
+
+  font-size: 42px;
+  line-height: .9;
+}
+
+.preview-milestone small {
+  color: #bdc0c5;
+
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   22 BIRTHDAY
+========================================================= */
+
+.preview-birthday {
+  text-align: center;
+
+  background:
+    radial-gradient(
+      circle at center,
+      #853f2d,
+      #60141b 49%,
+      #161013
+    );
+}
+
+.preview-birthday > span {
+  display: block;
+
+  margin-top: 44px;
+
+  color: #eec34f;
+
+  font-family: "Playfair Display";
+
+  font-size: 9px;
+  font-style: italic;
+}
+
+.preview-birthday strong {
+  display: block;
+
+  font-size: 17px;
+}
+
+.preview-birthday small {
+  color: #eec34f;
+
+  font-size: 6px;
+}
+
+
+/* =========================================================
+   23 SPONSOR
+========================================================= */
+
+.preview-sponsor {
+  background:
+    linear-gradient(
+      145deg,
+      #0a0f14,
+      #183646 55%,
+      #67141c
+    );
+}
+
+.preview-sponsor > span {
+  display: block;
+
+  margin-top: 42px;
+
+  color: #87929c;
+
+  font-size: 5px;
+  letter-spacing: .17em;
+}
+
+.preview-sponsor strong {
+  display: block;
+
+  color: #eec34f;
+
+  font-size: 22px;
+}
+
+.preview-sponsor small {
+  font-size: 5px;
+}
+
+
+/* =========================================================
+   24 THANK YOU
+========================================================= */
+
+.preview-thankyou {
+  background:
+    linear-gradient(
+      160deg,
+      #68151c,
+      #090b0e
+    );
+}
+
+.preview-thankyou strong {
+  position: absolute;
+
+  left: 11px;
+  bottom: 29px;
+
+  font-size: 26px;
+  line-height: .8;
+}
+
+.preview-thankyou small {
+  position: absolute;
+
+  left: 11px;
+  bottom: 12px;
+
+  color: #eec34f;
+
+  font-size: 5px;
+  letter-spacing: .13em;
+}
+
+
+/* EMPTY SEARCH */
+
+.template-empty {
+  padding: 30px 10px;
+
+  color: #676a71;
+
+  text-align: center;
+
+  font-size: 9px;
+}
