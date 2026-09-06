@@ -750,3 +750,162 @@
   }
 
 }
+
+/* =========================================================
+   PREMIUM TEMPLATE LIBRARY
+========================================================= */
+
+.poster-template-card {
+  position: relative;
+}
+
+
+.poster-template-card::after {
+  content: "";
+
+  position: absolute;
+
+  inset: 0 0 auto auto;
+
+  pointer-events: none;
+}
+
+
+.poster-template-art {
+  isolation: isolate;
+}
+
+
+.poster-template-art::before {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  z-index: 0;
+
+  opacity: .16;
+
+  pointer-events: none;
+
+  background-image:
+    repeating-linear-gradient(
+      9deg,
+      rgba(255,255,255,.05) 0,
+      rgba(255,255,255,.05) 1px,
+      transparent 1px,
+      transparent 5px
+    );
+
+  mix-blend-mode: overlay;
+}
+
+
+.poster-template-art::after {
+  content: "";
+
+  position: absolute;
+
+  width: 100px;
+  height: 170px;
+
+  right: -42px;
+  top: 24px;
+
+  z-index: 0;
+
+  transform: rotate(18deg);
+
+  background:
+    var(--preview-accent);
+
+  opacity: .075;
+
+  pointer-events: none;
+}
+
+
+.poster-template-art img,
+.poster-template-art span,
+.poster-template-art strong,
+.poster-template-art small {
+  z-index: 2;
+}
+
+
+.poster-template-art img,
+.poster-template-art span,
+.poster-template-art strong,
+.poster-template-art small {
+  position: absolute;
+}
+
+
+/* subtle premium template hover */
+
+.poster-template-card:hover
+.poster-template-art::after {
+  opacity: .13;
+
+  transition:
+    opacity .22s ease;
+}
+
+
+/* =========================================================
+   LOCKED TEMPLATE DECORATION LAYER
+========================================================= */
+
+.pro-layer-row
+.layer-type-icon {
+  transition:
+    background .15s ease,
+    color .15s ease;
+}
+
+
+.pro-layer-row:hover
+.layer-type-icon {
+  color: #ffe48b;
+
+  background:
+    rgba(240,195,76,.09);
+}
+
+
+/* =========================================================
+   COLLECTION FILTER EMPHASIS
+========================================================= */
+
+.filter-chip[
+  data-collection-filter
+] {
+  border-color:
+    rgba(240,195,76,.11);
+
+  color: #9e8951;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(240,195,76,.035),
+      rgba(255,255,255,.015)
+    );
+}
+
+
+.filter-chip[
+  data-collection-filter
+].active {
+  color: #17120a;
+
+  border-color:
+    #f0c34c;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f8d66e,
+      #f0c34c
+    );
+}
