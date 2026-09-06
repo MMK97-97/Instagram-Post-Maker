@@ -1,7 +1,23 @@
 /* =========================================================
-   FWCWL PRO POSTER EDITOR
-   Layer-based cricket creative studio
+   FWCWL CREATIVE STUDIO
+   WORLD-CLASS PRO POSTER EDITOR
+   ---------------------------------------------------------
+   Fabric.js 6
+   Exact template previews
+   Layer editor
+   Text editor
+   Photo editor
+   Effects
+   Masks
+   Shapes
+   Stickers
+   Drawing
+   Rustic / textured templates
+   Undo / redo
+   Autosave
+   Full-resolution export
 ========================================================= */
+
 
 import {
   Canvas,
@@ -17,17 +33,21 @@ import {
   filters
 } from "https://cdn.jsdelivr.net/npm/fabric@6.6.5/+esm";
 
+
 import {
   POSTER_TEMPLATES as ORIGINAL_POSTER_TEMPLATES
 } from "./cricket-templates.js";
+
 
 import {
   PREMIUM_POSTER_TEMPLATES
 } from "./premium-cricket-templates.js";
 
+
 import {
   applyTemplateEffects
 } from "./template-effects.js";
+
 
 
 /* =========================================================
@@ -35,8 +55,11 @@ import {
 ========================================================= */
 
 const POSTER_TEMPLATES = [
+
   ...ORIGINAL_POSTER_TEMPLATES,
+
   ...PREMIUM_POSTER_TEMPLATES
+
 ];
 
 
@@ -48,61 +71,98 @@ const DEFAULT_TEMPLATE_ID =
   POSTER_TEMPLATES[0]?.id;
 
 
+
 /* =========================================================
-   CANVAS SIZES
+   CANVAS FORMATS
 ========================================================= */
 
 const POSTER_SIZES = {
 
   portrait: {
+
     width: 1080,
+
     height: 1350
+
   },
+
 
   square: {
+
     width: 1080,
+
     height: 1080
+
   },
 
+
   story: {
+
     width: 1080,
+
     height: 1920
+
   }
 
 };
 
 
+
 /* =========================================================
-   EDITOR OPTIONS
+   FONTS
 ========================================================= */
 
 const FONT_OPTIONS = [
 
   "Montserrat",
+
   "Bebas Neue",
+
   "Poppins",
+
   "DM Sans",
+
   "Playfair Display"
 
 ];
 
 
+
+/* =========================================================
+   BLEND MODES
+========================================================= */
+
 const BLEND_MODES = [
 
   "source-over",
+
   "multiply",
+
   "screen",
+
   "overlay",
+
   "darken",
+
   "lighten",
+
   "color-dodge",
+
   "color-burn",
+
   "hard-light",
+
   "soft-light",
+
   "difference"
 
 ];
 
+
+
+/* =========================================================
+   STICKERS
+========================================================= */
 
 const CRICKET_STICKERS = [
 
@@ -126,8 +186,10 @@ const CRICKET_STICKERS = [
 ];
 
 
+
 const HISTORY_LIMIT =
   60;
+
 
 
 /* =========================================================
@@ -136,7 +198,13 @@ const HISTORY_LIMIT =
 
 export class PosterEditor {
 
+
   constructor() {
+
+
+    /* =====================================================
+       FABRIC CANVAS
+    ====================================================== */
 
     this.canvasElement =
       document.getElementById(
@@ -167,6 +235,11 @@ export class PosterEditor {
         }
       );
 
+
+
+    /* =====================================================
+       STATE
+    ====================================================== */
 
     this.state = {
 
@@ -215,9 +288,31 @@ export class PosterEditor {
     };
 
 
+
+    /* =====================================================
+       TEMPLATE LIBRARY STATE
+    ====================================================== */
+
     this.activeFilter =
       "all";
 
+
+    this.templatePreviewCache =
+      new Map();
+
+
+    this.templatePreviewObserver =
+      null;
+
+
+    this.templatePreviewRenderToken =
+      0;
+
+
+
+    /* =====================================================
+       HISTORY
+    ====================================================== */
 
     this.history =
       [];
@@ -235,24 +330,41 @@ export class PosterEditor {
       false;
 
 
+
+    /* =====================================================
+       SETUP
+    ====================================================== */
+
+    this.ensureExactTemplatePreviewStyles();
+
+
     this.buildProUi();
+
 
     this.bindCoreCanvasEvents();
 
+
     this.bindExistingUi();
+
 
     this.bindProUi();
 
+
+    this.bindWindowEvents();
+
+
     this.initialize();
+
   }
 
 
 
-  /* =====================================================
-     INITIALIZATION
-  ====================================================== */
+  /* =========================================================
+     INITIALIZE
+  ========================================================= */
 
   async initialize() {
+
 
     this.setLogicalCanvasSize();
 
@@ -267,58 +379,107 @@ export class PosterEditor {
         DEFAULT_TEMPLATE_ID,
         false
       );
+
     }
 
 
     this.applyZoom();
 
+
     this.renderTemplates();
+
 
     this.renderLayers();
 
+
     this.updateSelectionInspector();
+
 
     this.pushHistory();
 
+
     this.initialized =
       true;
+
+
+    requestAnimationFrame(
+      () => {
+
+        this.fitCanvasToViewport();
+
+      }
+    );
+
   }
 
 
 
-  /* =====================================================
-     PUBLIC COMPATIBILITY METHODS
-  ====================================================== */
+  /* =========================================================
+     WINDOW EVENTS
+  ========================================================= */
+
+  bindWindowEvents() {
+
+
+    window.addEventListener(
+      "resize",
+      () => {
+
+        if (
+          this.initialized
+        ) {
+
+          this.fitCanvasToViewport();
+
+        }
+
+      }
+    );
+
+  }
+
+
+
+  /* =========================================================
+     COMPATIBILITY
+  ========================================================= */
 
   render() {
 
     this.canvas.requestRenderAll();
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      BUILD UI
-  ====================================================== */
+  ========================================================= */
 
   buildProUi() {
 
+
     this.buildToolRail();
+
 
     this.buildAdvancedMediaPanel();
 
+
     this.buildAdvancedBrandPanel();
 
+
     this.buildAdvancedInspector();
+
   }
 
 
 
-  /* =====================================================
-     TOOL RAIL
-  ====================================================== */
+  /* =========================================================
+     LEFT TOOL RAIL
+  ========================================================= */
 
   buildToolRail() {
+
 
     const workspace =
       document.getElementById(
@@ -326,16 +487,18 @@ export class PosterEditor {
       );
 
 
-    const previous =
-      document.getElementById(
-        "posterProRail"
-      );
+    if (!workspace) {
 
+      return;
 
-    if (previous) {
-
-      previous.remove();
     }
+
+
+    document
+      .getElementById(
+        "posterProRail"
+      )
+      ?.remove();
 
 
     const rail =
@@ -358,7 +521,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool active"
         data-pro-tool="select"
-        title="Select / Move"
+        title="Select and move layers"
       >
         <span>↖</span>
         <small>Select</small>
@@ -369,7 +532,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool"
         data-pro-tool="text"
-        title="Add Text"
+        title="Add text"
       >
         <span>T</span>
         <small>Text</small>
@@ -380,7 +543,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool"
         data-pro-tool="photo"
-        title="Add Photo"
+        title="Add photo"
       >
         <span>▧</span>
         <small>Photo</small>
@@ -391,7 +554,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool"
         data-pro-tool="shape"
-        title="Add Shape"
+        title="Add shape"
       >
         <span>○</span>
         <small>Shape</small>
@@ -413,7 +576,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool"
         data-pro-tool="sticker"
-        title="Cricket Stickers"
+        title="Cricket stickers"
       >
         <span>★</span>
         <small>Sticker</small>
@@ -424,7 +587,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool"
         data-pro-tool="layers"
-        title="Layers"
+        title="Open layers"
       >
         <span>▤</span>
         <small>Layers</small>
@@ -435,7 +598,7 @@ export class PosterEditor {
         type="button"
         class="pro-tool"
         data-pro-tool="background"
-        title="Background"
+        title="Background studio"
       >
         <span>◫</span>
         <small>BG</small>
@@ -454,26 +617,36 @@ export class PosterEditor {
         id="posterToolPopover"
         class="poster-tool-popover hidden"
       ></div>
+
     `;
 
 
     workspace.appendChild(
       rail
     );
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      MEDIA PANEL
-  ====================================================== */
+  ========================================================= */
 
   buildAdvancedMediaPanel() {
+
 
     const panel =
       document.getElementById(
         "posterMediaPanel"
       );
+
+
+    if (!panel) {
+
+      return;
+
+    }
 
 
     panel.innerHTML = `
@@ -491,7 +664,7 @@ export class PosterEditor {
           </h2>
 
           <p>
-            Add player photos, team logos, sponsors and graphics as editable layers.
+            Add player photos, logos and design elements as editable layers.
           </p>
 
         </div>
@@ -500,6 +673,7 @@ export class PosterEditor {
 
 
       <div class="pro-upload-grid">
+
 
         <label class="pro-upload-tile">
 
@@ -510,7 +684,9 @@ export class PosterEditor {
             hidden
           />
 
-          <strong>＋</strong>
+          <strong>
+            ＋
+          </strong>
 
           <span>
             Add Photo
@@ -532,14 +708,16 @@ export class PosterEditor {
             hidden
           />
 
-          <strong>▧</strong>
+          <strong>
+            ▧
+          </strong>
 
           <span>
             Background
           </span>
 
           <small>
-            Full canvas
+            Behind template
           </small>
 
         </label>
@@ -551,7 +729,7 @@ export class PosterEditor {
 
 
       <div class="pro-section-label">
-        TEAM / SPONSOR LOGO
+        TEAM / SPONSOR
       </div>
 
 
@@ -569,11 +747,11 @@ export class PosterEditor {
         </div>
 
         <strong>
-          Upload Logo
+          Add Logo
         </strong>
 
         <span>
-          Fully editable layer
+          Editable team or sponsor layer
         </span>
 
       </label>
@@ -599,7 +777,6 @@ export class PosterEditor {
               <button
                 type="button"
                 data-sticker="${sticker}"
-                title="Add ${sticker}"
               >
                 ${sticker}
               </button>
@@ -615,7 +792,7 @@ export class PosterEditor {
 
 
       <div class="pro-section-label">
-        SHAPES
+        QUICK SHAPES
       </div>
 
 
@@ -624,7 +801,6 @@ export class PosterEditor {
         <button
           type="button"
           data-add-shape="rect"
-          title="Rectangle"
         >
           ▰
         </button>
@@ -632,7 +808,6 @@ export class PosterEditor {
         <button
           type="button"
           data-add-shape="circle"
-          title="Circle"
         >
           ●
         </button>
@@ -640,7 +815,6 @@ export class PosterEditor {
         <button
           type="button"
           data-add-shape="triangle"
-          title="Triangle"
         >
           ▲
         </button>
@@ -648,7 +822,6 @@ export class PosterEditor {
         <button
           type="button"
           data-add-shape="line"
-          title="Line"
         >
           ╱
         </button>
@@ -656,7 +829,6 @@ export class PosterEditor {
         <button
           type="button"
           data-add-shape="badge"
-          title="Badge"
         >
           ★
         </button>
@@ -664,20 +836,29 @@ export class PosterEditor {
       </div>
 
     `;
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      BRAND PANEL
-  ====================================================== */
+  ========================================================= */
 
   buildAdvancedBrandPanel() {
+
 
     const panel =
       document.getElementById(
         "posterBrandPanel"
       );
+
+
+    if (!panel) {
+
+      return;
+
+    }
 
 
     panel.innerHTML = `
@@ -695,7 +876,7 @@ export class PosterEditor {
           </h2>
 
           <p>
-            Official league branding stays consistent across every poster.
+            Control the official league colors and poster environment.
           </p>
 
         </div>
@@ -718,11 +899,11 @@ export class PosterEditor {
         <div>
 
           <strong>
-            Official FWCWL Mark
+            Official FWCWL Logo
           </strong>
 
           <p>
-            Locked top-left on final exports.
+            Permanently locked at the top-left of every final poster.
           </p>
 
         </div>
@@ -748,7 +929,7 @@ export class PosterEditor {
       <div class="form-field">
 
         <label>
-          Accent Color
+          Accent
         </label>
 
         <div class="color-row">
@@ -773,7 +954,7 @@ export class PosterEditor {
       <div class="form-field">
 
         <label>
-          Primary Text
+          Text
         </label>
 
         <div class="color-row">
@@ -799,7 +980,7 @@ export class PosterEditor {
 
 
       <div class="pro-section-label">
-        CANVAS BACKGROUND
+        BACKGROUND GRADIENT
       </div>
 
 
@@ -864,60 +1045,63 @@ export class PosterEditor {
 
       <div class="pro-background-presets">
 
+
         <button
           type="button"
           data-bg-preset="#210B0E,#080A0D"
           style="--a:#210B0E;--b:#080A0D"
-          title="FWCWL Maroon"
         ></button>
+
 
         <button
           type="button"
           data-bg-preset="#071C29,#66151D"
           style="--a:#071C29;--b:#66151D"
-          title="Night Stadium"
         ></button>
+
 
         <button
           type="button"
           data-bg-preset="#06141A,#087886"
           style="--a:#06141A;--b:#087886"
-          title="Teal Cricket"
         ></button>
+
 
         <button
           type="button"
           data-bg-preset="#0A0A0C,#333333"
           style="--a:#0A0A0C;--b:#333333"
-          title="Black Steel"
         ></button>
+
 
         <button
           type="button"
           data-bg-preset="#5A0E17,#E29E26"
           style="--a:#5A0E17;--b:#E29E26"
-          title="Championship"
         ></button>
+
 
         <button
           type="button"
           data-bg-preset="#0A1830,#264A8A"
           style="--a:#0A1830;--b:#264A8A"
-          title="Royal Blue"
         ></button>
+
 
       </div>
 
     `;
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      RIGHT INSPECTOR
-  ====================================================== */
+  ========================================================= */
 
   buildAdvancedInspector() {
+
 
     const panel =
       document.getElementById(
@@ -925,10 +1109,24 @@ export class PosterEditor {
       );
 
 
+    if (!panel) {
+
+      return;
+
+    }
+
+
     const scroll =
       panel.querySelector(
         ".right-scroll"
       );
+
+
+    if (!scroll) {
+
+      return;
+
+    }
 
 
     scroll.innerHTML = `
@@ -960,15 +1158,19 @@ export class PosterEditor {
       </div>
 
 
-      <!-- ================================================
+
+      <!-- =================================================
            EDIT
-      ================================================= -->
+      ================================================== -->
+
       <div
         id="proInspectorEdit"
         class="pro-inspector-tab active"
       >
 
+
         <section class="inspector-section">
+
 
           <div class="inspector-title-row">
 
@@ -990,7 +1192,7 @@ export class PosterEditor {
             id="proNoSelection"
             class="pro-no-selection"
           >
-            Select a text, photo, logo, sticker or shape directly on the poster.
+            Select a layer directly on the poster or from the Layers panel.
           </div>
 
 
@@ -998,6 +1200,7 @@ export class PosterEditor {
             id="proSelectionControls"
             class="hidden"
           >
+
 
             <div class="form-field">
 
@@ -1128,14 +1331,14 @@ export class PosterEditor {
                 type="button"
                 id="proFlipX"
               >
-                Flip Horizontal
+                Flip H
               </button>
 
               <button
                 type="button"
                 id="proFlipY"
               >
-                Flip Vertical
+                Flip V
               </button>
 
               <button
@@ -1159,7 +1362,11 @@ export class PosterEditor {
         </section>
 
 
-        <!-- TEXT CONTROLS -->
+
+        <!-- =================================================
+             TEXT
+        ================================================== -->
+
         <section
           id="proTextSection"
           class="inspector-section hidden"
@@ -1197,9 +1404,11 @@ export class PosterEditor {
                 ${FONT_OPTIONS
                   .map(
                     font => `
+
                       <option value="${font}">
                         ${font}
                       </option>
+
                     `
                   )
                   .join("")}
@@ -1446,7 +1655,11 @@ export class PosterEditor {
         </section>
 
 
-        <!-- IMAGE CONTROLS -->
+
+        <!-- =================================================
+             IMAGE
+        ================================================== -->
+
         <section
           id="proImageSection"
           class="inspector-section hidden"
@@ -1501,7 +1714,7 @@ export class PosterEditor {
               type="button"
               data-mask="none"
             >
-              No Mask
+              None
             </button>
 
             <button
@@ -1530,7 +1743,11 @@ export class PosterEditor {
         </section>
 
 
-        <!-- SHAPE CONTROLS -->
+
+        <!-- =================================================
+             SHAPE
+        ================================================== -->
+
         <section
           id="proShapeSection"
           class="inspector-section hidden"
@@ -1602,7 +1819,11 @@ export class PosterEditor {
         </section>
 
 
-        <!-- ACTIONS -->
+
+        <!-- =================================================
+             OBJECT ACTIONS
+        ================================================== -->
+
         <section
           id="proObjectActionsSection"
           class="inspector-section hidden"
@@ -1633,14 +1854,14 @@ export class PosterEditor {
               type="button"
               id="proBringForward"
             >
-              Bring Forward
+              Forward
             </button>
 
             <button
               type="button"
               id="proSendBackward"
             >
-              Send Backward
+              Backward
             </button>
 
           </div>
@@ -1659,13 +1880,16 @@ export class PosterEditor {
       </div>
 
 
-      <!-- ================================================
+
+      <!-- =================================================
            EFFECTS
-      ================================================= -->
+      ================================================== -->
+
       <div
         id="proInspectorEffects"
         class="pro-inspector-tab"
       >
+
 
         <section class="inspector-section">
 
@@ -1708,7 +1932,7 @@ export class PosterEditor {
               </strong>
 
               <span>
-                Add separation and depth
+                Add depth and separation
               </span>
 
             </div>
@@ -1765,14 +1989,18 @@ export class PosterEditor {
         </section>
 
 
-        <!-- PHOTO EFFECTS -->
+
+        <!-- =================================================
+             PHOTO EFFECTS
+        ================================================== -->
+
         <section
           id="proImageEffectsSection"
           class="inspector-section hidden"
         >
 
           <div class="inspector-title">
-            PHOTO ADJUSTMENTS
+            PHOTO ADJUST
           </div>
 
 
@@ -1882,21 +2110,21 @@ export class PosterEditor {
               type="button"
               id="proGrayscale"
             >
-              Black & White
+              B&W
             </button>
 
             <button
               type="button"
               id="proSepia"
             >
-              Vintage Sepia
+              Sepia
             </button>
 
             <button
               type="button"
               id="proResetFilters"
             >
-              Reset Filters
+              Reset
             </button>
 
           </div>
@@ -1906,19 +2134,19 @@ export class PosterEditor {
 
 
           <div class="pro-section-label">
-            BACKGROUND / COLOR REMOVAL
+            COLOR CUTOUT
           </div>
 
 
           <p class="pro-helper-text">
-            Best for solid white, black or green backgrounds.
+            Remove a solid background color such as white or green.
           </p>
 
 
           <div class="form-field">
 
             <label>
-              Color to Remove
+              Remove Color
             </label>
 
             <input
@@ -1966,11 +2194,15 @@ export class PosterEditor {
         </section>
 
 
-        <!-- CANVAS EFFECTS -->
+
+        <!-- =================================================
+             BACKGROUND
+        ================================================== -->
+
         <section class="inspector-section">
 
           <div class="inspector-title">
-            BACKGROUND
+            CANVAS BACKGROUND
           </div>
 
 
@@ -2010,11 +2242,13 @@ export class PosterEditor {
 
           <div class="pro-background-presets">
 
+
             <button
               type="button"
               data-bg-preset="#210B0E,#080A0D"
               style="--a:#210B0E;--b:#080A0D"
             ></button>
+
 
             <button
               type="button"
@@ -2022,11 +2256,13 @@ export class PosterEditor {
               style="--a:#071C29;--b:#66151D"
             ></button>
 
+
             <button
               type="button"
               data-bg-preset="#06141A,#087886"
               style="--a:#06141A;--b:#087886"
             ></button>
+
 
             <button
               type="button"
@@ -2034,17 +2270,20 @@ export class PosterEditor {
               style="--a:#0A0A0C;--b:#333333"
             ></button>
 
+
             <button
               type="button"
               data-bg-preset="#5A0E17,#E29E26"
               style="--a:#5A0E17;--b:#E29E26"
             ></button>
 
+
             <button
               type="button"
               data-bg-preset="#0A1830,#264A8A"
               style="--a:#0A1830;--b:#264A8A"
             ></button>
+
 
           </div>
 
@@ -2053,15 +2292,18 @@ export class PosterEditor {
       </div>
 
 
-      <!-- ================================================
+
+      <!-- =================================================
            LAYERS
-      ================================================= -->
+      ================================================== -->
+
       <div
         id="proInspectorLayers"
         class="pro-inspector-tab"
       >
 
         <section class="inspector-section">
+
 
           <div class="inspector-title-row">
 
@@ -2087,8 +2329,14 @@ export class PosterEditor {
         </section>
 
       </div>
+
     `;
 
+
+
+    /* =====================================================
+       FOOTER
+    ====================================================== */
 
     const footer =
       panel.querySelector(
@@ -2096,50 +2344,57 @@ export class PosterEditor {
       );
 
 
-    footer.innerHTML = `
+    if (footer) {
 
-      <button
-        id="posterDownloadPngBtn"
-        class="export-main-btn"
-        type="button"
-      >
+      footer.innerHTML = `
 
-        <span>
+        <button
+          id="posterDownloadPngBtn"
+          class="export-main-btn"
+          type="button"
+        >
 
-          <strong>
-            Export PNG
-          </strong>
+          <span>
 
-          <small>
-            Full 1080px quality
-          </small>
+            <strong>
+              Export PNG
+            </strong>
 
-        </span>
+            <small>
+              Full 1080px quality
+            </small>
 
-        <span>
-          ↓
-        </span>
+          </span>
 
-      </button>
+          <span>
+            ↓
+          </span>
+
+        </button>
 
 
-      <button
-        id="posterDownloadJpgBtn"
-        class="export-alt-btn"
-        type="button"
-      >
-        Export JPG
-      </button>
-    `;
+        <button
+          id="posterDownloadJpgBtn"
+          class="export-alt-btn"
+          type="button"
+        >
+          Export JPG
+        </button>
+
+      `;
+
+    }
+
   }
 
 
 
-  /* =====================================================
-     FABRIC CANVAS EVENTS
-  ====================================================== */
+  /* =========================================================
+     CANVAS EVENTS
+  ========================================================= */
 
   bindCoreCanvasEvents() {
+
 
     this.canvas.on(
       "selection:created",
@@ -2149,9 +2404,12 @@ export class PosterEditor {
           false
         );
 
+
         this.updateSelectionInspector();
 
+
         this.renderLayers();
+
       }
     );
 
@@ -2162,7 +2420,9 @@ export class PosterEditor {
 
         this.updateSelectionInspector();
 
+
         this.renderLayers();
+
       }
     );
 
@@ -2173,7 +2433,9 @@ export class PosterEditor {
 
         this.updateSelectionInspector();
 
+
         this.renderLayers();
+
       }
     );
 
@@ -2186,7 +2448,9 @@ export class PosterEditor {
           event.target
         );
 
+
         this.updateTransformControls();
+
       }
     );
 
@@ -2196,6 +2460,7 @@ export class PosterEditor {
       () => {
 
         this.updateTransformControls();
+
       }
     );
 
@@ -2205,6 +2470,7 @@ export class PosterEditor {
       () => {
 
         this.updateTransformControls();
+
       }
     );
 
@@ -2213,19 +2479,27 @@ export class PosterEditor {
       "object:modified",
       event => {
 
+
         this.applyLiveSnap(
           event.target
         );
 
-        event.target?.setCoords?.();
+
+        event.target
+          ?.setCoords?.();
+
 
         this.canvas.requestRenderAll();
 
+
         this.updateSelectionInspector();
+
 
         this.renderLayers();
 
+
         this.commit();
+
       }
     );
 
@@ -2233,6 +2507,7 @@ export class PosterEditor {
     this.canvas.on(
       "path:created",
       event => {
+
 
         const path =
           event.path;
@@ -2252,6 +2527,7 @@ export class PosterEditor {
 
           path.globalCompositeOperation =
             "destination-out";
+
         }
 
 
@@ -2261,26 +2537,36 @@ export class PosterEditor {
         ) {
 
           path.opacity =
-            .32;
+            0.32;
+
         }
 
 
         this.ensureBrandTop();
 
+
         this.renderLayers();
 
+
         this.commit();
+
       }
     );
+
   }
 
 
 
-  /* =====================================================
-     EXISTING INDEX CONTROLS
-  ====================================================== */
+  /* =========================================================
+     PAGE UI
+  ========================================================= */
 
   bindExistingUi() {
+
+
+    /* =====================================================
+       LEFT PANEL TABS
+    ====================================================== */
 
     document
       .querySelectorAll(
@@ -2289,19 +2575,24 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
+
 
               document
                 .querySelectorAll(
                   "[data-poster-tab]"
                 )
                 .forEach(
-                  item =>
+                  item => {
+
                     item.classList.remove(
                       "active"
-                    )
+                    );
+
+                  }
                 );
 
 
@@ -2310,10 +2601,13 @@ export class PosterEditor {
                   "#posterLeftPanel .left-tab-panel"
                 )
                 .forEach(
-                  panel =>
+                  panel => {
+
                     panel.classList.remove(
                       "active"
-                    )
+                    );
+
+                  }
                 );
 
 
@@ -2339,19 +2633,25 @@ export class PosterEditor {
               document
                 .getElementById(
                   map[
-                    button.dataset
-                      .posterTab
+                    button.dataset.posterTab
                   ]
                 )
                 ?.classList
                 .add(
                   "active"
                 );
+
             }
           );
+
         }
       );
 
+
+
+    /* =====================================================
+       TEMPLATE SEARCH
+    ====================================================== */
 
     document
       .getElementById(
@@ -2359,10 +2659,18 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "input",
-        () =>
-          this.renderTemplates()
+        () => {
+
+          this.renderTemplates();
+
+        }
       );
 
+
+
+    /* =====================================================
+       TEMPLATE FILTERS
+    ====================================================== */
 
     document
       .querySelectorAll(
@@ -2371,19 +2679,24 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
+
 
               document
                 .querySelectorAll(
                   "#posterTemplateFilters .filter-chip"
                 )
                 .forEach(
-                  item =>
-                    item.classList.remove(
+                  chip => {
+
+                    chip.classList.remove(
                       "active"
-                    )
+                    );
+
+                  }
                 );
 
 
@@ -2393,16 +2706,22 @@ export class PosterEditor {
 
 
               this.activeFilter =
-                button.dataset
-                  .filter;
+                button.dataset.filter;
 
 
               this.renderTemplates();
+
             }
           );
+
         }
       );
 
+
+
+    /* =====================================================
+       CANVAS SIZE
+    ====================================================== */
 
     document
       .getElementById(
@@ -2415,9 +2734,15 @@ export class PosterEditor {
           this.resizeCanvas(
             event.target.value
           );
+
         }
       );
 
+
+
+    /* =====================================================
+       SAFE AREA
+    ====================================================== */
 
     document
       .getElementById(
@@ -2427,22 +2752,29 @@ export class PosterEditor {
         "click",
         event => {
 
+
           this.state.safeZone =
-            !this.state
-              .safeZone;
+            !this.state.safeZone;
 
 
           event.currentTarget
-            .classList.toggle(
+            .classList
+            .toggle(
               "active",
               this.state.safeZone
             );
 
 
           this.updateSafeZone();
+
         }
       );
 
+
+
+    /* =====================================================
+       SNAP
+    ====================================================== */
 
     document
       .getElementById(
@@ -2452,19 +2784,26 @@ export class PosterEditor {
         "click",
         event => {
 
+
           this.state.snap =
-            !this.state
-              .snap;
+            !this.state.snap;
 
 
           event.currentTarget
-            .classList.toggle(
+            .classList
+            .toggle(
               "active",
               this.state.snap
             );
+
         }
       );
 
+
+
+    /* =====================================================
+       FIT
+    ====================================================== */
 
     document
       .getElementById(
@@ -2475,9 +2814,15 @@ export class PosterEditor {
         () => {
 
           this.fitCanvasToViewport();
+
         }
       );
 
+
+
+    /* =====================================================
+       ZOOM
+    ====================================================== */
 
     document
       .getElementById(
@@ -2486,6 +2831,7 @@ export class PosterEditor {
       ?.addEventListener(
         "click",
         () => {
+
 
           this.state.zoom =
             Math.max(
@@ -2496,6 +2842,7 @@ export class PosterEditor {
 
 
           this.applyZoom();
+
         }
       );
 
@@ -2508,6 +2855,7 @@ export class PosterEditor {
         "click",
         () => {
 
+
           this.state.zoom =
             Math.min(
               100,
@@ -2517,9 +2865,15 @@ export class PosterEditor {
 
 
           this.applyZoom();
+
         }
       );
 
+
+
+    /* =====================================================
+       RESET
+    ====================================================== */
 
     document
       .getElementById(
@@ -2529,21 +2883,30 @@ export class PosterEditor {
         "click",
         async () => {
 
+
           if (
             !confirm(
-              "Reset the current poster and load the Match Day template?"
+              "Reset this poster and load Match Day?"
             )
           ) {
+
             return;
+
           }
 
 
           await this.applyTemplate(
             DEFAULT_TEMPLATE_ID
           );
+
         }
       );
 
+
+
+    /* =====================================================
+       EXPORT TOP
+    ====================================================== */
 
     document
       .getElementById(
@@ -2556,46 +2919,60 @@ export class PosterEditor {
           this.exportPoster(
             "png"
           );
+
         }
       );
+
   }
 
 
 
-  /* =====================================================
-     PRO UI
-  ====================================================== */
+  /* =========================================================
+     PRO UI BINDINGS
+  ========================================================= */
 
   bindProUi() {
 
+
     this.bindToolRail();
+
 
     this.bindMediaPanel();
 
+
     this.bindBrandPanel();
+
 
     this.bindInspectorTabs();
 
+
     this.bindTransformInspector();
+
 
     this.bindTextInspector();
 
+
     this.bindImageInspector();
+
 
     this.bindShapeInspector();
 
+
     this.bindEffectsInspector();
 
+
     this.bindExportButtons();
+
   }
 
 
 
-  /* =====================================================
-     TOOL RAIL BINDINGS
-  ====================================================== */
+  /* =========================================================
+     TOOL RAIL
+  ========================================================= */
 
   bindToolRail() {
+
 
     document
       .querySelectorAll(
@@ -2604,13 +2981,14 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               const tool =
-                button.dataset
-                  .proTool;
+                button.dataset.proTool;
 
 
               document
@@ -2618,10 +2996,13 @@ export class PosterEditor {
                   "[data-pro-tool]"
                 )
                 .forEach(
-                  item =>
+                  item => {
+
                     item.classList.remove(
                       "active"
-                    )
+                    );
+
+                  }
                 );
 
 
@@ -2633,8 +3014,10 @@ export class PosterEditor {
               this.handleTool(
                 tool
               );
+
             }
           );
+
         }
       );
 
@@ -2647,6 +3030,7 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const file =
             event.target.files[0];
 
@@ -2656,13 +3040,16 @@ export class PosterEditor {
             this.addPhotoFile(
               file
             );
+
           }
 
 
           event.target.value =
             "";
+
         }
       );
+
   }
 
 
@@ -2671,10 +3058,12 @@ export class PosterEditor {
     tool
   ) {
 
+
     this.hideToolPopover();
 
 
     switch (tool) {
+
 
       case "select":
 
@@ -2685,15 +3074,18 @@ export class PosterEditor {
         break;
 
 
+
       case "text":
 
         this.setDrawingMode(
           false
         );
 
+
         this.addTextLayer();
 
         break;
+
 
 
       case "photo":
@@ -2701,6 +3093,7 @@ export class PosterEditor {
         this.setDrawingMode(
           false
         );
+
 
         document
           .getElementById(
@@ -2711,15 +3104,18 @@ export class PosterEditor {
         break;
 
 
+
       case "shape":
 
         this.setDrawingMode(
           false
         );
 
+
         this.showShapePopover();
 
         break;
+
 
 
       case "draw":
@@ -2729,15 +3125,18 @@ export class PosterEditor {
         break;
 
 
+
       case "sticker":
 
         this.setDrawingMode(
           false
         );
 
+
         this.showStickerPopover();
 
         break;
+
 
 
       case "layers":
@@ -2746,11 +3145,13 @@ export class PosterEditor {
           false
         );
 
+
         this.switchInspectorTab(
           "layers"
         );
 
         break;
+
 
 
       case "background":
@@ -2759,26 +3160,37 @@ export class PosterEditor {
           false
         );
 
+
         this.switchInspectorTab(
           "effects"
         );
 
         break;
+
     }
+
   }
 
 
 
-  /* =====================================================
-     TOOL POPOVERS
-  ====================================================== */
+  /* =========================================================
+     SHAPE POPOVER
+  ========================================================= */
 
   showShapePopover() {
+
 
     const popover =
       document.getElementById(
         "posterToolPopover"
       );
+
+
+    if (!popover) {
+
+      return;
+
+    }
 
 
     popover.innerHTML = `
@@ -2826,6 +3238,7 @@ export class PosterEditor {
         </button>
 
       </div>
+
     `;
 
 
@@ -2841,31 +3254,47 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.addShape(
-                button.dataset
-                  .popShape
+                button.dataset.popShape
               );
 
 
               this.hideToolPopover();
+
             }
           );
+
         }
       );
+
   }
 
 
 
+  /* =========================================================
+     STICKER POPOVER
+  ========================================================= */
+
   showStickerPopover() {
+
 
     const popover =
       document.getElementById(
         "posterToolPopover"
       );
+
+
+    if (!popover) {
+
+      return;
+
+    }
 
 
     popover.innerHTML = `
@@ -2893,6 +3322,7 @@ export class PosterEditor {
           .join("")}
 
       </div>
+
     `;
 
 
@@ -2908,31 +3338,47 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.addSticker(
-                button.dataset
-                  .popSticker
+                button.dataset.popSticker
               );
 
 
               this.hideToolPopover();
+
             }
           );
+
         }
       );
+
   }
 
 
 
+  /* =========================================================
+     DRAW POPOVER
+  ========================================================= */
+
   showDrawPopover() {
+
 
     const popover =
       document.getElementById(
         "posterToolPopover"
       );
+
+
+    if (!popover) {
+
+      return;
+
+    }
 
 
     popover.innerHTML = `
@@ -2995,7 +3441,7 @@ export class PosterEditor {
           type="button"
           data-brush-mode="highlighter"
         >
-          Highlighter
+          Highlight
         </button>
 
         <button
@@ -3006,6 +3452,7 @@ export class PosterEditor {
         </button>
 
       </div>
+
     `;
 
 
@@ -3031,41 +3478,52 @@ export class PosterEditor {
       );
 
 
-    color.addEventListener(
-      "input",
-      () => {
-
-        this.state.brushColor =
-          color.value;
+    color
+      ?.addEventListener(
+        "input",
+        () => {
 
 
-        this.configureBrush();
-      }
-    );
+          this.state.brushColor =
+            color.value;
 
 
-    width.addEventListener(
-      "input",
-      () => {
+          this.configureBrush();
 
-        this.state.brushWidth =
-          Number(
-            width.value
-          );
+        }
+      );
 
 
-        popover
-          .querySelector(
-            "#proBrushWidthValue"
-          )
-          .textContent =
-          this.state
-            .brushWidth;
+    width
+      ?.addEventListener(
+        "input",
+        () => {
 
 
-        this.configureBrush();
-      }
-    );
+          this.state.brushWidth =
+            Number(
+              width.value
+            );
+
+
+          const value =
+            popover.querySelector(
+              "#proBrushWidthValue"
+            );
+
+
+          if (value) {
+
+            value.textContent =
+              this.state.brushWidth;
+
+          }
+
+
+          this.configureBrush();
+
+        }
+      );
 
 
     popover
@@ -3075,25 +3533,30 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.state.brushMode =
-                button.dataset
-                  .brushMode;
+                button.dataset.brushMode;
 
 
               this.configureBrush();
+
             }
           );
+
         }
       );
+
   }
 
 
 
   hideToolPopover() {
+
 
     document
       .getElementById(
@@ -3103,17 +3566,19 @@ export class PosterEditor {
       .add(
         "hidden"
       );
+
   }
 
 
 
-  /* =====================================================
-     DRAW MODE
-  ====================================================== */
+  /* =========================================================
+     DRAWING
+  ========================================================= */
 
   setDrawingMode(
     enabled
   ) {
+
 
     this.canvas.isDrawingMode =
       enabled;
@@ -3121,17 +3586,23 @@ export class PosterEditor {
 
     if (enabled) {
 
+
       this.canvas.discardActiveObject();
+
 
       this.configureBrush();
 
+
       this.canvas.requestRenderAll();
+
     }
+
   }
 
 
 
   configureBrush() {
+
 
     const brush =
       new PencilBrush(
@@ -3152,15 +3623,17 @@ export class PosterEditor {
 
     this.canvas.freeDrawingBrush =
       brush;
+
   }
 
 
 
-  /* =====================================================
-     MEDIA BINDINGS
-  ====================================================== */
+  /* =========================================================
+     MEDIA PANEL BINDINGS
+  ========================================================= */
 
   bindMediaPanel() {
+
 
     document
       .getElementById(
@@ -3169,6 +3642,7 @@ export class PosterEditor {
       ?.addEventListener(
         "change",
         event => {
+
 
           const file =
             event.target.files[0];
@@ -3179,11 +3653,13 @@ export class PosterEditor {
             this.addPhotoFile(
               file
             );
+
           }
 
 
           event.target.value =
             "";
+
         }
       );
 
@@ -3196,6 +3672,7 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const file =
             event.target.files[0];
 
@@ -3205,11 +3682,13 @@ export class PosterEditor {
             this.addBackgroundPhoto(
               file
             );
+
           }
 
 
           event.target.value =
             "";
+
         }
       );
 
@@ -3222,6 +3701,7 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const file =
             event.target.files[0];
 
@@ -3231,11 +3711,13 @@ export class PosterEditor {
             this.addSponsorLogo(
               file
             );
+
           }
 
 
           event.target.value =
             "";
+
         }
       );
 
@@ -3247,16 +3729,19 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.addSticker(
-                button.dataset
-                  .sticker
+                button.dataset.sticker
               );
+
             }
           );
+
         }
       );
 
@@ -3268,43 +3753,72 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.addShape(
-                button.dataset
-                  .addShape
+                button.dataset.addShape
               );
+
             }
           );
+
         }
       );
+
   }
 
 
 
-  /* =====================================================
-     BRAND BINDINGS
-  ====================================================== */
+  /* =========================================================
+     BRAND PANEL BINDINGS
+  ========================================================= */
 
   bindBrandPanel() {
 
-    document
-      .getElementById(
+
+    const brandInput =
+      document.getElementById(
         "posterBrandName"
-      )
+      );
+
+
+    brandInput
       ?.addEventListener(
         "input",
         event => {
+
 
           this.state.brandName =
             event.target.value;
 
 
           this.updateBrandText();
+
         }
       );
+
+
+    brandInput
+      ?.addEventListener(
+        "change",
+        () => {
+
+
+          this.clearTemplatePreviewCache();
+
+
+          this.renderTemplates();
+
+
+          this.commit();
+
+        }
+      );
+
 
 
     this.bindColorPair(
@@ -3315,14 +3829,17 @@ export class PosterEditor {
 
       value => {
 
+
         this.state.accent =
           value;
 
 
         this.applyBrandAccent();
+
       }
 
     );
+
 
 
     this.bindColorPair(
@@ -3333,14 +3850,17 @@ export class PosterEditor {
 
       value => {
 
+
         this.state.textColor =
           value;
 
 
         this.applyBrandTextColor();
+
       }
 
     );
+
 
 
     document
@@ -3351,13 +3871,16 @@ export class PosterEditor {
         "input",
         event => {
 
+
           this.state.backgroundColor =
             event.target.value;
 
 
           this.syncBackgroundInputs();
 
+
           this.updateBackground();
+
         }
       );
 
@@ -3370,13 +3893,16 @@ export class PosterEditor {
         "input",
         event => {
 
+
           this.state.backgroundColor2 =
             event.target.value;
 
 
           this.syncBackgroundInputs();
 
+
           this.updateBackground();
+
         }
       );
 
@@ -3389,21 +3915,29 @@ export class PosterEditor {
         "input",
         event => {
 
+
           this.state.backgroundAngle =
             Number(
               event.target.value
             );
 
 
-          document
-            .getElementById(
+          const label =
+            document.getElementById(
               "proBackgroundAngleValue"
-            )
-            .textContent =
-            `${this.state.backgroundAngle}°`;
+            );
+
+
+          if (label) {
+
+            label.textContent =
+              `${this.state.backgroundAngle}°`;
+
+          }
 
 
           this.updateBackground();
+
         }
       );
 
@@ -3415,13 +3949,15 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               const [
-                a,
-                b
+                first,
+                second
               ] =
                 button.dataset
                   .bgPreset
@@ -3429,22 +3965,27 @@ export class PosterEditor {
 
 
               this.state.backgroundColor =
-                a;
+                first;
 
 
               this.state.backgroundColor2 =
-                b;
+                second;
 
 
               this.syncBackgroundInputs();
 
+
               this.updateBackground();
 
+
               this.commit();
+
             }
           );
+
         }
       );
+
   }
 
 
@@ -3454,6 +3995,7 @@ export class PosterEditor {
     textId,
     callback
   ) {
+
 
     const picker =
       document.getElementById(
@@ -3471,7 +4013,9 @@ export class PosterEditor {
       !picker ||
       !text
     ) {
+
       return;
+
     }
 
 
@@ -3479,9 +4023,9 @@ export class PosterEditor {
       "input",
       () => {
 
+
         const value =
-          picker.value
-            .toUpperCase();
+          picker.value.toUpperCase();
 
 
         text.value =
@@ -3491,20 +4035,25 @@ export class PosterEditor {
         callback(
           value
         );
+
       }
     );
 
 
     picker.addEventListener(
       "change",
-      () =>
-        this.commit()
+      () => {
+
+        this.commit();
+
+      }
     );
 
 
     text.addEventListener(
       "change",
       () => {
+
 
         const value =
           this.normalizeColor(
@@ -3514,11 +4063,13 @@ export class PosterEditor {
 
         if (!value) {
 
+
           text.value =
-            picker.value
-              .toUpperCase();
+            picker.value.toUpperCase();
+
 
           return;
+
         }
 
 
@@ -3536,17 +4087,20 @@ export class PosterEditor {
 
 
         this.commit();
+
       }
     );
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      INSPECTOR TABS
-  ====================================================== */
+  ========================================================= */
 
   bindInspectorTabs() {
+
 
     document
       .querySelectorAll(
@@ -3555,18 +4109,22 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.switchInspectorTab(
-                button.dataset
-                  .inspectorTab
+                button.dataset.inspectorTab
               );
+
             }
           );
+
         }
       );
+
   }
 
 
@@ -3575,6 +4133,7 @@ export class PosterEditor {
     name
   ) {
 
+
     document
       .querySelectorAll(
         "[data-inspector-tab]"
@@ -3582,15 +4141,16 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.classList.toggle(
 
             "active",
 
-            button.dataset
-              .inspectorTab ===
+            button.dataset.inspectorTab ===
               name
 
           );
+
         }
       );
 
@@ -3605,6 +4165,7 @@ export class PosterEditor {
           panel.classList.remove(
             "active"
           );
+
         }
       );
 
@@ -3634,21 +4195,23 @@ export class PosterEditor {
 
 
     if (
-      name ===
-      "layers"
+      name === "layers"
     ) {
 
       this.renderLayers();
+
     }
+
   }
 
 
 
-  /* =====================================================
-     COMMON TRANSFORM
-  ====================================================== */
+  /* =========================================================
+     TRANSFORM INSPECTOR
+  ========================================================= */
 
   bindTransformInspector() {
+
 
     document
       .getElementById(
@@ -3658,22 +4221,28 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.name =
-            event.target.value
-              .trim() ||
+            event.target.value.trim() ||
             "Layer";
 
 
           this.renderLayers();
 
+
           this.commit();
+
         }
       );
 
@@ -3686,11 +4255,16 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.left =
@@ -3701,9 +4275,12 @@ export class PosterEditor {
 
           object.setCoords();
 
+
           this.canvas.requestRenderAll();
 
+
           this.commit();
+
         }
       );
 
@@ -3716,11 +4293,16 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.top =
@@ -3731,11 +4313,15 @@ export class PosterEditor {
 
           object.setCoords();
 
+
           this.canvas.requestRenderAll();
 
+
           this.commit();
+
         }
       );
+
 
 
     this.bindRangeTransform(
@@ -3744,11 +4330,16 @@ export class PosterEditor {
 
       value => {
 
+
         const object =
           this.getEditableSelection();
 
 
-        if (!object) return;
+        if (!object) {
+
+          return;
+
+        }
 
 
         const scale =
@@ -3767,18 +4358,26 @@ export class PosterEditor {
         object.setCoords();
 
 
-        document
-          .getElementById(
+        const label =
+          document.getElementById(
             "proObjectScaleValue"
-          )
-          .textContent =
-          `${Math.round(value)}%`;
+          );
+
+
+        if (label) {
+
+          label.textContent =
+            `${Math.round(value)}%`;
+
+        }
 
 
         this.canvas.requestRenderAll();
+
       }
 
     );
+
 
 
     this.bindRangeTransform(
@@ -3787,11 +4386,16 @@ export class PosterEditor {
 
       value => {
 
+
         const object =
           this.getEditableSelection();
 
 
-        if (!object) return;
+        if (!object) {
+
+          return;
+
+        }
 
 
         object.angle =
@@ -3801,18 +4405,26 @@ export class PosterEditor {
         object.setCoords();
 
 
-        document
-          .getElementById(
+        const label =
+          document.getElementById(
             "proObjectAngleValue"
-          )
-          .textContent =
-          `${Math.round(value)}°`;
+          );
+
+
+        if (label) {
+
+          label.textContent =
+            `${Math.round(value)}°`;
+
+        }
 
 
         this.canvas.requestRenderAll();
+
       }
 
     );
+
 
 
     this.bindRangeTransform(
@@ -3821,11 +4433,16 @@ export class PosterEditor {
 
       value => {
 
+
         const object =
           this.getEditableSelection();
 
 
-        if (!object) return;
+        if (!object) {
+
+          return;
+
+        }
 
 
         object.opacity =
@@ -3833,18 +4450,26 @@ export class PosterEditor {
           100;
 
 
-        document
-          .getElementById(
+        const label =
+          document.getElementById(
             "proObjectOpacityValue"
-          )
-          .textContent =
-          `${Math.round(value)}%`;
+          );
+
+
+        if (label) {
+
+          label.textContent =
+            `${Math.round(value)}%`;
+
+        }
 
 
         this.canvas.requestRenderAll();
+
       }
 
     );
+
 
 
     document
@@ -3855,11 +4480,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.flipX =
@@ -3868,7 +4498,9 @@ export class PosterEditor {
 
           this.canvas.requestRenderAll();
 
+
           this.commit();
+
         }
       );
 
@@ -3881,11 +4513,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.flipY =
@@ -3894,7 +4531,9 @@ export class PosterEditor {
 
           this.canvas.requestRenderAll();
 
+
           this.commit();
+
         }
       );
 
@@ -3907,11 +4546,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.set({
@@ -3928,11 +4572,15 @@ export class PosterEditor {
 
           object.setCoords();
 
+
           this.canvas.requestRenderAll();
+
 
           this.updateTransformControls();
 
+
           this.commit();
+
         }
       );
 
@@ -3945,11 +4593,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.set({
@@ -3966,11 +4619,15 @@ export class PosterEditor {
 
           object.setCoords();
 
+
           this.canvas.requestRenderAll();
+
 
           this.updateTransformControls();
 
+
           this.commit();
+
         }
       );
 
@@ -3981,8 +4638,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
-          this.duplicateSelected()
+        () => {
+
+          this.duplicateSelected();
+
+        }
       );
 
 
@@ -3992,8 +4652,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
-          this.deleteSelected()
+        () => {
+
+          this.deleteSelected();
+
+        }
       );
 
 
@@ -4003,8 +4666,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
-          this.toggleLockSelected()
+        () => {
+
+          this.toggleLockSelected();
+
+        }
       );
 
 
@@ -4014,10 +4680,13 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
+        () => {
+
           this.moveSelectedLayer(
             1
-          )
+          );
+
+        }
       );
 
 
@@ -4027,11 +4696,15 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
+        () => {
+
           this.moveSelectedLayer(
             -1
-          )
+          );
+
+        }
       );
+
   }
 
 
@@ -4041,45 +4714,58 @@ export class PosterEditor {
     callback
   ) {
 
+
     const input =
       document.getElementById(
         id
       );
 
 
-    if (!input) return;
+    if (!input) {
+
+      return;
+
+    }
 
 
     input.addEventListener(
       "input",
       () => {
 
+
         callback(
           Number(
             input.value
           )
         );
+
       }
     );
 
 
     input.addEventListener(
       "change",
-      () =>
-        this.commit()
+      () => {
+
+        this.commit();
+
+      }
     );
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      TEXT INSPECTOR
-  ====================================================== */
+  ========================================================= */
 
   bindTextInspector() {
 
+
     const withText =
       callback => {
+
 
         const object =
           this.getEditableSelection();
@@ -4090,7 +4776,9 @@ export class PosterEditor {
             object
           )
         ) {
+
           return;
+
         }
 
 
@@ -4101,8 +4789,11 @@ export class PosterEditor {
 
         object.setCoords();
 
+
         this.canvas.requestRenderAll();
+
       };
+
 
 
     document
@@ -4113,13 +4804,16 @@ export class PosterEditor {
         "input",
         event => {
 
+
           withText(
             object => {
 
               object.text =
                 event.target.value;
+
             }
           );
+
         }
       );
 
@@ -4130,8 +4824,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
 
 
@@ -4143,16 +4840,19 @@ export class PosterEditor {
         "change",
         event => {
 
+
           withText(
             object => {
 
               object.fontFamily =
                 event.target.value;
+
             }
           );
 
 
           this.commit();
+
         }
       );
 
@@ -4165,6 +4865,7 @@ export class PosterEditor {
         "change",
         event => {
 
+
           withText(
             object => {
 
@@ -4172,13 +4873,16 @@ export class PosterEditor {
                 Number(
                   event.target.value
                 );
+
             }
           );
 
 
           this.commit();
+
         }
       );
+
 
 
     this.bindTextRange(
@@ -4194,6 +4898,7 @@ export class PosterEditor {
 
         object.fontSize =
           value;
+
       },
 
       value =>
@@ -4202,6 +4907,7 @@ export class PosterEditor {
         )
 
     );
+
 
 
     this.bindTextRange(
@@ -4217,6 +4923,7 @@ export class PosterEditor {
 
         object.charSpacing =
           value;
+
       },
 
       value =>
@@ -4225,6 +4932,7 @@ export class PosterEditor {
         )
 
     );
+
 
 
     this.bindTextRange(
@@ -4241,6 +4949,7 @@ export class PosterEditor {
         object.lineHeight =
           value /
           100;
+
       },
 
       value =>
@@ -4255,6 +4964,7 @@ export class PosterEditor {
     );
 
 
+
     document
       .getElementById(
         "proTextFill"
@@ -4262,14 +4972,17 @@ export class PosterEditor {
       ?.addEventListener(
         "input",
         event => {
+
 
           withText(
             object => {
 
               object.fill =
                 event.target.value;
+
             }
           );
+
         }
       );
 
@@ -4280,8 +4993,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
 
 
@@ -4293,13 +5009,16 @@ export class PosterEditor {
         "input",
         event => {
 
+
           withText(
             object => {
 
               object.stroke =
                 event.target.value;
+
             }
           );
+
         }
       );
 
@@ -4310,9 +5029,13 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
+
 
 
     this.bindTextRange(
@@ -4328,6 +5051,7 @@ export class PosterEditor {
 
         object.strokeWidth =
           value;
+
       },
 
       value =>
@@ -4338,6 +5062,7 @@ export class PosterEditor {
     );
 
 
+
     document
       .querySelectorAll(
         "#proTextAlign [data-align]"
@@ -4345,25 +5070,30 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
+
 
               withText(
                 object => {
 
                   object.textAlign =
-                    button.dataset
-                      .align;
+                    button.dataset.align;
+
                 }
               );
 
 
               this.updateSelectionInspector();
 
+
               this.commit();
+
             }
           );
+
         }
       );
 
@@ -4376,6 +5106,7 @@ export class PosterEditor {
         "click",
         () => {
 
+
           withText(
             object => {
 
@@ -4384,11 +5115,13 @@ export class PosterEditor {
                 "italic"
                   ? "normal"
                   : "italic";
+
             }
           );
 
 
           this.commit();
+
         }
       );
 
@@ -4401,16 +5134,19 @@ export class PosterEditor {
         "click",
         () => {
 
+
           withText(
             object => {
 
               object.underline =
                 !object.underline;
+
             }
           );
 
 
           this.commit();
+
         }
       );
 
@@ -4423,6 +5159,7 @@ export class PosterEditor {
         "click",
         () => {
 
+
           withText(
             object => {
 
@@ -4432,13 +5169,16 @@ export class PosterEditor {
                   ""
                 )
                   .toUpperCase();
+
             }
           );
 
 
           this.updateSelectionInspector();
 
+
           this.commit();
+
         }
       );
 
@@ -4451,8 +5191,10 @@ export class PosterEditor {
         "click",
         () => {
 
+
           withText(
             object => {
+
 
               object.fill =
                 new Gradient({
@@ -4480,33 +5222,48 @@ export class PosterEditor {
                   colorStops: [
 
                     {
-                      offset: 0,
+
+                      offset:
+                        0,
+
                       color:
                         "#FFF5C5"
+
                     },
 
                     {
-                      offset: .46,
+
+                      offset:
+                        0.46,
+
                       color:
                         "#F0C34C"
+
                     },
 
                     {
-                      offset: 1,
+
+                      offset:
+                        1,
+
                       color:
                         "#A97713"
+
                     }
 
                   ]
 
                 });
+
             }
           );
 
 
           this.commit();
+
         }
       );
+
   }
 
 
@@ -4518,18 +5275,24 @@ export class PosterEditor {
     formatter
   ) {
 
+
     const input =
       document.getElementById(
         inputId
       );
 
 
-    if (!input) return;
+    if (!input) {
+
+      return;
+
+    }
 
 
     input.addEventListener(
       "input",
       () => {
+
 
         const object =
           this.getEditableSelection();
@@ -4540,7 +5303,9 @@ export class PosterEditor {
             object
           )
         ) {
+
           return;
+
         }
 
 
@@ -4556,37 +5321,50 @@ export class PosterEditor {
         );
 
 
-        document
-          .getElementById(
+        const label =
+          document.getElementById(
             valueId
-          )
-          .textContent =
-          formatter(
-            value
           );
+
+
+        if (label) {
+
+          label.textContent =
+            formatter(
+              value
+            );
+
+        }
 
 
         object.setCoords();
 
+
         this.canvas.requestRenderAll();
+
       }
     );
 
 
     input.addEventListener(
       "change",
-      () =>
-        this.commit()
+      () => {
+
+        this.commit();
+
+      }
     );
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      IMAGE INSPECTOR
-  ====================================================== */
+  ========================================================= */
 
   bindImageInspector() {
+
 
     document
       .getElementById(
@@ -4594,10 +5372,13 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
+        () => {
+
           this.fitSelectedImage(
             false
-          )
+          );
+
+        }
       );
 
 
@@ -4607,10 +5388,13 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "click",
-        () =>
+        () => {
+
           this.fitSelectedImage(
             true
-          )
+          );
+
+        }
       );
 
 
@@ -4622,11 +5406,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const image =
             this.getSelectedImage();
 
 
-          if (!image) return;
+          if (!image) {
+
+            return;
+
+          }
 
 
           image.set({
@@ -4650,11 +5439,15 @@ export class PosterEditor {
 
           image.setCoords();
 
+
           this.canvas.requestRenderAll();
+
 
           this.updateTransformControls();
 
+
           this.commit();
+
         }
       );
 
@@ -4667,11 +5460,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const image =
             this.getSelectedImage();
 
 
-          if (!image) return;
+          if (!image) {
+
+            return;
+
+          }
 
 
           image.set({
@@ -4735,11 +5533,15 @@ export class PosterEditor {
 
           image.setCoords();
 
+
           this.canvas.requestRenderAll();
+
 
           this.updateSelectionInspector();
 
+
           this.commit();
+
         }
       );
 
@@ -4751,18 +5553,22 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               this.applyImageMask(
-                button.dataset
-                  .mask
+                button.dataset.mask
               );
+
             }
           );
+
         }
       );
+
   }
 
 
@@ -4771,27 +5577,32 @@ export class PosterEditor {
     type
   ) {
 
+
     const image =
       this.getSelectedImage();
 
 
-    if (!image) return;
+    if (!image) {
 
+      return;
 
-    if (
-      type ===
-      "none"
-    ) {
-
-      image.clipPath =
-        null;
     }
 
 
     if (
-      type ===
-      "circle"
+      type === "none"
     ) {
+
+      image.clipPath =
+        null;
+
+    }
+
+
+    if (
+      type === "circle"
+    ) {
+
 
       image.clipPath =
         new Circle({
@@ -4803,24 +5614,27 @@ export class PosterEditor {
             ) /
             2,
 
+          left:
+            0,
+
+          top:
+            0,
+
           originX:
             "center",
 
           originY:
-            "center",
-
-          left: 0,
-
-          top: 0
+            "center"
 
         });
+
     }
 
 
     if (
-      type ===
-      "rounded"
+      type === "rounded"
     ) {
+
 
       image.clipPath =
         new Rect({
@@ -4836,39 +5650,42 @@ export class PosterEditor {
               image.width,
               image.height
             ) *
-            .08,
+            0.08,
 
           ry:
             Math.min(
               image.width,
               image.height
             ) *
-            .08,
+            0.08,
+
+          left:
+            0,
+
+          top:
+            0,
 
           originX:
             "center",
 
           originY:
-            "center",
-
-          left: 0,
-
-          top: 0
+            "center"
 
         });
+
     }
 
 
     if (
-      type ===
-      "portrait"
+      type === "portrait"
     ) {
+
 
       const width =
         Math.min(
           image.width,
           image.height *
-          .8
+          0.8
         );
 
 
@@ -4890,25 +5707,31 @@ export class PosterEditor {
           ry:
             34,
 
+          left:
+            0,
+
+          top:
+            0,
+
           originX:
             "center",
 
           originY:
-            "center",
-
-          left: 0,
-
-          top: 0
+            "center"
 
         });
+
     }
 
 
     image.setCoords();
 
+
     this.canvas.requestRenderAll();
 
+
     this.commit();
+
   }
 
 
@@ -4917,19 +5740,24 @@ export class PosterEditor {
     fill
   ) {
 
+
     const image =
       this.getSelectedImage();
 
 
-    if (!image) return;
+    if (!image) {
+
+      return;
+
+    }
 
 
-    const sx =
+    const scaleX =
       this.canvas.width /
       image.width;
 
 
-    const sy =
+    const scaleY =
       this.canvas.height /
       image.height;
 
@@ -4937,12 +5765,12 @@ export class PosterEditor {
     const scale =
       fill
         ? Math.max(
-            sx,
-            sy
+            scaleX,
+            scaleY
           )
         : Math.min(
-            sx,
-            sy
+            scaleX,
+            scaleY
           );
 
 
@@ -4976,20 +5804,25 @@ export class PosterEditor {
 
     image.setCoords();
 
+
     this.canvas.requestRenderAll();
+
 
     this.updateSelectionInspector();
 
+
     this.commit();
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      SHAPE INSPECTOR
-  ====================================================== */
+  ========================================================= */
 
   bindShapeInspector() {
+
 
     document
       .getElementById(
@@ -4998,6 +5831,7 @@ export class PosterEditor {
       ?.addEventListener(
         "input",
         event => {
+
 
           const object =
             this.getEditableSelection();
@@ -5008,7 +5842,9 @@ export class PosterEditor {
               object
             )
           ) {
+
             return;
+
           }
 
 
@@ -5017,6 +5853,7 @@ export class PosterEditor {
 
 
           this.canvas.requestRenderAll();
+
         }
       );
 
@@ -5027,8 +5864,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
 
 
@@ -5040,6 +5880,7 @@ export class PosterEditor {
         "input",
         event => {
 
+
           const object =
             this.getEditableSelection();
 
@@ -5049,7 +5890,9 @@ export class PosterEditor {
               object
             )
           ) {
+
             return;
+
           }
 
 
@@ -5058,6 +5901,7 @@ export class PosterEditor {
 
 
           this.canvas.requestRenderAll();
+
         }
       );
 
@@ -5068,8 +5912,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
 
 
@@ -5081,6 +5928,7 @@ export class PosterEditor {
         "input",
         event => {
 
+
           const object =
             this.getEditableSelection();
 
@@ -5090,7 +5938,9 @@ export class PosterEditor {
               object
             )
           ) {
+
             return;
+
           }
 
 
@@ -5100,15 +5950,22 @@ export class PosterEditor {
             );
 
 
-          document
-            .getElementById(
+          const label =
+            document.getElementById(
               "proShapeStrokeWidthValue"
-            )
-            .textContent =
-            object.strokeWidth;
+            );
+
+
+          if (label) {
+
+            label.textContent =
+              object.strokeWidth;
+
+          }
 
 
           this.canvas.requestRenderAll();
+
         }
       );
 
@@ -5119,18 +5976,23 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      EFFECTS
-  ====================================================== */
+  ========================================================= */
 
   bindEffectsInspector() {
+
 
     document
       .getElementById(
@@ -5140,11 +6002,16 @@ export class PosterEditor {
         "change",
         event => {
 
+
           const object =
             this.getEditableSelection();
 
 
-          if (!object) return;
+          if (!object) {
+
+            return;
+
+          }
 
 
           object.globalCompositeOperation =
@@ -5153,7 +6020,9 @@ export class PosterEditor {
 
           this.canvas.requestRenderAll();
 
+
           this.commit();
+
         }
       );
 
@@ -5166,9 +6035,12 @@ export class PosterEditor {
         "change",
         () => {
 
+
           this.updateSelectedShadow();
 
+
           this.commit();
+
         }
       );
 
@@ -5182,6 +6054,7 @@ export class PosterEditor {
         () => {
 
           this.updateSelectedShadow();
+
         }
       );
 
@@ -5192,8 +6065,11 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
 
 
@@ -5205,15 +6081,23 @@ export class PosterEditor {
         "input",
         event => {
 
-          document
-            .getElementById(
+
+          const label =
+            document.getElementById(
               "proShadowBlurValue"
-            )
-            .textContent =
-            event.target.value;
+            );
+
+
+          if (label) {
+
+            label.textContent =
+              event.target.value;
+
+          }
 
 
           this.updateSelectedShadow();
+
         }
       );
 
@@ -5224,9 +6108,13 @@ export class PosterEditor {
       )
       ?.addEventListener(
         "change",
-        () =>
-          this.commit()
+        () => {
+
+          this.commit();
+
+        }
       );
+
 
 
     this.bindImageFilterSlider(
@@ -5273,6 +6161,7 @@ export class PosterEditor {
     );
 
 
+
     document
       .getElementById(
         "proGrayscale"
@@ -5281,11 +6170,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const image =
             this.getSelectedImage();
 
 
-          if (!image) return;
+          if (!image) {
+
+            return;
+
+          }
 
 
           image.filterGrayscale =
@@ -5298,6 +6192,7 @@ export class PosterEditor {
 
 
           this.commit();
+
         }
       );
 
@@ -5310,11 +6205,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const image =
             this.getSelectedImage();
 
 
-          if (!image) return;
+          if (!image) {
+
+            return;
+
+          }
 
 
           image.filterSepia =
@@ -5327,6 +6227,7 @@ export class PosterEditor {
 
 
           this.commit();
+
         }
       );
 
@@ -5339,11 +6240,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const image =
             this.getSelectedImage();
 
 
-          if (!image) return;
+          if (!image) {
+
+            return;
+
+          }
 
 
           image.filterBrightness =
@@ -5381,7 +6287,9 @@ export class PosterEditor {
 
           this.updateSelectionInspector();
 
+
           this.commit();
+
         }
       );
 
@@ -5394,12 +6302,20 @@ export class PosterEditor {
         "input",
         event => {
 
-          document
-            .getElementById(
+
+          const label =
+            document.getElementById(
               "proRemoveColorDistanceValue"
-            )
-            .textContent =
-            event.target.value;
+            );
+
+
+          if (label) {
+
+            label.textContent =
+              event.target.value;
+
+          }
+
         }
       );
 
@@ -5412,11 +6328,16 @@ export class PosterEditor {
         "click",
         () => {
 
+
           const image =
             this.getSelectedImage();
 
 
-          if (!image) return;
+          if (!image) {
+
+            return;
+
+          }
 
 
           image.removeColorEnabled =
@@ -5428,7 +6349,8 @@ export class PosterEditor {
               .getElementById(
                 "proRemoveColor"
               )
-              .value;
+              ?.value ||
+            "#FFFFFF";
 
 
           image.removeColorDistance =
@@ -5437,7 +6359,8 @@ export class PosterEditor {
                 .getElementById(
                   "proRemoveColorDistance"
                 )
-                .value
+                ?.value ||
+              20
             ) /
             100;
 
@@ -5448,9 +6371,15 @@ export class PosterEditor {
 
 
           this.commit();
+
         }
       );
 
+
+
+    /* =====================================================
+       EFFECTS BACKGROUND COLORS
+    ====================================================== */
 
     document
       .getElementById(
@@ -5460,13 +6389,16 @@ export class PosterEditor {
         "input",
         event => {
 
+
           this.state.backgroundColor =
             event.target.value;
 
 
           this.syncBackgroundInputs();
 
+
           this.updateBackground();
+
         }
       );
 
@@ -5479,24 +6411,29 @@ export class PosterEditor {
         "input",
         event => {
 
+
           this.state.backgroundColor2 =
             event.target.value;
 
 
           this.syncBackgroundInputs();
 
+
           this.updateBackground();
+
         }
       );
+
   }
 
 
 
   bindImageFilterSlider(
     inputId,
-    labelId,
+    valueId,
     property
   ) {
+
 
     const input =
       document.getElementById(
@@ -5504,18 +6441,27 @@ export class PosterEditor {
       );
 
 
-    if (!input) return;
+    if (!input) {
+
+      return;
+
+    }
 
 
     input.addEventListener(
       "input",
       () => {
 
+
         const image =
           this.getSelectedImage();
 
 
-        if (!image) return;
+        if (!image) {
+
+          return;
+
+        }
 
 
         image[property] =
@@ -5524,26 +6470,37 @@ export class PosterEditor {
           );
 
 
-        document
-          .getElementById(
-            labelId
-          )
-          .textContent =
-          input.value;
+        const label =
+          document.getElementById(
+            valueId
+          );
+
+
+        if (label) {
+
+          label.textContent =
+            input.value;
+
+        }
 
 
         this.applyImageFilters(
           image
         );
+
       }
     );
 
 
     input.addEventListener(
       "change",
-      () =>
-        this.commit()
+      () => {
+
+        this.commit();
+
+      }
     );
+
   }
 
 
@@ -5551,6 +6508,7 @@ export class PosterEditor {
   applyImageFilters(
     image
   ) {
+
 
     const list =
       [];
@@ -5567,6 +6525,7 @@ export class PosterEditor {
       brightness !== 0
     ) {
 
+
       list.push(
 
         new filters.Brightness({
@@ -5578,6 +6537,7 @@ export class PosterEditor {
         })
 
       );
+
     }
 
 
@@ -5592,6 +6552,7 @@ export class PosterEditor {
       contrast !== 0
     ) {
 
+
       list.push(
 
         new filters.Contrast({
@@ -5603,6 +6564,7 @@ export class PosterEditor {
         })
 
       );
+
     }
 
 
@@ -5617,6 +6579,7 @@ export class PosterEditor {
       saturation !== 0
     ) {
 
+
       list.push(
 
         new filters.Saturation({
@@ -5628,6 +6591,7 @@ export class PosterEditor {
         })
 
       );
+
     }
 
 
@@ -5642,6 +6606,7 @@ export class PosterEditor {
       blur > 0
     ) {
 
+
       list.push(
 
         new filters.Blur({
@@ -5653,6 +6618,7 @@ export class PosterEditor {
         })
 
       );
+
     }
 
 
@@ -5663,6 +6629,7 @@ export class PosterEditor {
       list.push(
         new filters.Grayscale()
       );
+
     }
 
 
@@ -5673,12 +6640,14 @@ export class PosterEditor {
       list.push(
         new filters.Sepia()
       );
+
     }
 
 
     if (
       image.removeColorEnabled
     ) {
+
 
       list.push(
 
@@ -5690,11 +6659,12 @@ export class PosterEditor {
 
           distance:
             image.removeColorDistance ||
-            .2
+            0.2
 
         })
 
       );
+
     }
 
 
@@ -5704,18 +6674,25 @@ export class PosterEditor {
 
     image.applyFilters();
 
+
     this.canvas.requestRenderAll();
+
   }
 
 
 
   updateSelectedShadow() {
 
+
     const object =
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
     const enabled =
@@ -5723,10 +6700,11 @@ export class PosterEditor {
         .getElementById(
           "proShadowEnabled"
         )
-        .checked;
+        ?.checked;
 
 
     if (!enabled) {
+
 
       object.shadow =
         null;
@@ -5734,7 +6712,9 @@ export class PosterEditor {
 
       this.canvas.requestRenderAll();
 
+
       return;
+
     }
 
 
@@ -5746,7 +6726,8 @@ export class PosterEditor {
             .getElementById(
               "proShadowColor"
             )
-            .value,
+            ?.value ||
+          "#000000",
 
         blur:
           Number(
@@ -5754,7 +6735,8 @@ export class PosterEditor {
               .getElementById(
                 "proShadowBlur"
               )
-              .value
+              ?.value ||
+            25
           ),
 
         offsetX:
@@ -5767,15 +6749,17 @@ export class PosterEditor {
 
 
     this.canvas.requestRenderAll();
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      EXPORT
-  ====================================================== */
+  ========================================================= */
 
   bindExportButtons() {
+
 
     document
       .getElementById(
@@ -5788,6 +6772,7 @@ export class PosterEditor {
           this.exportPoster(
             "png"
           );
+
         }
       );
 
@@ -5803,8 +6788,10 @@ export class PosterEditor {
           this.exportPoster(
             "jpg"
           );
+
         }
       );
+
   }
 
 
@@ -5812,6 +6799,7 @@ export class PosterEditor {
   exportPoster(
     format
   ) {
+
 
     const safeZone =
       this.getSafeZoneObject();
@@ -5826,10 +6814,12 @@ export class PosterEditor {
 
       safeZone.visible =
         false;
+
     }
 
 
     this.canvas.discardActiveObject();
+
 
     this.canvas.requestRenderAll();
 
@@ -5844,7 +6834,7 @@ export class PosterEditor {
 
         quality:
           format === "jpg"
-            ? .96
+            ? 0.96
             : 1,
 
         multiplier:
@@ -5897,6 +6887,7 @@ export class PosterEditor {
 
     link.click();
 
+
     link.remove();
 
 
@@ -5904,19 +6895,22 @@ export class PosterEditor {
 
       safeZone.visible =
         safeVisible;
+
     }
 
 
     this.canvas.requestRenderAll();
+
   }
 
 
 
-  /* =====================================================
-     TEMPLATES
-  ====================================================== */
+  /* =========================================================
+     EXACT TEMPLATE LIBRARY
+  ========================================================= */
 
-  renderTemplates() {
+  async renderTemplates() {
+
 
     const grid =
       document.getElementById(
@@ -5924,7 +6918,11 @@ export class PosterEditor {
       );
 
 
-    if (!grid) return;
+    if (!grid) {
+
+      return;
+
+    }
 
 
     const search =
@@ -5941,8 +6939,11 @@ export class PosterEditor {
     const collectionFilters = [
 
       "rustic",
+
       "layered",
+
       "vintage",
+
       "editorial"
 
     ];
@@ -5951,6 +6952,7 @@ export class PosterEditor {
     const templates =
       POSTER_TEMPLATES.filter(
         template => {
+
 
           const filterOk =
 
@@ -5970,7 +6972,7 @@ export class PosterEditor {
             );
 
 
-          const searchText =
+          const searchString =
             [
 
               template.name,
@@ -5979,13 +6981,19 @@ export class PosterEditor {
 
               template.kicker,
 
+              template.subheadline,
+
+              template.footer,
+
               template.category,
 
               template.collection,
 
+              template.texture,
+
               template.templateStyle,
 
-              template.texture
+              template.decorativeStyle
 
             ]
               .filter(Boolean)
@@ -5995,7 +7003,7 @@ export class PosterEditor {
 
           const searchOk =
             !search ||
-            searchText.includes(
+            searchString.includes(
               search
             );
 
@@ -6004,22 +7012,69 @@ export class PosterEditor {
             filterOk &&
             searchOk
           );
+
         }
       );
 
 
-    document
-      .getElementById(
+    const count =
+      document.getElementById(
         "posterTemplateCount"
-      )
-      .textContent =
-      templates.length;
+      );
 
+
+    if (count) {
+
+      count.textContent =
+        templates.length;
+
+    }
+
+
+
+    /* =====================================================
+       STOP OLD PREVIEW OBSERVER
+    ====================================================== */
+
+    if (
+      this.templatePreviewObserver
+    ) {
+
+
+      this.templatePreviewObserver
+        .disconnect();
+
+
+      this.templatePreviewObserver =
+        null;
+
+    }
+
+
+    this.templatePreviewRenderToken++;
+
+
+    const token =
+      this.templatePreviewRenderToken;
+
+
+    const size =
+      POSTER_SIZES[
+        this.state.canvasSize
+      ] ||
+      POSTER_SIZES.portrait;
+
+
+
+    /* =====================================================
+       CARDS
+    ====================================================== */
 
     grid.innerHTML =
       templates
         .map(
           template => {
+
 
             const active =
               this.state.template ===
@@ -6028,13 +7083,15 @@ export class PosterEditor {
                 : "";
 
 
-            const label =
+            const collection =
               template.collection
                 ? template.collection
                     .toUpperCase()
-                : template.category
-                    ?.toUpperCase() ||
-                  "CRICKET";
+                : (
+                    template.category ||
+                    "CRICKET"
+                  )
+                    .toUpperCase();
 
 
             return `
@@ -6043,48 +7100,30 @@ export class PosterEditor {
                 class="poster-template-card ${active}"
                 data-template-id="${template.id}"
                 type="button"
+                title="${this.escapeHtml(
+                  template.name
+                )}"
               >
 
                 <div
-                  class="poster-template-art"
+                  class="poster-template-art exact-template-preview"
+                  data-template-preview="${template.id}"
                   style="
-                    --preview-bg-1:${template.background || "#101216"};
-                    --preview-bg-2:${template.bg2 || "#050607"};
-                    --preview-accent:${template.accent || "#F0C34C"};
+                    aspect-ratio:
+                    ${size.width} /
+                    ${size.height};
                   "
                 >
 
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    alt=""
-                  />
+                  <div class="exact-preview-loading">
 
+                    <span></span>
 
-                  <span>
-                    ${this.escapeHtml(
-                      template.kicker ||
-                      label
-                    )}
-                  </span>
+                    <small>
+                      Rendering
+                    </small>
 
-
-                  <strong>
-                    ${this.escapeHtml(
-                      template.headline ||
-                      template.name
-                    )
-                      .replace(
-                        /\n/g,
-                        "<br>"
-                      )}
-                  </strong>
-
-
-                  <small>
-                    ${this.escapeHtml(
-                      label
-                    )}
-                  </small>
+                  </div>
 
                 </div>
 
@@ -6097,14 +7136,27 @@ export class PosterEditor {
                     )}
                   </span>
 
+                  <small>
+                    ${this.escapeHtml(
+                      collection
+                    )}
+                  </small>
+
                 </div>
 
               </button>
+
             `;
+
           }
         )
         .join("");
 
+
+
+    /* =====================================================
+       SELECT TEMPLATE
+    ====================================================== */
 
     grid
       .querySelectorAll(
@@ -6113,26 +7165,180 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             async () => {
 
+
               await this.applyTemplate(
-                button.dataset
-                  .templateId
+                button.dataset.templateId
               );
+
             }
           );
+
         }
       );
+
+
+
+    /* =====================================================
+       LAZY EXACT PREVIEWS
+    ====================================================== */
+
+    const previews =
+      Array.from(
+        grid.querySelectorAll(
+          "[data-template-preview]"
+        )
+      );
+
+
+    const root =
+      document.getElementById(
+        "posterTemplatesPanel"
+      );
+
+
+    if (
+      "IntersectionObserver" in
+      window
+    ) {
+
+
+      this.templatePreviewObserver =
+        new IntersectionObserver(
+
+          entries => {
+
+
+            entries.forEach(
+              entry => {
+
+
+                if (
+                  !entry.isIntersecting
+                ) {
+
+                  return;
+
+                }
+
+
+                const preview =
+                  entry.target;
+
+
+                this.templatePreviewObserver
+                  ?.unobserve(
+                    preview
+                  );
+
+
+                this.loadExactTemplatePreview(
+
+                  preview,
+
+                  token
+
+                );
+
+              }
+            );
+
+          },
+
+          {
+
+            root:
+              root ||
+              null,
+
+            rootMargin:
+              "400px 0px 400px 0px",
+
+            threshold:
+              0.01
+
+          }
+
+        );
+
+
+      previews.forEach(
+        preview => {
+
+
+          this.templatePreviewObserver
+            .observe(
+              preview
+            );
+
+        }
+      );
+
+
+    } else {
+
+
+      for (
+        const preview of previews
+      ) {
+
+
+        await this.loadExactTemplatePreview(
+
+          preview,
+
+          token
+
+        );
+
+
+        await new Promise(
+          resolve => {
+
+            requestAnimationFrame(
+              resolve
+            );
+
+          }
+        );
+
+      }
+
+    }
+
   }
 
 
 
-  async applyTemplate(
-    templateId,
-    save = true
+  /* =========================================================
+     EXACT THUMBNAIL LOADER
+  ========================================================= */
+
+  async loadExactTemplatePreview(
+    previewElement,
+    token
   ) {
+
+
+    if (
+      !previewElement ||
+      previewElement.dataset.previewLoading ===
+        "true"
+    ) {
+
+      return;
+
+    }
+
+
+    const templateId =
+      previewElement.dataset
+        .templatePreview;
+
 
     const template =
       POSTER_TEMPLATES.find(
@@ -6142,7 +7348,296 @@ export class PosterEditor {
       );
 
 
-    if (!template) return;
+    if (!template) {
+
+      return;
+
+    }
+
+
+    previewElement.dataset.previewLoading =
+      "true";
+
+
+    try {
+
+
+      const dataUrl =
+        await this.getExactTemplatePreview(
+          template
+        );
+
+
+      if (
+        token !==
+        this.templatePreviewRenderToken
+      ) {
+
+        return;
+
+      }
+
+
+      if (
+        !previewElement.isConnected
+      ) {
+
+        return;
+
+      }
+
+
+      previewElement.style.backgroundImage =
+        `url("${dataUrl}")`;
+
+
+      previewElement.classList.add(
+        "preview-ready"
+      );
+
+
+      previewElement
+        .querySelector(
+          ".exact-preview-loading"
+        )
+        ?.remove();
+
+
+      previewElement.dataset.previewLoaded =
+        "true";
+
+
+    } catch (
+      error
+    ) {
+
+
+      console.warn(
+
+        `Template preview failed: ${template.name}`,
+
+        error
+
+      );
+
+
+      const loading =
+        previewElement.querySelector(
+          ".exact-preview-loading"
+        );
+
+
+      if (loading) {
+
+
+        loading.innerHTML = `
+
+          <small>
+            Preview unavailable
+          </small>
+
+        `;
+
+      }
+
+
+    } finally {
+
+
+      previewElement.dataset.previewLoading =
+        "false";
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     CREATE EXACT THUMBNAIL
+  ========================================================= */
+
+  async getExactTemplatePreview(
+    template
+  ) {
+
+
+    const cacheKey =
+      [
+
+        template.id,
+
+        this.state.canvasSize,
+
+        this.state.brandName
+
+      ]
+        .join(
+          "::"
+        );
+
+
+    if (
+      this.templatePreviewCache.has(
+        cacheKey
+      )
+    ) {
+
+
+      return this.templatePreviewCache.get(
+        cacheKey
+      );
+
+    }
+
+
+    const size =
+      POSTER_SIZES[
+        this.state.canvasSize
+      ] ||
+      POSTER_SIZES.portrait;
+
+
+    const htmlCanvas =
+      document.createElement(
+        "canvas"
+      );
+
+
+    htmlCanvas.width =
+      size.width;
+
+
+    htmlCanvas.height =
+      size.height;
+
+
+    const previewCanvas =
+      new Canvas(
+        htmlCanvas,
+        {
+
+          width:
+            size.width,
+
+          height:
+            size.height,
+
+          selection:
+            false,
+
+          preserveObjectStacking:
+            true,
+
+          renderOnAddRemove:
+            false
+
+        }
+      );
+
+
+    try {
+
+
+      await this.renderTemplateScene(
+
+        previewCanvas,
+
+        template,
+
+        {
+
+          interactive:
+            false,
+
+          brandName:
+            this.state.brandName,
+
+          canvasSize:
+            this.state.canvasSize
+
+        }
+
+      );
+
+
+      previewCanvas.renderAll();
+
+
+      /*
+       * Full template rendered first.
+       * Only after rendering do we downsample the result.
+       */
+
+      const dataUrl =
+        previewCanvas.toDataURL({
+
+          format:
+            "jpeg",
+
+          quality:
+            0.90,
+
+          multiplier:
+            0.25
+
+        });
+
+
+      this.templatePreviewCache.set(
+
+        cacheKey,
+
+        dataUrl
+
+      );
+
+
+      return dataUrl;
+
+
+    } finally {
+
+
+      try {
+
+        previewCanvas.dispose();
+
+      } catch {
+
+        /* ignore */
+
+      }
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     APPLY TEMPLATE
+  ========================================================= */
+
+  async applyTemplate(
+    templateId,
+    save = true
+  ) {
+
+
+    const template =
+      POSTER_TEMPLATES.find(
+        item =>
+          item.id ===
+          templateId
+      );
+
+
+    if (!template) {
+
+      return;
+
+    }
 
 
     this.restoring =
@@ -6154,47 +7649,330 @@ export class PosterEditor {
     );
 
 
-    this.canvas.clear();
+    try {
 
 
-    this.state.template =
-      template.id;
+      this.state.template =
+        template.id;
 
 
-    this.state.accent =
-      template.accent ||
-      "#F0C34C";
+      this.state.accent =
+        template.accent ||
+        "#F0C34C";
 
 
-    this.state.textColor =
-      template.text ||
-      "#FFFFFF";
+      this.state.textColor =
+        template.text ||
+        "#FFFFFF";
 
 
-    this.state.backgroundColor =
+      this.state.backgroundColor =
+        template.background ||
+        "#210B0E";
+
+
+      this.state.backgroundColor2 =
+        template.bg2 ||
+        "#080A0D";
+
+
+      this.state.backgroundAngle =
+        template.backgroundAngle ??
+        135;
+
+
+      this.syncBrandInputs();
+
+
+
+      /*
+       * CRITICAL:
+       *
+       * Main poster and left thumbnail use this exact
+       * same render function.
+       */
+
+      await this.renderTemplateScene(
+
+        this.canvas,
+
+        template,
+
+        {
+
+          interactive:
+            true,
+
+          brandName:
+            this.state.brandName,
+
+          canvasSize:
+            this.state.canvasSize
+
+        }
+
+      );
+
+
+      this.ensureSafeZone();
+
+
+      this.canvas.discardActiveObject();
+
+
+      this.ensureBrandTop();
+
+
+      this.canvas.requestRenderAll();
+
+
+    } finally {
+
+
+      this.restoring =
+        false;
+
+    }
+
+
+    this.renderTemplates();
+
+
+    this.renderLayers();
+
+
+    this.updateSelectionInspector();
+
+
+    if (save) {
+
+      this.commit();
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     SHARED TEMPLATE RENDERER
+     ---------------------------------------------------------
+     This renders BOTH:
+       1. Main poster
+       2. Sidebar thumbnail
+
+     Therefore thumbnails cannot visually drift away from
+     the actual selected template.
+  ========================================================= */
+
+  async renderTemplateScene(
+    targetCanvas,
+    template,
+    options = {}
+  ) {
+
+
+    const interactive =
+      options.interactive !==
+      false;
+
+
+    const brandName =
+      options.brandName ||
+      "FWCWL";
+
+
+    const backgroundColor =
       template.background ||
       "#210B0E";
 
 
-    this.state.backgroundColor2 =
+    const backgroundColor2 =
       template.bg2 ||
       "#080A0D";
 
 
-    this.syncBrandInputs();
+    const accent =
+      template.accent ||
+      "#F0C34C";
 
 
-    this.createBackgroundLayer();
+    const textColor =
+      template.text ||
+      "#FFFFFF";
 
 
-    await applyTemplateEffects(
-      this,
-      template
+    const backgroundAngle =
+      template.backgroundAngle ??
+      135;
+
+
+
+    /* =====================================================
+       CLEAR
+    ====================================================== */
+
+    targetCanvas.clear();
+
+
+
+    /* =====================================================
+       BACKGROUND
+    ====================================================== */
+
+    const background =
+      new Rect({
+
+        left:
+          0,
+
+        top:
+          0,
+
+        width:
+          targetCanvas.width,
+
+        height:
+          targetCanvas.height,
+
+        originX:
+          "left",
+
+        originY:
+          "top",
+
+        fill:
+          this.createTemplateGradient(
+
+            targetCanvas,
+
+            backgroundColor,
+
+            backgroundColor2,
+
+            backgroundAngle
+
+          ),
+
+        selectable:
+          false,
+
+        evented:
+          false
+
+      });
+
+
+    background.id =
+      interactive
+        ? "poster-background"
+        : `preview-bg-${template.id}`;
+
+
+    background.name =
+      "Canvas Background";
+
+
+    background.typeLabel =
+      "background";
+
+
+    background.editorType =
+      "background";
+
+
+    background.isBackground =
+      true;
+
+
+    targetCanvas.add(
+      background
     );
 
 
+    this.moveObjectToIndexOnCanvas(
+
+      targetCanvas,
+
+      background,
+
+      0
+
+    );
+
+
+
+    /* =====================================================
+       PREMIUM TEMPLATE EFFECTS
+    ====================================================== */
+
+    const effectBridge = {
+
+
+      canvas:
+        targetCanvas,
+
+
+      state: {
+
+        ...this.state,
+
+        backgroundColor,
+
+        backgroundColor2,
+
+        accent,
+
+        textColor,
+
+        brandName
+
+      },
+
+
+      moveObjectToIndex:
+        (
+          object,
+          index
+        ) => {
+
+
+          this.moveObjectToIndexOnCanvas(
+
+            targetCanvas,
+
+            object,
+
+            index
+
+          );
+
+        }
+
+    };
+
+
+    await applyTemplateEffects(
+
+      effectBridge,
+
+      template
+
+    );
+
+
+
+    /* =====================================================
+       CONTENT POSITION
+    ====================================================== */
+
+    const alignment =
+      template.align ||
+      "left";
+
+
     const contentY =
-      this.canvas.height *
+      targetCanvas.height *
       (
         (
           template.contentY ??
@@ -6204,9 +7982,14 @@ export class PosterEditor {
       );
 
 
-    /* EYEBROW */
 
-    this.addTemplateText(
+    /* =====================================================
+       EYEBROW
+    ====================================================== */
+
+    this.addTemplateTextToCanvas(
+
+      targetCanvas,
 
       template.kicker ||
       "FWCWL • CRICKET",
@@ -6229,24 +8012,34 @@ export class PosterEditor {
           800,
 
         fill:
-          this.state.accent,
+          accent,
 
         top:
           contentY,
 
         width:
-          this.canvas.width -
-          164
+          targetCanvas.width -
+          164,
 
-      }
+        textAlign:
+          alignment
+
+      },
+
+      interactive
 
     );
 
 
-    /* HEADLINE */
+
+    /* =====================================================
+       HEADLINE
+    ====================================================== */
 
     const headline =
-      this.addTemplateText(
+      this.addTemplateTextToCanvas(
+
+        targetCanvas,
 
         template.headline ||
         "MATCH DAY",
@@ -6274,24 +8067,25 @@ export class PosterEditor {
                 : 900,
 
           fill:
-            this.state.textColor,
+            textColor,
 
           top:
             contentY +
             58,
 
           width:
-            this.canvas.width -
+            targetCanvas.width -
             164,
 
           lineHeight:
-            .9,
+            0.90,
 
           textAlign:
-            template.align ||
-            "left"
+            alignment
 
-        }
+        },
+
+        interactive
 
       );
 
@@ -6300,13 +8094,47 @@ export class PosterEditor {
       headline.getScaledHeight();
 
 
-    /* ACCENT LINE */
+
+    /* =====================================================
+       ACCENT LINE
+    ====================================================== */
+
+    let accentLeft =
+      82;
+
+
+    if (
+      alignment ===
+      "center"
+    ) {
+
+
+      accentLeft =
+        targetCanvas.width /
+        2 -
+        39;
+
+    }
+
+
+    if (
+      alignment ===
+      "right"
+    ) {
+
+
+      accentLeft =
+        targetCanvas.width -
+        160;
+
+    }
+
 
     const accentLine =
       new Rect({
 
         left:
-          82,
+          accentLeft,
 
         top:
           headline.top +
@@ -6320,36 +8148,51 @@ export class PosterEditor {
           7,
 
         fill:
-          this.state.accent,
+          accent,
 
         rx:
           3,
 
         ry:
-          3
+          3,
+
+        selectable:
+          interactive,
+
+        evented:
+          interactive
 
       });
 
 
-    this.assignObjectMeta(
+    this.setTemplateObjectMetadata(
+
       accentLine,
+
       "Accent Line",
-      "shape"
+
+      "shape",
+
+      "templateAccent",
+
+      interactive
+
     );
 
 
-    accentLine.role =
-      "templateAccent";
-
-
-    this.canvas.add(
+    targetCanvas.add(
       accentLine
     );
 
 
-    /* DETAILS */
 
-    this.addTemplateText(
+    /* =====================================================
+       SUBHEADLINE
+    ====================================================== */
+
+    this.addTemplateTextToCanvas(
+
+      targetCanvas,
 
       template.subheadline ||
       "Saturday • Tampa, Florida",
@@ -6373,8 +8216,8 @@ export class PosterEditor {
 
         fill:
           this.hexToRgba(
-            this.state.textColor,
-            .84
+            textColor,
+            0.84
           ),
 
         top:
@@ -6384,33 +8227,52 @@ export class PosterEditor {
         width:
           Math.min(
             720,
-            this.canvas.width -
+            targetCanvas.width -
             164
           ),
+
+        textAlign:
+          alignment,
 
         lineHeight:
           1.32
 
-      }
+      },
+
+      interactive
 
     );
 
 
-    /* CTA */
 
-    this.addCta(
+    /* =====================================================
+       CTA
+    ====================================================== */
+
+    this.addCtaToCanvas(
+
+      targetCanvas,
 
       template.cta ||
       "MATCH DETAILS",
 
-      this.state.accent
+      accent,
+
+      interactive,
+
+      alignment
 
     );
 
 
-    /* FOOTER */
 
-    this.addTemplateText(
+    /* =====================================================
+       FOOTER
+    ====================================================== */
+
+    this.addTemplateTextToCanvas(
+
+      targetCanvas,
 
       template.footer ||
       "FLORIDA WEST COAST WINTER LEAGUE",
@@ -6434,28 +8296,35 @@ export class PosterEditor {
 
         fill:
           this.hexToRgba(
-            this.state.textColor,
-            .70
+            textColor,
+            0.70
           ),
 
         top:
-          this.canvas.height -
+          targetCanvas.height -
           105,
 
         width:
-          this.canvas.width -
+          targetCanvas.width -
           164
 
-      }
+      },
+
+      interactive
 
     );
 
 
-    /* BRAND NAME */
 
-    this.addTemplateText(
+    /* =====================================================
+       BRAND NAME
+    ====================================================== */
 
-      this.state.brandName,
+    this.addTemplateTextToCanvas(
+
+      targetCanvas,
+
+      brandName,
 
       {
 
@@ -6476,16 +8345,16 @@ export class PosterEditor {
 
         fill:
           this.hexToRgba(
-            this.state.textColor,
-            .70
+            textColor,
+            0.70
           ),
 
         top:
-          this.canvas.height -
+          targetCanvas.height -
           105,
 
         left:
-          this.canvas.width -
+          targetCanvas.width -
           300,
 
         width:
@@ -6494,47 +8363,47 @@ export class PosterEditor {
         textAlign:
           "right"
 
-      }
+      },
+
+      interactive
 
     );
 
 
-    await this.addOfficialLogo();
+
+    /* =====================================================
+       OFFICIAL LOGO
+    ====================================================== */
+
+    await this.addOfficialLogoToCanvas(
+
+      targetCanvas,
+
+      interactive
+
+    );
 
 
-    this.ensureSafeZone();
+    targetCanvas.discardActiveObject();
 
 
-    this.canvas.discardActiveObject();
+    targetCanvas.requestRenderAll();
 
-    this.ensureBrandTop();
-
-    this.canvas.requestRenderAll();
-
-
-    this.restoring =
-      false;
-
-
-    this.renderTemplates();
-
-    this.renderLayers();
-
-    this.updateSelectionInspector();
-
-
-    if (save) {
-
-      this.commit();
-    }
   }
 
 
 
-  addTemplateText(
+  /* =========================================================
+     SHARED TEMPLATE TEXT
+  ========================================================= */
+
+  addTemplateTextToCanvas(
+    targetCanvas,
     text,
-    options = {}
+    options = {},
+    interactive = true
   ) {
+
 
     const object =
       new Textbox(
@@ -6585,6 +8454,12 @@ export class PosterEditor {
           originY:
             "top",
 
+          selectable:
+            interactive,
+
+          evented:
+            interactive,
+
           cornerColor:
             "#F0C34C",
 
@@ -6605,64 +8480,110 @@ export class PosterEditor {
       );
 
 
-    this.assignObjectMeta(
+    this.setTemplateObjectMetadata(
 
       object,
 
       options.name ||
       "Text",
 
-      "text"
+      "text",
+
+      options.role ||
+      null,
+
+      interactive
 
     );
 
 
-    if (
-      options.role
-    ) {
-
-      object.role =
-        options.role;
-    }
-
-
-    this.canvas.add(
+    targetCanvas.add(
       object
     );
 
 
     return object;
+
   }
 
 
 
-  addCta(
+  /* =========================================================
+     SHARED CTA
+  ========================================================= */
+
+  addCtaToCanvas(
+    targetCanvas,
     text,
-    accent
+    accent,
+    interactive = true,
+    alignment = "left"
   ) {
 
-    if (!text) return;
+
+    if (!text) {
+
+      return;
+
+    }
 
 
-    const y =
-      this.canvas.height *
-      .79;
+    const width =
+      245;
+
+
+    const height =
+      62;
+
+
+    let left =
+      82;
+
+
+    if (
+      alignment ===
+      "center"
+    ) {
+
+
+      left =
+        targetCanvas.width /
+        2 -
+        width /
+        2;
+
+    }
+
+
+    if (
+      alignment ===
+      "right"
+    ) {
+
+
+      left =
+        targetCanvas.width -
+        82 -
+        width;
+
+    }
+
+
+    const top =
+      targetCanvas.height *
+      0.79;
 
 
     const rect =
       new Rect({
 
-        left:
-          82,
+        left,
 
-        top:
-          y,
+        top,
 
-        width:
-          245,
+        width,
 
-        height:
-          62,
+        height,
 
         fill:
           accent,
@@ -6671,20 +8592,30 @@ export class PosterEditor {
           10,
 
         ry:
-          10
+          10,
+
+        selectable:
+          interactive,
+
+        evented:
+          interactive
 
       });
 
 
-    this.assignObjectMeta(
+    this.setTemplateObjectMetadata(
+
       rect,
+
       "CTA Background",
-      "shape"
+
+      "shape",
+
+      "templateCtaBackground",
+
+      interactive
+
     );
-
-
-    rect.role =
-      "templateCtaBackground";
 
 
     const label =
@@ -6696,14 +8627,16 @@ export class PosterEditor {
         {
 
           left:
-            97,
+            left +
+            15,
 
           top:
-            y +
+            top +
             17,
 
           width:
-            215,
+            width -
+            30,
 
           fontFamily:
             "DM Sans",
@@ -6718,37 +8651,463 @@ export class PosterEditor {
             "#111111",
 
           textAlign:
-            "center"
+            "center",
+
+          selectable:
+            interactive,
+
+          evented:
+            interactive
 
         }
 
       );
 
 
-    this.assignObjectMeta(
+    this.setTemplateObjectMetadata(
+
       label,
+
       "CTA Text",
-      "text"
+
+      "text",
+
+      "templateCtaText",
+
+      interactive
+
     );
 
 
-    label.role =
-      "templateCtaText";
+    targetCanvas.add(
+      rect
+    );
 
 
-    this.canvas.add(
-      rect,
+    targetCanvas.add(
       label
     );
+
   }
 
 
 
-  /* =====================================================
-     ADD TEXT
-  ====================================================== */
+  /* =========================================================
+     SHARED LOGO
+  ========================================================= */
+
+  async addOfficialLogoToCanvas(
+    targetCanvas,
+    interactive = false
+  ) {
+
+
+    try {
+
+
+      const image =
+        await FabricImage.fromURL(
+          "assets/fwcwl-logo.jpeg"
+        );
+
+
+      const maxWidth =
+        195;
+
+
+      const maxHeight =
+        130;
+
+
+      const scale =
+        Math.min(
+
+          maxWidth /
+          image.width,
+
+          maxHeight /
+          image.height
+
+        );
+
+
+      image.set({
+
+        left:
+          58,
+
+        top:
+          58,
+
+        originX:
+          "left",
+
+        originY:
+          "top",
+
+        scaleX:
+          scale,
+
+        scaleY:
+          scale,
+
+        selectable:
+          false,
+
+        evented:
+          false,
+
+        hasControls:
+          false,
+
+        hasBorders:
+          false,
+
+        shadow:
+          new Shadow({
+
+            color:
+              "rgba(0,0,0,.50)",
+
+            blur:
+              26,
+
+            offsetX:
+              0,
+
+            offsetY:
+              9
+
+          })
+
+      });
+
+
+      image.id =
+        interactive
+          ? "official-fwcwl-logo"
+          : `preview-logo-${crypto.randomUUID()}`;
+
+
+      image.name =
+        "Official FWCWL Logo";
+
+
+      image.typeLabel =
+        "brand";
+
+
+      image.editorType =
+        "brand";
+
+
+      image.isBrand =
+        true;
+
+
+      image.role =
+        "officialLogo";
+
+
+      targetCanvas.add(
+        image
+      );
+
+
+      this.moveObjectToIndexOnCanvas(
+
+        targetCanvas,
+
+        image,
+
+        targetCanvas
+          .getObjects()
+          .length -
+        1
+
+      );
+
+
+    } catch (
+      error
+    ) {
+
+
+      const fallback =
+        new Textbox(
+
+          "FWCWL",
+
+          {
+
+            left:
+              58,
+
+            top:
+              58,
+
+            width:
+              185,
+
+            fontFamily:
+              "Montserrat",
+
+            fontSize:
+              35,
+
+            fontWeight:
+              900,
+
+            fill:
+              "#F0C34C",
+
+            selectable:
+              false,
+
+            evented:
+              false
+
+          }
+
+        );
+
+
+      fallback.id =
+        interactive
+          ? "official-fwcwl-logo"
+          : crypto.randomUUID();
+
+
+      fallback.name =
+        "FWCWL Logo";
+
+
+      fallback.typeLabel =
+        "brand";
+
+
+      fallback.editorType =
+        "brand";
+
+
+      fallback.isBrand =
+        true;
+
+
+      fallback.role =
+        "officialLogo";
+
+
+      targetCanvas.add(
+        fallback
+      );
+
+
+      this.moveObjectToIndexOnCanvas(
+
+        targetCanvas,
+
+        fallback,
+
+        targetCanvas
+          .getObjects()
+          .length -
+        1
+
+      );
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     TEMPLATE METADATA
+  ========================================================= */
+
+  setTemplateObjectMetadata(
+    object,
+    name,
+    editorType,
+    role = null,
+    interactive = true
+  ) {
+
+
+    object.id =
+      crypto.randomUUID();
+
+
+    object.name =
+      name;
+
+
+    object.typeLabel =
+      editorType;
+
+
+    object.editorType =
+      editorType;
+
+
+    if (role) {
+
+      object.role =
+        role;
+
+    }
+
+
+    if (!interactive) {
+
+
+      object.selectable =
+        false;
+
+
+      object.evented =
+        false;
+
+
+      object.hasControls =
+        false;
+
+
+      object.hasBorders =
+        false;
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     TEMPLATE GRADIENT
+  ========================================================= */
+
+  createTemplateGradient(
+    targetCanvas,
+    color1,
+    color2,
+    angle = 135
+  ) {
+
+
+    const radians =
+      angle *
+      Math.PI /
+      180;
+
+
+    const width =
+      targetCanvas.width;
+
+
+    const height =
+      targetCanvas.height;
+
+
+    const centerX =
+      width /
+      2;
+
+
+    const centerY =
+      height /
+      2;
+
+
+    const length =
+      Math.sqrt(
+
+        width *
+        width +
+
+        height *
+        height
+
+      );
+
+
+    const dx =
+      Math.cos(
+        radians
+      ) *
+      length /
+      2;
+
+
+    const dy =
+      Math.sin(
+        radians
+      ) *
+      length /
+      2;
+
+
+    return new Gradient({
+
+      type:
+        "linear",
+
+      coords: {
+
+        x1:
+          centerX -
+          dx,
+
+        y1:
+          centerY -
+          dy,
+
+        x2:
+          centerX +
+          dx,
+
+        y2:
+          centerY +
+          dy
+
+      },
+
+      colorStops: [
+
+        {
+
+          offset:
+            0,
+
+          color:
+            color1
+
+        },
+
+        {
+
+          offset:
+            1,
+
+          color:
+            color2
+
+        }
+
+      ]
+
+    });
+
+  }
+
+
+
+  /* =========================================================
+     ADD CUSTOM TEXT
+  ========================================================= */
 
   addTextLayer() {
+
 
     const text =
       new Textbox(
@@ -6769,7 +9128,7 @@ export class PosterEditor {
             Math.min(
               650,
               this.canvas.width *
-              .7
+              0.70
             ),
 
           originX:
@@ -6814,9 +9173,13 @@ export class PosterEditor {
 
 
     this.assignObjectMeta(
+
       text,
+
       "Custom Text",
+
       "text"
+
     );
 
 
@@ -6832,28 +9195,35 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.switchInspectorTab(
       "edit"
     );
 
+
     this.updateSelectionInspector();
+
 
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
 
-  /* =====================================================
-     ADD PHOTOS
-  ====================================================== */
+  /* =========================================================
+     ADD PHOTO
+  ========================================================= */
 
   async addPhotoFile(
     file
   ) {
+
 
     const data =
       await this.fileToDataUrl(
@@ -6868,19 +9238,22 @@ export class PosterEditor {
 
 
     this.initializeImageObject(
+
       image,
+
       file.name
+
     );
 
 
     const maxWidth =
       this.canvas.width *
-      .64;
+      0.64;
 
 
     const maxHeight =
       this.canvas.height *
-      .64;
+      0.64;
 
 
     const scale =
@@ -6932,24 +9305,35 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.switchInspectorTab(
       "edit"
     );
 
+
     this.updateSelectionInspector();
+
 
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
 
+  /* =========================================================
+     ADD BACKGROUND PHOTO
+  ========================================================= */
+
   async addBackgroundPhoto(
     file
   ) {
+
 
     const existing =
       this.canvas
@@ -6966,6 +9350,7 @@ export class PosterEditor {
       this.canvas.remove(
         existing
       );
+
     }
 
 
@@ -6982,8 +9367,11 @@ export class PosterEditor {
 
 
     this.initializeImageObject(
+
       image,
+
       "Background Photo"
+
     );
 
 
@@ -7034,13 +9422,16 @@ export class PosterEditor {
 
 
     /*
-     * Background is placed above base color/texture,
-     * but below editable design content.
+     * Index 1 puts background photo over base gradient,
+     * but below the generated template texture.
      */
 
     this.moveObjectToIndex(
+
       image,
-      2
+
+      1
+
     );
 
 
@@ -7051,20 +9442,30 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.updateSelectionInspector();
 
+
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
 
+  /* =========================================================
+     SPONSOR LOGO
+  ========================================================= */
+
   async addSponsorLogo(
     file
   ) {
+
 
     const data =
       await this.fileToDataUrl(
@@ -7079,9 +9480,12 @@ export class PosterEditor {
 
 
     this.initializeImageObject(
+
       image,
+
       file.name ||
       "Sponsor Logo"
+
     );
 
 
@@ -7137,13 +9541,18 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.updateSelectionInspector();
 
+
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
@@ -7153,10 +9562,15 @@ export class PosterEditor {
     name
   ) {
 
+
     this.assignObjectMeta(
+
       image,
+
       name,
+
       "image"
+
     );
 
 
@@ -7206,17 +9620,19 @@ export class PosterEditor {
 
     image.removeColorEnabled =
       false;
+
   }
 
 
 
-  /* =====================================================
-     STICKERS
-  ====================================================== */
+  /* =========================================================
+     STICKER
+  ========================================================= */
 
   addSticker(
     sticker
   ) {
+
 
     const object =
       new Textbox(
@@ -7266,9 +9682,13 @@ export class PosterEditor {
 
 
     this.assignObjectMeta(
+
       object,
+
       `Sticker ${sticker}`,
+
       "sticker"
+
     );
 
 
@@ -7284,142 +9704,166 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.updateSelectionInspector();
 
+
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      SHAPES
-  ====================================================== */
+  ========================================================= */
 
   addShape(
     type
   ) {
 
+
     let object =
       null;
 
 
-    switch (type) {
-
-      case "rect":
-
-        object =
-          new Rect({
-
-            width:
-              370,
-
-            height:
-              220,
-
-            rx:
-              28,
-
-            ry:
-              28,
-
-            fill:
-              this.state.accent
-
-          });
-
-        break;
+    if (
+      type === "rect"
+    ) {
 
 
-      case "circle":
+      object =
+        new Rect({
 
-        object =
-          new Circle({
+          width:
+            370,
 
-            radius:
-              155,
+          height:
+            220,
 
-            fill:
-              this.state.accent
+          rx:
+            28,
 
-          });
+          ry:
+            28,
 
-        break;
+          fill:
+            this.state.accent
 
+        });
 
-      case "triangle":
-
-        object =
-          new Triangle({
-
-            width:
-              310,
-
-            height:
-              290,
-
-            fill:
-              this.state.accent
-
-          });
-
-        break;
-
-
-      case "line":
-
-        object =
-          new Line(
-
-            [
-              0,
-              0,
-              400,
-              0
-            ],
-
-            {
-
-              stroke:
-                this.state.accent,
-
-              strokeWidth:
-                16
-
-            }
-
-          );
-
-        break;
-
-
-      case "badge":
-
-        object =
-          new Circle({
-
-            radius:
-              150,
-
-            fill:
-              this.state.accent,
-
-            stroke:
-              "#FFFFFF",
-
-            strokeWidth:
-              7
-
-          });
-
-        break;
     }
 
 
-    if (!object) return;
+    if (
+      type === "circle"
+    ) {
+
+
+      object =
+        new Circle({
+
+          radius:
+            155,
+
+          fill:
+            this.state.accent
+
+        });
+
+    }
+
+
+    if (
+      type === "triangle"
+    ) {
+
+
+      object =
+        new Triangle({
+
+          width:
+            310,
+
+          height:
+            290,
+
+          fill:
+            this.state.accent
+
+        });
+
+    }
+
+
+    if (
+      type === "line"
+    ) {
+
+
+      object =
+        new Line(
+
+          [
+
+            0,
+            0,
+            400,
+            0
+
+          ],
+
+          {
+
+            stroke:
+              this.state.accent,
+
+            strokeWidth:
+              16
+
+          }
+
+        );
+
+    }
+
+
+    if (
+      type === "badge"
+    ) {
+
+
+      object =
+        new Circle({
+
+          radius:
+            150,
+
+          fill:
+            this.state.accent,
+
+          stroke:
+            "#FFFFFF",
+
+          strokeWidth:
+            7
+
+        });
+
+    }
+
+
+    if (!object) {
+
+      return;
+
+    }
 
 
     object.set({
@@ -7454,9 +9898,13 @@ export class PosterEditor {
 
 
     this.assignObjectMeta(
+
       object,
+
       "Shape",
+
       "shape"
+
     );
 
 
@@ -7472,29 +9920,37 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.updateSelectionInspector();
 
+
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      BACKGROUND
-  ====================================================== */
+  ========================================================= */
 
   createBackgroundLayer() {
+
 
     const background =
       new Rect({
 
-        left: 0,
+        left:
+          0,
 
-        top: 0,
+        top:
+          0,
 
         width:
           this.canvas.width,
@@ -7546,14 +10002,19 @@ export class PosterEditor {
 
 
     this.moveObjectToIndex(
+
       background,
+
       0
+
     );
+
   }
 
 
 
   updateBackground() {
+
 
     let background =
       this.canvas
@@ -7566,6 +10027,7 @@ export class PosterEditor {
 
     if (!background) {
 
+
       this.createBackgroundLayer();
 
 
@@ -7576,6 +10038,7 @@ export class PosterEditor {
             object =>
               object.isBackground
           );
+
     }
 
 
@@ -7594,119 +10057,43 @@ export class PosterEditor {
 
 
     this.canvas.requestRenderAll();
+
   }
 
 
 
   createBackgroundGradient() {
 
-    const angle =
-      this.state.backgroundAngle *
-      Math.PI /
-      180;
 
+    return this.createTemplateGradient(
 
-    const width =
-      this.canvas.width;
+      this.canvas,
 
+      this.state.backgroundColor,
 
-    const height =
-      this.canvas.height;
+      this.state.backgroundColor2,
 
+      this.state.backgroundAngle
 
-    const centerX =
-      width /
-      2;
+    );
 
-
-    const centerY =
-      height /
-      2;
-
-
-    const length =
-      Math.sqrt(
-        width *
-        width +
-        height *
-        height
-      );
-
-
-    const dx =
-      Math.cos(
-        angle
-      ) *
-      length /
-      2;
-
-
-    const dy =
-      Math.sin(
-        angle
-      ) *
-      length /
-      2;
-
-
-    return new Gradient({
-
-      type:
-        "linear",
-
-      coords: {
-
-        x1:
-          centerX -
-          dx,
-
-        y1:
-          centerY -
-          dy,
-
-        x2:
-          centerX +
-          dx,
-
-        y2:
-          centerY +
-          dy
-
-      },
-
-      colorStops: [
-
-        {
-          offset: 0,
-          color:
-            this.state
-              .backgroundColor
-        },
-
-        {
-          offset: 1,
-          color:
-            this.state
-              .backgroundColor2
-        }
-
-      ]
-
-    });
   }
 
 
 
   syncBackgroundInputs() {
 
+
     [
 
       "proBackgroundColor1",
+
       "proFxBackground1"
 
     ]
       .forEach(
         id => {
+
 
           const input =
             document.getElementById(
@@ -7717,9 +10104,10 @@ export class PosterEditor {
           if (input) {
 
             input.value =
-              this.state
-                .backgroundColor;
+              this.state.backgroundColor;
+
           }
+
         }
       );
 
@@ -7727,11 +10115,13 @@ export class PosterEditor {
     [
 
       "proBackgroundColor2",
+
       "proFxBackground2"
 
     ]
       .forEach(
         id => {
+
 
           const input =
             document.getElementById(
@@ -7742,25 +10132,30 @@ export class PosterEditor {
           if (input) {
 
             input.value =
-              this.state
-                .backgroundColor2;
+              this.state.backgroundColor2;
+
           }
+
         }
       );
+
   }
 
 
 
-  /* =====================================================
-     BRAND COLOR APPLICATION
-  ====================================================== */
+  /* =========================================================
+     BRAND COLORS
+  ========================================================= */
 
   applyBrandAccent() {
 
-    const accentRoles = [
+
+    const roles = [
 
       "templateEyebrow",
+
       "templateAccent",
+
       "templateCtaBackground"
 
     ];
@@ -7771,30 +10166,36 @@ export class PosterEditor {
       .forEach(
         object => {
 
+
           if (
-            accentRoles.includes(
+            roles.includes(
               object.role
             )
           ) {
 
             object.fill =
               this.state.accent;
+
           }
+
         }
       );
 
 
     this.canvas.requestRenderAll();
+
   }
 
 
 
   applyBrandTextColor() {
 
+
     this.canvas
       .getObjects()
       .forEach(
         object => {
+
 
           if (
             object.role ===
@@ -7802,8 +10203,8 @@ export class PosterEditor {
           ) {
 
             object.fill =
-              this.state
-                .textColor;
+              this.state.textColor;
+
           }
 
 
@@ -7815,170 +10216,70 @@ export class PosterEditor {
             object.fill =
               this.hexToRgba(
                 this.state.textColor,
-                .84
+                0.84
               );
+
           }
 
 
           if (
             object.role ===
-            "templateFooter" ||
+              "templateFooter" ||
             object.role ===
-            "brandText"
+              "brandText"
           ) {
 
             object.fill =
               this.hexToRgba(
                 this.state.textColor,
-                .70
+                0.70
               );
+
           }
+
         }
       );
 
 
     this.canvas.requestRenderAll();
+
   }
 
 
 
-  /* =====================================================
-     OFFICIAL LOGO
-  ====================================================== */
-
-  async addOfficialLogo() {
-
-    const existing =
-      this.canvas
-        .getObjects()
-        .find(
-          object =>
-            object.role ===
-            "officialLogo"
-        );
+  updateBrandText() {
 
 
-    if (existing) {
+    this.canvas
+      .getObjects()
+      .filter(
+        object =>
+          object.role ===
+          "brandText"
+      )
+      .forEach(
+        object => {
 
-      this.canvas.remove(
-        existing
-      );
-    }
 
+          object.text =
+            this.state.brandName;
 
-    const image =
-      await FabricImage.fromURL(
-        "assets/fwcwl-logo.jpeg"
+        }
       );
 
 
-    const maxWidth =
-      195;
+    this.canvas.requestRenderAll();
 
-
-    const maxHeight =
-      130;
-
-
-    const scale =
-      Math.min(
-
-        maxWidth /
-        image.width,
-
-        maxHeight /
-        image.height
-
-      );
-
-
-    image.set({
-
-      left:
-        58,
-
-      top:
-        58,
-
-      originX:
-        "left",
-
-      originY:
-        "top",
-
-      scaleX:
-        scale,
-
-      scaleY:
-        scale,
-
-      selectable:
-        false,
-
-      evented:
-        false,
-
-      hasControls:
-        false,
-
-      hasBorders:
-        false,
-
-      shadow:
-        new Shadow({
-
-          color:
-            "rgba(0,0,0,.50)",
-
-          blur:
-            26,
-
-          offsetX:
-            0,
-
-          offsetY:
-            9
-
-        })
-
-    });
-
-
-    image.id =
-      "official-fwcwl-logo";
-
-
-    image.name =
-      "Official FWCWL Logo";
-
-
-    image.typeLabel =
-      "brand";
-
-
-    image.editorType =
-      "brand";
-
-
-    image.isBrand =
-      true;
-
-
-    image.role =
-      "officialLogo";
-
-
-    this.canvas.add(
-      image
-    );
-
-
-    this.ensureBrandTop();
   }
 
 
+
+  /* =========================================================
+     BRAND TOP
+  ========================================================= */
 
   ensureBrandTop() {
+
 
     const logo =
       this.canvas
@@ -7996,6 +10297,7 @@ export class PosterEditor {
 
     if (logo) {
 
+
       this.moveObjectToIndex(
 
         logo,
@@ -8006,10 +10308,12 @@ export class PosterEditor {
         1
 
       );
+
     }
 
 
     if (safe) {
+
 
       this.moveObjectToIndex(
 
@@ -8021,45 +10325,26 @@ export class PosterEditor {
         1
 
       );
+
     }
+
   }
 
 
 
-  updateBrandText() {
-
-    this.canvas
-      .getObjects()
-      .filter(
-        object =>
-          object.role ===
-          "brandText"
-      )
-      .forEach(
-        object => {
-
-          object.text =
-            this.state
-              .brandName;
-        }
-      );
-
-
-    this.canvas.requestRenderAll();
-  }
-
-
-
-  /* =====================================================
-     SAFE ZONE
-  ====================================================== */
+  /* =========================================================
+     SAFE AREA
+  ========================================================= */
 
   ensureSafeZone() {
+
 
     if (
       this.getSafeZoneObject()
     ) {
+
       return;
+
     }
 
 
@@ -8097,11 +10382,12 @@ export class PosterEditor {
         strokeWidth:
           2,
 
-        strokeDashArray:
-          [
-            14,
-            12
-          ],
+        strokeDashArray: [
+
+          14,
+          12
+
+        ],
 
         selectable:
           false,
@@ -8110,8 +10396,7 @@ export class PosterEditor {
           false,
 
         visible:
-          this.state
-            .safeZone
+          this.state.safeZone
 
       });
 
@@ -8142,11 +10427,13 @@ export class PosterEditor {
 
 
     this.ensureBrandTop();
+
   }
 
 
 
   getSafeZoneObject() {
+
 
     return this.canvas
       .getObjects()
@@ -8155,17 +10442,26 @@ export class PosterEditor {
           object.id ===
           "safe-zone"
       );
+
   }
 
 
 
   updateSafeZone() {
 
+
     this.ensureSafeZone();
 
 
     const safe =
       this.getSafeZoneObject();
+
+
+    if (!safe) {
+
+      return;
+
+    }
 
 
     const marginY =
@@ -8193,26 +10489,29 @@ export class PosterEditor {
         2,
 
       visible:
-        this.state
-          .safeZone
+        this.state.safeZone
 
     });
 
 
     safe.setCoords();
 
+
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
   }
 
 
 
-  /* =====================================================
-     CANVAS SIZE / ZOOM
-  ====================================================== */
+  /* =========================================================
+     CANVAS SIZE
+  ========================================================= */
 
   setLogicalCanvasSize() {
+
 
     const size =
       POSTER_SIZES[
@@ -8231,21 +10530,33 @@ export class PosterEditor {
     });
 
 
-    document
-      .getElementById(
+    const selector =
+      document.getElementById(
         "posterCanvasSize"
-      )
-      .value =
-      this.state
-        .canvasSize;
+      );
 
 
-    document
-      .getElementById(
+    if (selector) {
+
+      selector.value =
+        this.state.canvasSize;
+
+    }
+
+
+    const dimensions =
+      document.getElementById(
         "posterDimensions"
-      )
-      .textContent =
-      `${size.width} × ${size.height}`;
+      );
+
+
+    if (dimensions) {
+
+      dimensions.textContent =
+        `${size.width} × ${size.height}`;
+
+    }
+
   }
 
 
@@ -8254,13 +10565,18 @@ export class PosterEditor {
     type
   ) {
 
+
     const size =
       POSTER_SIZES[
         type
       ];
 
 
-    if (!size) return;
+    if (!size) {
+
+      return;
+
+    }
 
 
     const oldWidth =
@@ -8271,20 +10587,32 @@ export class PosterEditor {
       this.canvas.height;
 
 
-    const scaleX =
+    if (
+      oldWidth ===
+        size.width &&
+      oldHeight ===
+        size.height
+    ) {
+
+      return;
+
+    }
+
+
+    const ratioX =
       size.width /
       oldWidth;
 
 
-    const scaleY =
+    const ratioY =
       size.height /
       oldHeight;
 
 
-    const scale =
+    const uniformRatio =
       Math.min(
-        scaleX,
-        scaleY
+        ratioX,
+        ratioY
       );
 
 
@@ -8303,21 +10631,30 @@ export class PosterEditor {
     });
 
 
+
+    /* =====================================================
+       SCALE OBJECTS
+    ====================================================== */
+
     this.canvas
       .getObjects()
       .forEach(
         object => {
 
+
           if (
             object.isUi
           ) {
+
             return;
+
           }
 
 
           if (
             object.isBackground
           ) {
+
 
             object.set({
 
@@ -8331,6 +10668,7 @@ export class PosterEditor {
 
 
             return;
+
           }
 
 
@@ -8338,6 +10676,7 @@ export class PosterEditor {
             object.role ===
             "officialLogo"
           ) {
+
 
             object.set({
 
@@ -8351,53 +10690,123 @@ export class PosterEditor {
 
 
             return;
+
           }
 
 
+
+          /*
+           * Textures/decorations can stretch to match
+           * the new canvas ratio.
+           */
+
+          if (
+            object.isTemplateDecoration &&
+            object.typeLabel ===
+              "texture"
+          ) {
+
+
+            object.left *=
+              ratioX;
+
+
+            object.top *=
+              ratioY;
+
+
+            object.scaleX *=
+              ratioX;
+
+
+            object.scaleY *=
+              ratioY;
+
+
+            object.setCoords();
+
+
+            return;
+
+          }
+
+
+
+          /*
+           * Everything else remains proportionally scaled.
+           */
+
           object.left *=
-            scaleX;
+            ratioX;
 
 
           object.top *=
-            scaleY;
+            ratioY;
 
 
           object.scaleX *=
-            scale;
+            uniformRatio;
 
 
           object.scaleY *=
-            scale;
+            uniformRatio;
 
 
           object.setCoords();
+
         }
       );
 
 
     this.updateBackground();
 
+
     this.updateSafeZone();
+
 
     this.fitCanvasToViewport();
 
 
-    document
-      .getElementById(
+    const dimensions =
+      document.getElementById(
         "posterDimensions"
-      )
-      .textContent =
-      `${size.width} × ${size.height}`;
+      );
+
+
+    if (dimensions) {
+
+      dimensions.textContent =
+        `${size.width} × ${size.height}`;
+
+    }
+
+
+
+    /* =====================================================
+       NEW FORMAT = NEW EXACT THUMBNAILS
+    ====================================================== */
+
+    this.clearTemplatePreviewCache();
+
+
+    this.renderTemplates();
 
 
     this.canvas.requestRenderAll();
 
+
     this.commit();
+
   }
 
 
 
+  /* =========================================================
+     ZOOM
+  ========================================================= */
+
   applyZoom() {
+
 
     const ratio =
       this.state.zoom /
@@ -8419,26 +10828,36 @@ export class PosterEditor {
       },
 
       {
+
         cssOnly:
           true
+
       }
 
     );
 
 
-    document
-      .getElementById(
+    const label =
+      document.getElementById(
         "posterZoomValue"
-      )
-      .textContent =
-      `${Math.round(
-        this.state.zoom
-      )}%`;
+      );
+
+
+    if (label) {
+
+      label.textContent =
+        `${Math.round(
+          this.state.zoom
+        )}%`;
+
+    }
+
   }
 
 
 
   fitCanvasToViewport() {
+
 
     const stage =
       document.querySelector(
@@ -8448,25 +10867,34 @@ export class PosterEditor {
 
     if (!stage) {
 
+
       this.applyZoom();
 
+
       return;
+
     }
 
 
     const availableWidth =
       Math.max(
-        300,
+
+        320,
+
         stage.clientWidth -
         120
+
       );
 
 
     const availableHeight =
       Math.max(
+
         300,
+
         stage.clientHeight -
-        90
+        100
+
       );
 
 
@@ -8484,59 +10912,76 @@ export class PosterEditor {
 
     this.state.zoom =
       Math.max(
+
         20,
+
         Math.min(
+
           100,
+
           Math.floor(
             ratio *
             100
           )
+
         )
+
       );
 
 
     this.applyZoom();
+
   }
 
 
 
-  /* =====================================================
-     SELECTION HELPERS
-  ====================================================== */
+  /* =========================================================
+     SELECTION
+  ========================================================= */
 
   getEditableSelection() {
+
 
     const object =
       this.canvas
         .getActiveObject();
 
 
+    if (!object) {
+
+      return null;
+
+    }
+
+
     if (
-      !object ||
       object.isBrand ||
       object.isBackground ||
       object.isUi
     ) {
 
       return null;
+
     }
 
 
     return object;
+
   }
 
 
 
   getSelectedImage() {
 
+
     const object =
       this.getEditableSelection();
 
 
-    if (
-      !object
-    ) {
+    if (!object) {
+
       return null;
+
     }
 
 
@@ -8546,6 +10991,7 @@ export class PosterEditor {
     ) {
 
       return object;
+
     }
 
 
@@ -8557,11 +11003,19 @@ export class PosterEditor {
         .toLowerCase();
 
 
-    return type.includes(
-      "image"
-    )
-      ? object
-      : null;
+    if (
+      type.includes(
+        "image"
+      )
+    ) {
+
+      return object;
+
+    }
+
+
+    return null;
+
   }
 
 
@@ -8570,17 +11024,23 @@ export class PosterEditor {
     object
   ) {
 
-    if (!object) return false;
+
+    if (!object) {
+
+      return false;
+
+    }
 
 
     if (
       object.editorType ===
-      "text" ||
+        "text" ||
       object.editorType ===
-      "sticker"
+        "sticker"
     ) {
 
       return true;
+
     }
 
 
@@ -8595,13 +11055,18 @@ export class PosterEditor {
     return [
 
       "textbox",
+
       "text",
+
       "i-text",
+
       "itext"
 
-    ].includes(
-      type
-    );
+    ]
+      .includes(
+        type
+      );
+
   }
 
 
@@ -8610,7 +11075,12 @@ export class PosterEditor {
     object
   ) {
 
-    if (!object) return false;
+
+    if (!object) {
+
+      return false;
+
+    }
 
 
     if (
@@ -8619,6 +11089,7 @@ export class PosterEditor {
     ) {
 
       return true;
+
     }
 
 
@@ -8633,22 +11104,28 @@ export class PosterEditor {
     return [
 
       "rect",
+
       "circle",
+
       "triangle",
+
       "line"
 
-    ].includes(
-      type
-    );
+    ]
+      .includes(
+        type
+      );
+
   }
 
 
 
-  /* =====================================================
-     SELECTION INSPECTOR
-  ====================================================== */
+  /* =========================================================
+     INSPECTOR SYNC
+  ========================================================= */
 
   updateSelectionInspector() {
+
 
     const object =
       this.getEditableSelection();
@@ -8696,75 +11173,95 @@ export class PosterEditor {
       );
 
 
+    const badge =
+      document.getElementById(
+        "proSelectedType"
+      );
+
+
+
     if (!object) {
 
-      noSelection?.classList
+
+      noSelection
+        ?.classList
         .remove(
           "hidden"
         );
 
 
-      controls?.classList
+      controls
+        ?.classList
         .add(
           "hidden"
         );
 
 
-      textSection?.classList
+      textSection
+        ?.classList
         .add(
           "hidden"
         );
 
 
-      imageSection?.classList
+      imageSection
+        ?.classList
         .add(
           "hidden"
         );
 
 
-      shapeSection?.classList
+      shapeSection
+        ?.classList
         .add(
           "hidden"
         );
 
 
-      actions?.classList
+      actions
+        ?.classList
         .add(
           "hidden"
         );
 
 
-      imageEffects?.classList
+      imageEffects
+        ?.classList
         .add(
           "hidden"
         );
 
 
-      document
-        .getElementById(
-          "proSelectedType"
-        )
-        .textContent =
-        "None";
+      if (badge) {
+
+        badge.textContent =
+          "None";
+
+      }
 
 
       return;
+
     }
 
 
-    noSelection?.classList
+
+    noSelection
+      ?.classList
       .add(
         "hidden"
       );
 
 
-    controls?.classList
+    controls
+      ?.classList
       .remove(
         "hidden"
       );
 
 
-    actions?.classList
+    actions
+      ?.classList
       .remove(
         "hidden"
       );
@@ -8788,46 +11285,52 @@ export class PosterEditor {
       );
 
 
-    textSection?.classList
+    textSection
+      ?.classList
       .toggle(
         "hidden",
         !isText
       );
 
 
-    imageSection?.classList
+    imageSection
+      ?.classList
       .toggle(
         "hidden",
         !isImage
       );
 
 
-    shapeSection?.classList
+    shapeSection
+      ?.classList
       .toggle(
         "hidden",
         !isShape
       );
 
 
-    imageEffects?.classList
+    imageEffects
+      ?.classList
       .toggle(
         "hidden",
         !isImage
       );
 
 
-    document
-      .getElementById(
-        "proSelectedType"
-      )
-      .textContent =
-      object.typeLabel ||
-      object.editorType ||
-      object.type ||
-      "Layer";
+    if (badge) {
+
+
+      badge.textContent =
+        object.typeLabel ||
+        object.editorType ||
+        object.type ||
+        "Layer";
+
+    }
 
 
     this.updateTransformControls();
+
 
     this.syncCommonEffects(
       object
@@ -8839,6 +11342,7 @@ export class PosterEditor {
       this.syncTextInspector(
         object
       );
+
     }
 
 
@@ -8847,6 +11351,7 @@ export class PosterEditor {
       this.syncImageInspector(
         object
       );
+
     }
 
 
@@ -8855,49 +11360,50 @@ export class PosterEditor {
       this.syncShapeInspector(
         object
       );
+
     }
+
   }
 
 
 
   updateTransformControls() {
 
+
     const object =
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
-    document
-      .getElementById(
-        "proObjectName"
-      )
-      .value =
+    this.setInputValue(
+      "proObjectName",
       object.name ||
-      "Layer";
+      "Layer"
+    );
 
 
-    document
-      .getElementById(
-        "proObjectX"
-      )
-      .value =
+    this.setInputValue(
+      "proObjectX",
       Math.round(
         object.left ||
         0
-      );
-
-
-    document
-      .getElementById(
-        "proObjectY"
       )
-      .value =
+    );
+
+
+    this.setInputValue(
+      "proObjectY",
       Math.round(
         object.top ||
         0
-      );
+      )
+    );
 
 
     const scale =
@@ -8907,6 +11413,7 @@ export class PosterEditor {
             object.scaleX ||
             1
           ) +
+
           Math.abs(
             object.scaleY ||
             1
@@ -8917,46 +11424,44 @@ export class PosterEditor {
       100;
 
 
-    document
-      .getElementById(
-        "proObjectScale"
-      )
-      .value =
+    this.setInputValue(
+
+      "proObjectScale",
+
       Math.max(
         10,
         Math.min(
           400,
           scale
         )
-      );
-
-
-    document
-      .getElementById(
-        "proObjectScaleValue"
       )
-      .textContent =
-      `${Math.round(scale)}%`;
+
+    );
 
 
-    document
-      .getElementById(
-        "proObjectAngle"
-      )
-      .value =
+    this.setText(
+      "proObjectScaleValue",
+      `${Math.round(scale)}%`
+    );
+
+
+    this.setInputValue(
+      "proObjectAngle",
       object.angle ||
-      0;
+      0
+    );
 
 
-    document
-      .getElementById(
-        "proObjectAngleValue"
-      )
-      .textContent =
+    this.setText(
+
+      "proObjectAngleValue",
+
       `${Math.round(
         object.angle ||
         0
-      )}°`;
+      )}°`
+
+    );
 
 
     const opacity =
@@ -8967,24 +11472,22 @@ export class PosterEditor {
       100;
 
 
-    document
-      .getElementById(
-        "proObjectOpacity"
-      )
-      .value =
-      Math.round(
-        opacity
-      );
+    this.setInputValue(
+      "proObjectOpacity",
+      opacity
+    );
 
 
-    document
-      .getElementById(
-        "proObjectOpacityValue"
-      )
-      .textContent =
+    this.setText(
+
+      "proObjectOpacityValue",
+
       `${Math.round(
         opacity
-      )}%`;
+      )}%`
+
+    );
+
   }
 
 
@@ -8993,13 +11496,12 @@ export class PosterEditor {
     object
   ) {
 
-    document
-      .getElementById(
-        "proTextValue"
-      )
-      .value =
+
+    this.setInputValue(
+      "proTextValue",
       object.text ||
-      "";
+      ""
+    );
 
 
     const font =
@@ -9010,89 +11512,94 @@ export class PosterEditor {
         : "Montserrat";
 
 
-    document
-      .getElementById(
-        "proTextFont"
-      )
-      .value =
-      font;
+    this.setInputValue(
+      "proTextFont",
+      font
+    );
 
 
-    document
-      .getElementById(
-        "proTextWeight"
-      )
-      .value =
+    this.setInputValue(
+
+      "proTextWeight",
+
       String(
         object.fontWeight ||
         400
-      );
-
-
-    document
-      .getElementById(
-        "proTextSize"
       )
-      .value =
+
+    );
+
+
+    this.setInputValue(
+
+      "proTextSize",
+
       object.fontSize ||
-      80;
+      80
+
+    );
 
 
-    document
-      .getElementById(
-        "proTextSizeValue"
-      )
-      .textContent =
+    this.setText(
+
+      "proTextSizeValue",
+
       Math.round(
         object.fontSize ||
         80
-      );
-
-
-    document
-      .getElementById(
-        "proTextSpacing"
       )
-      .value =
+
+    );
+
+
+    this.setInputValue(
+
+      "proTextSpacing",
+
       object.charSpacing ||
-      0;
+      0
+
+    );
 
 
-    document
-      .getElementById(
-        "proTextSpacingValue"
-      )
-      .textContent =
+    this.setText(
+
+      "proTextSpacingValue",
+
       Math.round(
         object.charSpacing ||
         0
-      );
-
-
-    document
-      .getElementById(
-        "proTextLineHeight"
       )
-      .value =
+
+    );
+
+
+    this.setInputValue(
+
+      "proTextLineHeight",
+
       (
         object.lineHeight ||
         1
       ) *
-      100;
+      100
+
+    );
 
 
-    document
-      .getElementById(
-        "proTextLineHeightValue"
-      )
-      .textContent =
+    this.setText(
+
+      "proTextLineHeightValue",
+
       (
         object.lineHeight ||
         1
       )
         .toFixed(
           2
-        );
+        )
+
+    );
 
 
     if (
@@ -9100,45 +11607,51 @@ export class PosterEditor {
       "string"
     ) {
 
-      document
-        .getElementById(
-          "proTextFill"
-        )
-        .value =
+
+      this.setInputValue(
+
+        "proTextFill",
+
         this.safeHex(
           object.fill,
           "#FFFFFF"
-        );
+        )
+
+      );
+
     }
 
 
-    document
-      .getElementById(
-        "proTextStroke"
-      )
-      .value =
+    this.setInputValue(
+
+      "proTextStroke",
+
       this.safeHex(
         object.stroke,
         "#000000"
-      );
-
-
-    document
-      .getElementById(
-        "proTextStrokeWidth"
       )
-      .value =
-      object.strokeWidth ||
-      0;
+
+    );
 
 
-    document
-      .getElementById(
-        "proTextStrokeWidthValue"
-      )
-      .textContent =
+    this.setInputValue(
+
+      "proTextStrokeWidth",
+
       object.strokeWidth ||
-      0;
+      0
+
+    );
+
+
+    this.setText(
+
+      "proTextStrokeWidthValue",
+
+      object.strokeWidth ||
+      0
+
+    );
 
 
     document
@@ -9148,20 +11661,22 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.classList.toggle(
 
             "active",
 
-            button.dataset
-              .align ===
+            button.dataset.align ===
               (
                 object.textAlign ||
                 "left"
               )
 
           );
+
         }
       );
+
   }
 
 
@@ -9169,6 +11684,7 @@ export class PosterEditor {
   syncImageInspector(
     image
   ) {
+
 
     const values = {
 
@@ -9195,34 +11711,28 @@ export class PosterEditor {
       values
     )
       .forEach(
-        ([id, value]) => {
-
-          const input =
-            document.getElementById(
-              id
-            );
-
-
-          const label =
-            document.getElementById(
-              `${id}Value`
-            );
+        (
+          [
+            id,
+            value
+          ]
+        ) => {
 
 
-          if (input) {
+          this.setInputValue(
+            id,
+            value
+          );
 
-            input.value =
-              value;
-          }
 
+          this.setText(
+            `${id}Value`,
+            value
+          );
 
-          if (label) {
-
-            label.textContent =
-              value;
-          }
         }
       );
+
   }
 
 
@@ -9231,44 +11741,50 @@ export class PosterEditor {
     object
   ) {
 
-    document
-      .getElementById(
-        "proShapeFill"
-      )
-      .value =
+
+    this.setInputValue(
+
+      "proShapeFill",
+
       this.safeHex(
         object.fill,
         "#F0C34C"
-      );
-
-
-    document
-      .getElementById(
-        "proShapeStroke"
       )
-      .value =
+
+    );
+
+
+    this.setInputValue(
+
+      "proShapeStroke",
+
       this.safeHex(
         object.stroke,
         "#FFFFFF"
-      );
-
-
-    document
-      .getElementById(
-        "proShapeStrokeWidth"
       )
-      .value =
-      object.strokeWidth ||
-      0;
+
+    );
 
 
-    document
-      .getElementById(
-        "proShapeStrokeWidthValue"
-      )
-      .textContent =
+    this.setInputValue(
+
+      "proShapeStrokeWidth",
+
       object.strokeWidth ||
-      0;
+      0
+
+    );
+
+
+    this.setText(
+
+      "proShapeStrokeWidthValue",
+
+      object.strokeWidth ||
+      0
+
+    );
+
   }
 
 
@@ -9277,31 +11793,23 @@ export class PosterEditor {
     object
   ) {
 
+
     const blend =
       object.globalCompositeOperation ||
       "source-over";
 
 
-    const blendInput =
-      document.getElementById(
-        "proBlendMode"
-      );
+    this.setInputValue(
 
+      "proBlendMode",
 
-    if (
       BLEND_MODES.includes(
         blend
       )
-    ) {
+        ? blend
+        : "source-over"
 
-      blendInput.value =
-        blend;
-
-    } else {
-
-      blendInput.value =
-        "source-over";
-    }
+    );
 
 
     const hasShadow =
@@ -9310,42 +11818,74 @@ export class PosterEditor {
       );
 
 
-    document
-      .getElementById(
+    const shadowToggle =
+      document.getElementById(
         "proShadowEnabled"
-      )
-      .checked =
-      hasShadow;
+      );
+
+
+    if (shadowToggle) {
+
+      shadowToggle.checked =
+        hasShadow;
+
+    }
 
 
     if (hasShadow) {
 
-      document
-        .getElementById(
-          "proShadowBlur"
-        )
-        .value =
+
+      this.setInputValue(
+
+        "proShadowBlur",
+
         object.shadow.blur ||
-        25;
+        25
+
+      );
 
 
-      document
-        .getElementById(
-          "proShadowBlurValue"
-        )
-        .textContent =
+      this.setText(
+
+        "proShadowBlurValue",
+
         object.shadow.blur ||
-        25;
+        25
+
+      );
+
+
+      if (
+        typeof object.shadow.color ===
+        "string"
+      ) {
+
+
+        this.setInputValue(
+
+          "proShadowColor",
+
+          this.safeHex(
+            object.shadow.color,
+            "#000000"
+          )
+
+        );
+
+      }
+
     }
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      LAYERS PANEL
-  ====================================================== */
+  ========================================================= */
 
   renderLayers() {
+
 
     const list =
       document.getElementById(
@@ -9353,7 +11893,11 @@ export class PosterEditor {
       );
 
 
-    if (!list) return;
+    if (!list) {
+
+      return;
+
+    }
 
 
     const objects =
@@ -9368,26 +11912,28 @@ export class PosterEditor {
         .reverse();
 
 
-    document
-      .getElementById(
-        "proLayerCount"
-      )
-      .textContent =
-      objects.length;
+    this.setText(
+      "proLayerCount",
+      objects.length
+    );
 
 
     if (
       !objects.length
     ) {
 
+
       list.innerHTML = `
 
         <div class="pro-no-selection">
           No layers yet.
         </div>
+
       `;
 
+
       return;
+
     }
 
 
@@ -9400,6 +11946,7 @@ export class PosterEditor {
       objects
         .map(
           object => {
+
 
             const selected =
               active ===
@@ -9416,7 +11963,9 @@ export class PosterEditor {
 
             const locked =
               object.selectable ===
-              false;
+                false ||
+              object.lockMovementX ===
+                true;
 
 
             return `
@@ -9430,7 +11979,12 @@ export class PosterEditor {
                   type="button"
                   class="layer-visible-btn"
                   data-layer-visibility="${object.id}"
-                  title="Show / Hide"
+                  title="Show / hide layer"
+                  ${
+                    object.isBrand
+                      ? "disabled"
+                      : ""
+                  }
                 >
                   ${
                     object.visible ===
@@ -9479,7 +12033,7 @@ export class PosterEditor {
                   type="button"
                   class="layer-lock-btn"
                   data-layer-lock="${object.id}"
-                  title="Lock / Unlock"
+                  title="Lock / unlock layer"
                   ${
                     object.isBrand
                       ? "disabled"
@@ -9494,11 +12048,18 @@ export class PosterEditor {
                 </button>
 
               </div>
+
             `;
+
           }
         )
         .join("");
 
+
+
+    /* =====================================================
+       SELECT LAYER
+    ====================================================== */
 
     list
       .querySelectorAll(
@@ -9507,14 +12068,15 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               const object =
                 this.findObjectById(
-                  button.dataset
-                    .layerSelect
+                  button.dataset.layerSelect
                 );
 
 
@@ -9522,7 +12084,9 @@ export class PosterEditor {
                 !object ||
                 object.isBrand
               ) {
+
                 return;
+
               }
 
 
@@ -9533,6 +12097,7 @@ export class PosterEditor {
 
                 object.visible =
                   true;
+
               }
 
 
@@ -9542,6 +12107,7 @@ export class PosterEditor {
               ) {
 
                 return;
+
               }
 
 
@@ -9552,18 +12118,28 @@ export class PosterEditor {
 
               this.canvas.requestRenderAll();
 
+
               this.switchInspectorTab(
                 "edit"
               );
 
+
               this.updateSelectionInspector();
 
+
               this.renderLayers();
+
             }
           );
+
         }
       );
 
+
+
+    /* =====================================================
+       VISIBILITY
+    ====================================================== */
 
     list
       .querySelectorAll(
@@ -9572,18 +12148,26 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               const object =
                 this.findObjectById(
-                  button.dataset
-                    .layerVisibility
+                  button.dataset.layerVisibility
                 );
 
 
-              if (!object) return;
+              if (
+                !object ||
+                object.isBrand
+              ) {
+
+                return;
+
+              }
 
 
               object.visible =
@@ -9591,16 +12175,40 @@ export class PosterEditor {
                 false;
 
 
+              if (
+                object.visible ===
+                false &&
+                this.canvas.getActiveObject() ===
+                object
+              ) {
+
+                this.canvas.discardActiveObject();
+
+              }
+
+
               this.canvas.requestRenderAll();
+
 
               this.renderLayers();
 
+
+              this.updateSelectionInspector();
+
+
               this.commit();
+
             }
           );
+
         }
       );
 
+
+
+    /* =====================================================
+       LOCK
+    ====================================================== */
 
     list
       .querySelectorAll(
@@ -9609,14 +12217,15 @@ export class PosterEditor {
       .forEach(
         button => {
 
+
           button.addEventListener(
             "click",
             () => {
 
+
               const object =
                 this.findObjectById(
-                  button.dataset
-                    .layerLock
+                  button.dataset.layerLock
                 );
 
 
@@ -9624,7 +12233,9 @@ export class PosterEditor {
                 !object ||
                 object.isBrand
               ) {
+
                 return;
+
               }
 
 
@@ -9635,17 +12246,24 @@ export class PosterEditor {
 
               this.canvas.discardActiveObject();
 
+
               this.canvas.requestRenderAll();
+
 
               this.renderLayers();
 
+
               this.updateSelectionInspector();
 
+
               this.commit();
+
             }
           );
+
         }
       );
+
   }
 
 
@@ -9654,11 +12272,13 @@ export class PosterEditor {
     object
   ) {
 
+
     if (
       object.isBrand
     ) {
 
       return "◆";
+
     }
 
 
@@ -9667,6 +12287,7 @@ export class PosterEditor {
     ) {
 
       return "✦";
+
     }
 
 
@@ -9676,6 +12297,7 @@ export class PosterEditor {
     ) {
 
       return "▧";
+
     }
 
 
@@ -9685,6 +12307,7 @@ export class PosterEditor {
     ) {
 
       return "✎";
+
     }
 
 
@@ -9694,6 +12317,7 @@ export class PosterEditor {
     ) {
 
       return "★";
+
     }
 
 
@@ -9704,27 +12328,34 @@ export class PosterEditor {
     ) {
 
       return "T";
+
     }
 
 
     return "●";
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      LAYER ORDER
-  ====================================================== */
+  ========================================================= */
 
   moveSelectedLayer(
     direction
   ) {
 
+
     const object =
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
     const objects =
@@ -9741,7 +12372,9 @@ export class PosterEditor {
     if (
       index === -1
     ) {
+
       return;
+
     }
 
 
@@ -9751,9 +12384,12 @@ export class PosterEditor {
 
     const maxIndex =
       Math.max(
+
         minIndex,
+
         objects.length -
         2
+
       );
 
 
@@ -9775,18 +12411,25 @@ export class PosterEditor {
 
 
     this.moveObjectToIndex(
+
       object,
+
       target
+
     );
 
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.renderLayers();
 
+
     this.commit();
+
   }
 
 
@@ -9796,30 +12439,77 @@ export class PosterEditor {
     index
   ) {
 
+
+    this.moveObjectToIndexOnCanvas(
+
+      this.canvas,
+
+      object,
+
+      index
+
+    );
+
+  }
+
+
+
+  moveObjectToIndexOnCanvas(
+    targetCanvas,
+    object,
+    index
+  ) {
+
+
     if (
-      typeof this.canvas
-        .moveObjectTo ===
+      !targetCanvas ||
+      !object
+    ) {
+
+      return;
+
+    }
+
+
+    if (
+      typeof targetCanvas.moveObjectTo ===
       "function"
     ) {
 
+
       try {
 
-        this.canvas.moveObjectTo(
+
+        targetCanvas.moveObjectTo(
+
           object,
+
           index
+
         );
 
 
         return;
 
+
       } catch {
-        /* use fallback */
+
+        /* fallback */
+
       }
+
     }
 
 
     const objects =
-      this.canvas._objects;
+      targetCanvas._objects;
+
+
+    if (!objects) {
+
+      return;
+
+    }
 
 
     const current =
@@ -9831,25 +12521,40 @@ export class PosterEditor {
     if (
       current === -1
     ) {
+
       return;
+
     }
 
 
     objects.splice(
+
       current,
+
       1
+
     );
+
+
+    const destination =
+      Math.max(
+
+        0,
+
+        Math.min(
+
+          index,
+
+          objects.length
+
+        )
+
+      );
 
 
     objects.splice(
 
-      Math.max(
-        0,
-        Math.min(
-          index,
-          objects.length
-        )
-      ),
+      destination,
 
       0,
 
@@ -9858,22 +12563,28 @@ export class PosterEditor {
     );
 
 
-    this.canvas.requestRenderAll();
+    targetCanvas.requestRenderAll();
+
   }
 
 
 
-  /* =====================================================
-     DUPLICATE / DELETE / LOCK
-  ====================================================== */
+  /* =========================================================
+     DUPLICATE
+  ========================================================= */
 
   async duplicateSelected() {
+
 
     const object =
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
     const clone =
@@ -9968,24 +12679,38 @@ export class PosterEditor {
 
     this.ensureBrandTop();
 
+
     this.canvas.requestRenderAll();
+
 
     this.renderLayers();
 
+
     this.updateSelectionInspector();
 
+
     this.commit();
+
   }
 
 
 
+  /* =========================================================
+     DELETE
+  ========================================================= */
+
   deleteSelected() {
+
 
     const object =
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
     this.canvas.remove(
@@ -9995,24 +12720,38 @@ export class PosterEditor {
 
     this.canvas.discardActiveObject();
 
+
     this.canvas.requestRenderAll();
+
 
     this.renderLayers();
 
+
     this.updateSelectionInspector();
 
+
     this.commit();
+
   }
 
 
 
+  /* =========================================================
+     LOCK
+  ========================================================= */
+
   toggleLockSelected() {
+
 
     const object =
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
     this.toggleObjectLock(
@@ -10022,13 +12761,18 @@ export class PosterEditor {
 
     this.canvas.discardActiveObject();
 
+
     this.canvas.requestRenderAll();
+
 
     this.renderLayers();
 
+
     this.updateSelectionInspector();
 
+
     this.commit();
+
   }
 
 
@@ -10037,8 +12781,21 @@ export class PosterEditor {
     object
   ) {
 
+
+    const currentlyLocked =
+
+      object.selectable ===
+        false ||
+
+      object.lockMovementX ===
+        true ||
+
+      object.lockMovementY ===
+        true;
+
+
     const locking =
-      !object.lockMovementX;
+      !currentlyLocked;
 
 
     object.lockMovementX =
@@ -10071,17 +12828,19 @@ export class PosterEditor {
 
     object.evented =
       !locking;
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      SNAP
-  ====================================================== */
+  ========================================================= */
 
   applyLiveSnap(
     object
   ) {
+
 
     if (
       !this.state.snap ||
@@ -10090,7 +12849,9 @@ export class PosterEditor {
       object.isBackground ||
       object.isUi
     ) {
+
       return;
+
     }
 
 
@@ -10120,9 +12881,11 @@ export class PosterEditor {
       tolerance
     ) {
 
+
       object.left +=
         centerX -
         center.x;
+
     }
 
 
@@ -10134,44 +12897,62 @@ export class PosterEditor {
       tolerance
     ) {
 
+
       object.top +=
         centerY -
         center.y;
+
     }
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      HISTORY
-  ====================================================== */
+  ========================================================= */
 
   getSnapshot() {
+
 
     const canvas =
       this.canvas.toJSON(
         [
 
           "id",
+
           "name",
+
           "typeLabel",
+
           "editorType",
+
           "role",
 
           "isBrand",
+
           "isBackground",
+
           "isUi",
+
           "isTemplateDecoration",
 
           "filterBrightness",
+
           "filterContrast",
+
           "filterSaturation",
+
           "filterBlur",
+
           "filterGrayscale",
+
           "filterSepia",
 
           "removeColorEnabled",
+
           "removeColor",
+
           "removeColorDistance"
 
         ]
@@ -10181,7 +12962,7 @@ export class PosterEditor {
     return JSON.stringify({
 
       version:
-        3,
+        4,
 
       state:
         this.state,
@@ -10189,16 +12970,20 @@ export class PosterEditor {
       canvas
 
     });
+
   }
 
 
 
   pushHistory() {
 
+
     if (
       this.restoring
     ) {
+
       return;
+
     }
 
 
@@ -10214,14 +12999,18 @@ export class PosterEditor {
     ) {
 
       return;
+
     }
 
 
     this.history =
       this.history.slice(
+
         0,
+
         this.historyIndex +
         1
+
       );
 
 
@@ -10235,39 +13024,57 @@ export class PosterEditor {
       HISTORY_LIMIT
     ) {
 
+
       this.history.shift();
+
+
+      this.historyIndex =
+        this.history.length -
+        1;
+
 
     } else {
 
+
       this.historyIndex++;
+
     }
+
   }
 
 
 
   commit() {
 
+
     if (
       this.restoring
     ) {
+
       return;
+
     }
 
 
     this.pushHistory();
 
+
     this.saveProject();
+
   }
 
 
 
   async undo() {
 
+
     if (
       this.historyIndex <=
       0
     ) {
+
       return;
+
     }
 
 
@@ -10281,18 +13088,22 @@ export class PosterEditor {
       ]
 
     );
+
   }
 
 
 
   async redo() {
 
+
     if (
       this.historyIndex >=
       this.history.length -
       1
     ) {
+
       return;
+
     }
 
 
@@ -10306,6 +13117,7 @@ export class PosterEditor {
       ]
 
     );
+
   }
 
 
@@ -10314,11 +13126,13 @@ export class PosterEditor {
     snapshot
   ) {
 
+
     this.restoring =
       true;
 
 
     try {
+
 
       const parsed =
         JSON.parse(
@@ -10363,6 +13177,7 @@ export class PosterEditor {
         .forEach(
           object => {
 
+
             if (
               object.editorType ===
               "image"
@@ -10371,56 +13186,71 @@ export class PosterEditor {
               this.applyImageFilters(
                 object
               );
+
             }
+
           }
         );
 
 
       this.ensureSafeZone();
 
+
       this.updateSafeZone();
+
 
       this.ensureBrandTop();
 
+
       this.syncBrandInputs();
+
 
       this.applyZoom();
 
+
       this.canvas.discardActiveObject();
+
 
       this.canvas.requestRenderAll();
 
+
       this.renderTemplates();
+
 
       this.renderLayers();
 
+
       this.updateSelectionInspector();
+
 
     } finally {
 
+
       this.restoring =
         false;
+
     }
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      AUTOSAVE
-  ====================================================== */
+  ========================================================= */
 
   saveProject() {
 
+
     try {
+
 
       const snapshot =
         this.getSnapshot();
 
 
       /*
-       * Browser localStorage is intentionally only used
-       * for smaller projects. Large uploaded photography
-       * can exceed browser storage limits.
+       * Prevent localStorage quota corruption.
        */
 
       if (
@@ -10428,43 +13258,55 @@ export class PosterEditor {
         4_200_000
       ) {
 
+
         localStorage.setItem(
 
-          "fwcwl-poster-pro-v3",
+          "fwcwl-poster-pro-v4",
 
           snapshot
 
         );
+
       }
+
 
     } catch (
       error
     ) {
 
+
       console.warn(
+
         "Poster autosave skipped:",
+
         error
+
       );
+
     }
+
   }
 
 
 
   async restoreAutosave() {
 
+
     const saved =
       localStorage.getItem(
-        "fwcwl-poster-pro-v3"
+        "fwcwl-poster-pro-v4"
       );
 
 
     if (!saved) {
 
       return false;
+
     }
 
 
     try {
+
 
       await this.restoreSnapshot(
         saved
@@ -10473,45 +13315,60 @@ export class PosterEditor {
 
       return true;
 
+
     } catch (
       error
     ) {
 
+
       console.warn(
-        "Saved poster could not be restored:",
+
+        "Poster autosave could not be restored:",
+
         error
+
       );
 
 
       localStorage.removeItem(
-        "fwcwl-poster-pro-v3"
+        "fwcwl-poster-pro-v4"
       );
 
 
       return false;
+
     }
+
   }
 
 
 
-  /* =====================================================
+  /* =========================================================
      KEYBOARD
-  ====================================================== */
+  ========================================================= */
 
   handleKeyboard(
     event
   ) {
 
+
     const editing =
+
       event.target instanceof
         HTMLInputElement ||
+
       event.target instanceof
         HTMLTextAreaElement ||
+
       event.target instanceof
         HTMLSelectElement;
 
 
-    if (editing) return;
+    if (editing) {
+
+      return;
+
+    }
 
 
     const command =
@@ -10519,19 +13376,33 @@ export class PosterEditor {
       event.metaKey;
 
 
+
+    /* =====================================================
+       DUPLICATE
+    ====================================================== */
+
     if (
       command &&
       event.key.toLowerCase() ===
       "d"
     ) {
 
+
       event.preventDefault();
+
 
       this.duplicateSelected();
 
+
       return;
+
     }
 
+
+
+    /* =====================================================
+       DELETE
+    ====================================================== */
 
     if (
       event.key ===
@@ -10540,11 +13411,15 @@ export class PosterEditor {
         "Backspace"
     ) {
 
+
       event.preventDefault();
+
 
       this.deleteSelected();
 
+
       return;
+
     }
 
 
@@ -10552,7 +13427,11 @@ export class PosterEditor {
       this.getEditableSelection();
 
 
-    if (!object) return;
+    if (!object) {
+
+      return;
+
+    }
 
 
     const step =
@@ -10570,12 +13449,14 @@ export class PosterEditor {
       "ArrowLeft"
     ) {
 
+
       object.left -=
         step;
 
 
       changed =
         true;
+
     }
 
 
@@ -10584,12 +13465,14 @@ export class PosterEditor {
       "ArrowRight"
     ) {
 
+
       object.left +=
         step;
 
 
       changed =
         true;
+
     }
 
 
@@ -10598,12 +13481,14 @@ export class PosterEditor {
       "ArrowUp"
     ) {
 
+
       object.top -=
         step;
 
 
       changed =
         true;
+
     }
 
 
@@ -10612,18 +13497,22 @@ export class PosterEditor {
       "ArrowDown"
     ) {
 
+
       object.top +=
         step;
 
 
       changed =
         true;
+
     }
 
 
     if (changed) {
 
+
       event.preventDefault();
+
 
       this.applyLiveSnap(
         object
@@ -10632,23 +13521,292 @@ export class PosterEditor {
 
       object.setCoords();
 
+
       this.canvas.requestRenderAll();
 
+
       this.updateTransformControls();
+
     }
+
   }
 
 
 
-  /* =====================================================
-     OBJECT HELPERS
-  ====================================================== */
+  /* =========================================================
+     PREVIEW CACHE
+  ========================================================= */
+
+  clearTemplatePreviewCache() {
+
+
+    this.templatePreviewCache.clear();
+
+
+    this.templatePreviewRenderToken++;
+
+
+    if (
+      this.templatePreviewObserver
+    ) {
+
+
+      this.templatePreviewObserver.disconnect();
+
+
+      this.templatePreviewObserver =
+        null;
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     PREVIEW CSS
+  ========================================================= */
+
+  ensureExactTemplatePreviewStyles() {
+
+
+    if (
+      document.getElementById(
+        "fwcwlExactPreviewStyles"
+      )
+    ) {
+
+      return;
+
+    }
+
+
+    const style =
+      document.createElement(
+        "style"
+      );
+
+
+    style.id =
+      "fwcwlExactPreviewStyles";
+
+
+    style.textContent = `
+
+      /*
+       * Exact previews are real template snapshots.
+       * Disable old fake preview decoration.
+       */
+
+      .poster-template-art.exact-template-preview::before,
+      .poster-template-art.exact-template-preview::after {
+        display: none !important;
+        content: none !important;
+      }
+
+
+      .poster-template-art.exact-template-preview {
+        position: relative !important;
+
+        display: block !important;
+
+        width: 100% !important;
+
+        height: auto !important;
+
+        min-height: 0 !important;
+
+        overflow: hidden !important;
+
+        background-color: #08090b !important;
+
+        background-size: contain !important;
+
+        background-position: center !important;
+
+        background-repeat: no-repeat !important;
+
+        border-radius: inherit;
+
+        box-shadow:
+          inset 0 0 0 1px
+          rgba(255,255,255,.04);
+
+        transition:
+          transform .18s ease,
+          box-shadow .18s ease,
+          opacity .18s ease;
+      }
+
+
+      .poster-template-art.exact-template-preview.preview-ready {
+        background-color: #050607 !important;
+      }
+
+
+      .exact-preview-loading {
+        position: absolute !important;
+
+        inset: 0 !important;
+
+        z-index: 30 !important;
+
+        display: flex !important;
+
+        flex-direction: column !important;
+
+        align-items: center !important;
+
+        justify-content: center !important;
+
+        gap: 7px !important;
+
+        background:
+          linear-gradient(
+            145deg,
+            #111319,
+            #08090c
+          ) !important;
+      }
+
+
+      .exact-preview-loading > span {
+        position: relative !important;
+
+        left: auto !important;
+
+        right: auto !important;
+
+        top: auto !important;
+
+        bottom: auto !important;
+
+        width: 18px !important;
+
+        height: 18px !important;
+
+        border:
+          2px solid
+          rgba(255,255,255,.08) !important;
+
+        border-top-color:
+          #f0c34c !important;
+
+        border-radius:
+          50% !important;
+
+        background:
+          transparent !important;
+
+        animation:
+          fwcwlExactPreviewSpin
+          .75s
+          linear
+          infinite;
+      }
+
+
+      .exact-preview-loading small {
+        position: static !important;
+
+        margin: 0 !important;
+
+        padding: 0 !important;
+
+        color: #5f626a !important;
+
+        background: transparent !important;
+
+        font-size: 5px !important;
+
+        font-weight: 800 !important;
+
+        line-height: 1 !important;
+
+        letter-spacing: .09em !important;
+
+        text-transform: uppercase !important;
+      }
+
+
+      .poster-template-name {
+        display: flex;
+
+        align-items: center;
+
+        justify-content: space-between;
+
+        gap: 6px;
+      }
+
+
+      .poster-template-name > span {
+        min-width: 0;
+
+        overflow: hidden;
+
+        text-overflow: ellipsis;
+
+        white-space: nowrap;
+      }
+
+
+      .poster-template-name > small {
+        flex: 0 0 auto;
+
+        color: #4d5058;
+
+        font-size: 4.5px;
+
+        font-weight: 800;
+
+        letter-spacing: .06em;
+      }
+
+
+      .poster-template-card.active
+      .poster-template-art.exact-template-preview {
+        box-shadow:
+          0 0 0 1px #f0c34c,
+          0 0 24px rgba(240,195,76,.12);
+      }
+
+
+      .poster-template-card:hover
+      .poster-template-art.exact-template-preview {
+        transform: translateY(-1px);
+      }
+
+
+      @keyframes fwcwlExactPreviewSpin {
+
+        to {
+          transform: rotate(360deg);
+        }
+
+      }
+
+    `;
+
+
+    document.head.appendChild(
+      style
+    );
+
+  }
+
+
+
+  /* =========================================================
+     GENERIC OBJECT META
+  ========================================================= */
 
   assignObjectMeta(
     object,
     name,
     editorType
   ) {
+
 
     object.id =
       crypto.randomUUID();
@@ -10664,6 +13822,7 @@ export class PosterEditor {
 
     object.editorType =
       editorType;
+
   }
 
 
@@ -10672,6 +13831,7 @@ export class PosterEditor {
     id
   ) {
 
+
     return this.canvas
       .getObjects()
       .find(
@@ -10679,120 +13839,88 @@ export class PosterEditor {
           object.id ===
           id
       );
+
   }
 
 
 
-  /* =====================================================
-     BRAND INPUT SYNC
-  ====================================================== */
+  /* =========================================================
+     BRAND UI SYNC
+  ========================================================= */
 
   syncBrandInputs() {
 
-    const brand =
-      document.getElementById(
-        "posterBrandName"
-      );
+
+    this.setInputValue(
+
+      "posterBrandName",
+
+      this.state.brandName
+
+    );
 
 
-    if (brand) {
+    this.setInputValue(
 
-      brand.value =
-        this.state
-          .brandName;
-    }
+      "posterAccentColor",
 
+      this.state.accent
 
-    const accent =
-      document.getElementById(
-        "posterAccentColor"
-      );
+    );
 
 
-    const accentText =
-      document.getElementById(
-        "posterAccentColorText"
-      );
+    this.setInputValue(
+
+      "posterAccentColorText",
+
+      this.state.accent
+
+    );
 
 
-    if (accent) {
+    this.setInputValue(
 
-      accent.value =
-        this.state
-          .accent;
-    }
+      "posterTextColor",
 
+      this.state.textColor
 
-    if (accentText) {
-
-      accentText.value =
-        this.state
-          .accent;
-    }
+    );
 
 
-    const text =
-      document.getElementById(
-        "posterTextColor"
-      );
+    this.setInputValue(
+
+      "posterTextColorText",
+
+      this.state.textColor
+
+    );
 
 
-    const textString =
-      document.getElementById(
-        "posterTextColorText"
-      );
+    this.setInputValue(
+
+      "proBackgroundAngle",
+
+      this.state.backgroundAngle
+
+    );
 
 
-    if (text) {
+    this.setText(
 
-      text.value =
-        this.state
-          .textColor;
-    }
+      "proBackgroundAngleValue",
 
+      `${this.state.backgroundAngle}°`
 
-    if (textString) {
-
-      textString.value =
-        this.state
-          .textColor;
-    }
+    );
 
 
-    const angle =
-      document.getElementById(
-        "proBackgroundAngle"
-      );
+    this.setInputValue(
 
+      "posterCanvasSize",
 
-    if (angle) {
+      this.state.canvasSize
 
-      angle.value =
-        this.state
-          .backgroundAngle;
-    }
-
-
-    const angleLabel =
-      document.getElementById(
-        "proBackgroundAngleValue"
-      );
-
-
-    if (angleLabel) {
-
-      angleLabel.textContent =
-        `${this.state.backgroundAngle}°`;
-    }
-
-
-    document
-      .getElementById(
-        "posterCanvasSize"
-      )
-      .value =
-      this.state
-        .canvasSize;
+    );
 
 
     document
@@ -10818,17 +13946,69 @@ export class PosterEditor {
 
 
     this.syncBackgroundInputs();
+
   }
 
 
 
-  /* =====================================================
-     FILE / COLOR UTILITIES
-  ====================================================== */
+  /* =========================================================
+     DOM HELPERS
+  ========================================================= */
+
+  setInputValue(
+    id,
+    value
+  ) {
+
+
+    const input =
+      document.getElementById(
+        id
+      );
+
+
+    if (input) {
+
+      input.value =
+        value;
+
+    }
+
+  }
+
+
+
+  setText(
+    id,
+    value
+  ) {
+
+
+    const element =
+      document.getElementById(
+        id
+      );
+
+
+    if (element) {
+
+      element.textContent =
+        value;
+
+    }
+
+  }
+
+
+
+  /* =========================================================
+     FILE HELPERS
+  ========================================================= */
 
   fileToDataUrl(
     file
   ) {
+
 
     return new Promise(
       (
@@ -10836,15 +14016,19 @@ export class PosterEditor {
         reject
       ) => {
 
+
         const reader =
           new FileReader();
 
 
         reader.onload =
-          () =>
+          () => {
+
             resolve(
               reader.result
             );
+
+          };
 
 
         reader.onerror =
@@ -10854,15 +14038,22 @@ export class PosterEditor {
         reader.readAsDataURL(
           file
         );
+
       }
     );
+
   }
 
 
 
+  /* =========================================================
+     COLOR HELPERS
+  ========================================================= */
+
   normalizeColor(
     value
   ) {
+
 
     let color =
       String(
@@ -10877,8 +14068,10 @@ export class PosterEditor {
       )
     ) {
 
+
       color =
         `#${color}`;
+
     }
 
 
@@ -10888,11 +14081,14 @@ export class PosterEditor {
       )
     ) {
 
+
       return null;
+
     }
 
 
     return color.toUpperCase();
+
   }
 
 
@@ -10902,12 +14098,14 @@ export class PosterEditor {
     fallback
   ) {
 
+
     if (
       typeof value !==
       "string"
     ) {
 
       return fallback;
+
     }
 
 
@@ -10917,6 +14115,7 @@ export class PosterEditor {
       ) ||
       fallback
     );
+
   }
 
 
@@ -10926,6 +14125,7 @@ export class PosterEditor {
     alpha
   ) {
 
+
     const normalized =
       this.normalizeColor(
         hex
@@ -10934,7 +14134,9 @@ export class PosterEditor {
 
     if (!normalized) {
 
+
       return `rgba(255,255,255,${alpha})`;
+
     }
 
 
@@ -10975,13 +14177,19 @@ export class PosterEditor {
 
 
     return `rgba(${red},${green},${blue},${alpha})`;
+
   }
 
 
 
+  /* =========================================================
+     HTML ESCAPE
+  ========================================================= */
+
   escapeHtml(
     value
   ) {
+
 
     return String(
       value ??
@@ -11003,6 +14211,8 @@ export class PosterEditor {
         /"/g,
         "&quot;"
       );
+
   }
+
 
 }
