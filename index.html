@@ -1,9 +1,6 @@
 <!DOCTYPE html>
-
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8" />
 
   <meta
@@ -11,16 +8,24 @@
     content="width=device-width, initial-scale=1.0"
   />
 
+  <meta
+    name="theme-color"
+    content="#080a0d"
+  />
+
+  <meta
+    name="description"
+    content="FWCWL Creative Studio - Premium cricket poster and video editor."
+  />
+
   <title>
     FWCWL Creative Studio
   </title>
 
 
-  <meta
-    name="description"
-    content="Professional cricket poster and video creative studio for FWCWL."
-  />
-
+  <!-- =========================================================
+       GOOGLE FONTS
+  ========================================================== -->
 
   <link
     rel="preconnect"
@@ -33,2411 +38,961 @@
     crossorigin
   />
 
-
   <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet"
   />
 
+
+  <!-- =========================================================
+       APP STYLES
+  ========================================================== -->
 
   <link
     rel="stylesheet"
     href="styles.css"
   />
 
-
   <link
     rel="stylesheet"
-    href="poster-pro.css"
+    href="video-editor.css"
   />
-
 </head>
 
 
 <body>
 
+  <!-- =========================================================
+       APP SHELL
+  ========================================================== -->
 
-<div class="app-shell">
-
-
-  <!-- =====================================================
-       TOP BAR
-  ====================================================== -->
-
-  <header class="topbar">
+  <div class="app-shell">
 
 
-    <div class="brand">
+    <!-- =======================================================
+         GLOBAL HEADER
+    ======================================================== -->
+
+    <header class="topbar">
 
 
-      <div class="brand-logo-wrap">
+      <!-- BRAND -->
 
-        <img
-          src="assets/fwcwl-logo.jpeg"
-          alt="FWCWL"
-        />
+      <div class="brand">
 
-      </div>
+        <div class="brand-mark">
 
+          <img
+            src="assets/fwcwl-logo.jpeg"
+            alt="FWCWL"
+          />
 
-      <div class="brand-copy">
-
-        <strong>
-          FWCWL
-        </strong>
-
-        <span>
-          CREATIVE STUDIO
-        </span>
-
-      </div>
-
-    </div>
+        </div>
 
 
+        <div class="brand-copy">
 
-    <!-- CENTER -->
+          <div class="brand-title">
+            FWCWL
+          </div>
 
-    <div class="topbar-center">
+          <div class="brand-subtitle">
+            CREATIVE STUDIO
+          </div>
 
-
-      <div class="project-chip">
-
-        <span class="project-status-dot"></span>
-
-        <input
-          id="projectName"
-          type="text"
-          value="FWCWL Campaign"
-          maxlength="80"
-          aria-label="Project name"
-        />
+        </div>
 
       </div>
 
 
-      <div class="studio-switch">
+      <!-- PROJECT -->
+
+      <div class="topbar-center">
+
+        <div class="project-name-wrap">
+
+          <span class="project-status-dot"></span>
+
+          <input
+            id="projectName"
+            type="text"
+            value="FWCWL Campaign"
+            aria-label="Project name"
+            autocomplete="off"
+          />
+
+        </div>
+
+      </div>
+
+
+      <!-- MODE SWITCH -->
+
+      <div class="topbar-actions">
+
+
+        <div
+          class="studio-mode-switch"
+          role="group"
+          aria-label="Editor mode"
+        >
+
+          <button
+            id="posterModeBtn"
+            class="studio-mode-button active"
+            data-mode="poster"
+            type="button"
+          >
+
+            <span class="mode-icon">
+              ▧
+            </span>
+
+            <span>
+              Poster
+            </span>
+
+          </button>
+
+
+          <button
+            id="videoModeBtn"
+            class="studio-mode-button"
+            data-mode="video"
+            type="button"
+          >
+
+            <span class="mode-icon">
+              ▷
+            </span>
+
+            <span>
+              Video
+            </span>
+
+          </button>
+
+        </div>
+
+
+        <div class="topbar-separator"></div>
 
 
         <button
-          id="posterModeBtn"
-          class="studio-mode-btn active"
+          id="posterUndoBtn"
+          class="icon-button"
           type="button"
+          title="Undo"
+          aria-label="Undo"
         >
-
-          <svg viewBox="0 0 24 24">
-
-            <rect
-              x="4"
-              y="4"
-              width="16"
-              height="16"
-              rx="2"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            />
-
-            <circle
-              cx="9"
-              cy="9"
-              r="1.3"
-              fill="currentColor"
-            />
-
-            <path
-              d="m6 17 4-4 3 3 2-2 3 3"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.7"
-            />
-
-          </svg>
-
-          Poster
-
+          ↶
         </button>
 
 
         <button
-          id="videoModeBtn"
-          class="studio-mode-btn"
+          id="posterRedoBtn"
+          class="icon-button"
           type="button"
+          title="Redo"
+          aria-label="Redo"
         >
-
-          <svg viewBox="0 0 24 24">
-
-            <rect
-              x="3"
-              y="5"
-              width="18"
-              height="14"
-              rx="2"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-            />
-
-            <path
-              d="m10 9 5 3-5 3z"
-              fill="currentColor"
-            />
-
-          </svg>
-
-          Video
-
+          ↷
         </button>
-
-      </div>
-
-    </div>
-
-
-
-    <!-- ACTIONS -->
-
-    <div class="topbar-actions">
-
-
-      <button
-        id="undoGlobalBtn"
-        class="top-icon-btn"
-        type="button"
-        title="Undo · Ctrl/Cmd + Z"
-      >
-        ↶
-      </button>
-
-
-      <button
-        id="redoGlobalBtn"
-        class="top-icon-btn"
-        type="button"
-        title="Redo · Ctrl/Cmd + Shift + Z"
-      >
-        ↷
-      </button>
-
-
-      <button
-        id="posterResetBtn"
-        class="top-ghost poster-only-control"
-        type="button"
-      >
-        Reset
-      </button>
-
-
-      <button
-        id="posterExportTopBtn"
-        class="top-primary poster-only-control"
-        type="button"
-      >
-        Export Poster
-      </button>
-
-
-      <button
-        id="videoExportTopBtn"
-        class="top-primary video-only-control hidden"
-        type="button"
-      >
-        Export Video
-      </button>
-
-    </div>
-
-  </header>
-
-
-
-  <!-- =====================================================
-       MAIN
-  ====================================================== -->
-
-  <main class="main-layout">
-
-
-    <!-- ===================================================
-         LEFT SIDEBAR
-    ==================================================== -->
-
-    <aside class="left-sidebar">
-
-
-      <!-- =================================================
-           POSTER LEFT
-      ================================================== -->
-
-      <div
-        id="posterLeftPanel"
-        class="left-mode-panel"
-      >
-
-
-        <div class="left-tabs">
-
-
-          <button
-            class="left-tab active"
-            data-poster-tab="templates"
-            type="button"
-          >
-            Templates
-          </button>
-
-
-          <button
-            class="left-tab"
-            data-poster-tab="media"
-            type="button"
-          >
-            Media
-          </button>
-
-
-          <button
-            class="left-tab"
-            data-poster-tab="brand"
-            type="button"
-          >
-            Brand
-          </button>
-
-        </div>
-
-
-
-        <!-- ===============================================
-             TEMPLATES
-        ================================================ -->
-
-        <section
-          id="posterTemplatesPanel"
-          class="left-tab-panel active"
-        >
-
-
-          <div class="panel-title-row">
-
-
-            <div>
-
-              <div class="panel-eyebrow">
-                FWCWL DESIGN LIBRARY
-              </div>
-
-              <h2>
-                Cricket Templates
-              </h2>
-
-              <p>
-                Match graphics, rustic designs, layered editorials and premium cricket artwork.
-              </p>
-
-            </div>
-
-
-            <span
-              id="posterTemplateCount"
-              class="count-pill"
-            >
-              —
-            </span>
-
-          </div>
-
-
-
-          <!-- SEARCH -->
-
-          <div class="search-box">
-
-            <span>
-              ⌕
-            </span>
-
-            <input
-              id="posterTemplateSearch"
-              type="text"
-              placeholder="Search match day, vintage, grunge..."
-              autocomplete="off"
-            />
-
-          </div>
-
-
-
-          <!-- FILTERS -->
-
-          <div
-            id="posterTemplateFilters"
-            class="filter-row"
-          >
-
-
-            <button
-              class="filter-chip active"
-              data-filter="all"
-              type="button"
-            >
-              All
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="match"
-              type="button"
-            >
-              Match
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="team"
-              type="button"
-            >
-              Team
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="result"
-              type="button"
-            >
-              Results
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="event"
-              type="button"
-            >
-              Events
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="social"
-              type="button"
-            >
-              Social
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="rustic"
-              data-collection-filter="rustic"
-              type="button"
-            >
-              Rustic
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="layered"
-              data-collection-filter="layered"
-              type="button"
-            >
-              Layered
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="vintage"
-              data-collection-filter="vintage"
-              type="button"
-            >
-              Vintage
-            </button>
-
-
-            <button
-              class="filter-chip"
-              data-filter="editorial"
-              data-collection-filter="editorial"
-              type="button"
-            >
-              Editorial
-            </button>
-
-          </div>
-
-
-
-          <!-- TEMPLATE GRID -->
-
-          <div
-            id="posterTemplateGrid"
-            class="poster-template-grid"
-          ></div>
-
-        </section>
-
-
-
-        <!-- ===============================================
-             MEDIA
-             PosterEditor fills this dynamically
-        ================================================ -->
-
-        <section
-          id="posterMediaPanel"
-          class="left-tab-panel"
-        ></section>
-
-
-
-        <!-- ===============================================
-             BRAND
-             PosterEditor fills this dynamically
-        ================================================ -->
-
-        <section
-          id="posterBrandPanel"
-          class="left-tab-panel"
-        ></section>
-
-      </div>
-
-
-
-      <!-- =================================================
-           VIDEO LEFT
-      ================================================== -->
-
-      <div
-        id="videoLeftPanel"
-        class="left-mode-panel hidden"
-      >
-
-
-        <div class="left-tabs video-tabs">
-
-
-          <button
-            class="left-tab active"
-            data-video-tab="media"
-            type="button"
-          >
-            Media
-          </button>
-
-
-          <button
-            class="left-tab"
-            data-video-tab="templates"
-            type="button"
-          >
-            Cricket
-          </button>
-
-
-          <button
-            class="left-tab"
-            data-video-tab="text"
-            type="button"
-          >
-            Text
-          </button>
-
-        </div>
-
-
-
-        <!-- VIDEO MEDIA -->
-
-        <section
-          id="videoMediaPanel"
-          class="left-tab-panel active"
-        >
-
-
-          <div class="panel-title-row">
-
-
-            <div>
-
-              <div class="panel-eyebrow">
-                ASSET LIBRARY
-              </div>
-
-              <h2>
-                Your Media
-              </h2>
-
-              <p>
-                Upload match videos, player photography and music.
-              </p>
-
-            </div>
-
-          </div>
-
-
-
-          <div class="media-upload-grid">
-
-
-            <label class="mini-upload">
-
-              <input
-                id="videoUploadInput"
-                type="file"
-                accept="video/mp4,video/webm,video/quicktime"
-                multiple
-                hidden
-              />
-
-              <span class="media-upload-icon">
-                ▶
-              </span>
-
-              <strong>
-                Video
-              </strong>
-
-            </label>
-
-
-
-            <label class="mini-upload">
-
-              <input
-                id="videoImageUploadInput"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                multiple
-                hidden
-              />
-
-              <span class="media-upload-icon">
-                ▧
-              </span>
-
-              <strong>
-                Photo
-              </strong>
-
-            </label>
-
-
-
-            <label class="mini-upload">
-
-              <input
-                id="videoAudioUploadInput"
-                type="file"
-                accept="audio/*"
-                hidden
-              />
-
-              <span class="media-upload-icon">
-                ♫
-              </span>
-
-              <strong>
-                Audio
-              </strong>
-
-            </label>
-
-          </div>
-
-
-
-          <div class="section-label-row">
-
-            <span>
-              PROJECT MEDIA
-            </span>
-
-            <small id="videoMediaCount">
-              0 items
-            </small>
-
-          </div>
-
-
-
-          <div
-            id="videoMediaLibrary"
-            class="video-media-library"
-          >
-
-            <div class="empty-state">
-
-              <div class="empty-state-icon">
-                ▶
-              </div>
-
-              <strong>
-                No media yet
-              </strong>
-
-              <span>
-                Upload match clips, player photos or music.
-              </span>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-
-        <!-- VIDEO PRESETS -->
-
-        <section
-          id="videoTemplatesPanel"
-          class="left-tab-panel"
-        >
-
-
-          <div class="panel-title-row">
-
-
-            <div>
-
-              <div class="panel-eyebrow">
-                CRICKET GRAPHICS
-              </div>
-
-              <h2>
-                Quick Presets
-              </h2>
-
-              <p>
-                Add broadcast-style cricket graphics instantly.
-              </p>
-
-            </div>
-
-          </div>
-
-
-          <div
-            id="videoPresetGrid"
-            class="video-preset-grid"
-          ></div>
-
-        </section>
-
-
-
-        <!-- VIDEO TEXT -->
-
-        <section
-          id="videoTextPanel"
-          class="left-tab-panel"
-        >
-
-
-          <div class="panel-title-row">
-
-            <div>
-
-              <div class="panel-eyebrow">
-                TYPOGRAPHY
-              </div>
-
-              <h2>
-                Text Graphics
-              </h2>
-
-              <p>
-                Add match titles, players and score graphics.
-              </p>
-
-            </div>
-
-          </div>
-
-
-
-          <button
-            id="videoAddMatchTitleBtn"
-            class="text-preset-card"
-            type="button"
-          >
-
-            <div class="text-card-icon">
-              T
-            </div>
-
-
-            <div>
-
-              <span class="text-preview-large">
-                MATCH DAY
-              </span>
-
-              <small>
-                Hero title
-              </small>
-
-            </div>
-
-          </button>
-
-
-
-          <button
-            id="videoAddPlayerTitleBtn"
-            class="text-preset-card"
-            type="button"
-          >
-
-            <div class="text-card-icon">
-              P
-            </div>
-
-
-            <div>
-
-              <span class="text-preview-player">
-                PLAYER NAME
-              </span>
-
-              <small>
-                Lower third
-              </small>
-
-            </div>
-
-          </button>
-
-
-
-          <button
-            id="videoAddScoreTitleBtn"
-            class="text-preset-card"
-            type="button"
-          >
-
-            <div class="text-card-icon">
-              #
-            </div>
-
-
-            <div>
-
-              <span class="text-preview-score">
-                186/5
-              </span>
-
-              <small>
-                Score graphic
-              </small>
-
-            </div>
-
-          </button>
-
-        </section>
-
-      </div>
-
-    </aside>
-
-
-
-    <!-- ===================================================
-         CENTER WORKSPACE
-    ==================================================== -->
-
-    <section class="center-workspace">
-
-
-      <!-- =================================================
-           POSTER WORKSPACE
-      ================================================== -->
-
-      <div
-        id="posterWorkspace"
-        class="studio-workspace"
-      >
-
-
-        <!-- TOOLBAR -->
-
-        <div class="workspace-toolbar">
-
-
-          <div class="toolbar-group">
-
-            <div class="toolbar-label">
-              FORMAT
-            </div>
-
-
-            <select id="posterCanvasSize">
-
-              <option value="portrait">
-                Instagram Portrait · 1080 × 1350
-              </option>
-
-              <option value="square">
-                Instagram Square · 1080 × 1080
-              </option>
-
-              <option value="story">
-                Story / Reel Cover · 1080 × 1920
-              </option>
-
-            </select>
-
-          </div>
-
-
-
-          <div class="toolbar-group">
-
-
-            <button
-              id="posterSafeZoneBtn"
-              class="tool-btn"
-              type="button"
-              title="Instagram safe area"
-            >
-              Safe Area
-            </button>
-
-
-            <button
-              id="posterSnapBtn"
-              class="tool-btn active"
-              type="button"
-              title="Snap objects to canvas center"
-            >
-              Snap
-            </button>
-
-
-            <button
-              id="posterFitBtn"
-              class="tool-btn"
-              type="button"
-              title="Fit poster in workspace"
-            >
-              Fit
-            </button>
-
-
-            <div class="toolbar-divider"></div>
-
-
-            <button
-              id="posterZoomOutBtn"
-              class="icon-tool"
-              type="button"
-              title="Zoom out"
-            >
-              −
-            </button>
-
-
-            <span
-              id="posterZoomValue"
-              class="zoom-value"
-            >
-              50%
-            </span>
-
-
-            <button
-              id="posterZoomInBtn"
-              class="icon-tool"
-              type="button"
-              title="Zoom in"
-            >
-              +
-            </button>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- POSTER STAGE -->
-
-        <div class="poster-stage-area">
-
-
-          <div class="canvas-shadow-wrap">
-
-            <canvas
-              id="posterCanvas"
-              width="1080"
-              height="1350"
-            ></canvas>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- STATUS -->
-
-        <div class="workspace-statusbar">
-
-          <span>
-            <i class="online-dot"></i>
-            Editable layer canvas
-          </span>
-
-
-          <span>
-            Drag • Resize • Rotate • Double-click text to edit
-          </span>
-
-
-          <span id="posterDimensions">
-            1080 × 1350
-          </span>
-
-        </div>
-
-      </div>
-
-
-
-      <!-- =================================================
-           VIDEO WORKSPACE
-      ================================================== -->
-
-      <div
-        id="videoWorkspace"
-        class="studio-workspace hidden"
-      >
-
-
-        <!-- VIDEO TOOLBAR -->
-
-        <div class="workspace-toolbar">
-
-
-          <div class="toolbar-group">
-
-            <div class="toolbar-label">
-              FORMAT
-            </div>
-
-
-            <select id="videoAspectSelect">
-
-              <option value="reel">
-                Reel / Story · 9:16
-              </option>
-
-              <option value="portrait">
-                Instagram Portrait · 4:5
-              </option>
-
-              <option value="square">
-                Instagram Square · 1:1
-              </option>
-
-              <option value="landscape">
-                Landscape · 16:9
-              </option>
-
-            </select>
-
-          </div>
-
-
-
-          <div class="toolbar-group">
-
-
-            <button
-              id="videoSplitBtn"
-              class="tool-btn"
-              type="button"
-            >
-              ✂ Split
-            </button>
-
-
-            <button
-              id="videoDuplicateBtn"
-              class="tool-btn"
-              type="button"
-            >
-              Duplicate
-            </button>
-
-
-            <button
-              id="videoDeleteBtn"
-              class="tool-btn danger"
-              type="button"
-            >
-              Delete
-            </button>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- VIDEO PREVIEW -->
-
-        <div class="video-preview-area">
-
-
-          <div class="video-stage-shell">
-
-
-            <div class="video-stage-top">
-
-              <span>
-                PROGRAM
-              </span>
-
-
-              <div>
-
-                <i></i>
-
-                LIVE PREVIEW
-
-              </div>
-
-            </div>
-
-
-
-            <div class="video-preview-shell">
-
-
-              <canvas
-                id="videoCanvas"
-                width="1080"
-                height="1920"
-              ></canvas>
-
-
-              <div
-                id="videoEmptyPreview"
-                class="video-empty-preview"
-              >
-
-                <div class="video-empty-icon">
-                  ▶
-                </div>
-
-                <strong>
-                  Build your first FWCWL edit
-                </strong>
-
-                <span>
-                  Upload a clip or add a cricket preset.
-                </span>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- PLAYBACK -->
-
-        <div class="playback-bar">
-
-
-          <div class="playback-group">
-
-
-            <button
-              id="videoSkipBackBtn"
-              class="playback-icon"
-              type="button"
-            >
-              −1s
-            </button>
-
-
-            <button
-              id="videoPlayBtn"
-              class="play-button"
-              type="button"
-            >
-              ▶
-            </button>
-
-
-            <button
-              id="videoSkipForwardBtn"
-              class="playback-icon"
-              type="button"
-            >
-              +1s
-            </button>
-
-          </div>
-
-
-          <span
-            id="videoCurrentTime"
-            class="timecode primary-time"
-          >
-            00:00.0
-          </span>
-
-
-          <div class="playback-progress-wrap">
-
-            <input
-              id="videoSeekRange"
-              type="range"
-              min="0"
-              max="1000"
-              value="0"
-            />
-
-          </div>
-
-
-          <span
-            id="videoDuration"
-            class="timecode"
-          >
-            00:00.0
-          </span>
-
-        </div>
-
-
-
-        <!-- TIMELINE -->
-
-        <div class="timeline-panel">
-
-
-          <div class="timeline-toolbar">
-
-
-            <div class="timeline-left-tools">
-
-              <strong>
-                Timeline
-              </strong>
-
-              <span id="timelineDurationLabel">
-                0.0 sec
-              </span>
-
-            </div>
-
-
-
-            <div class="timeline-toolbar-center">
-
-
-              <button
-                id="timelineSnapBtn"
-                class="timeline-mini-btn active"
-                type="button"
-              >
-                Snap
-              </button>
-
-
-              <button
-                id="timelineFitBtn"
-                class="timeline-mini-btn"
-                type="button"
-              >
-                Fit
-              </button>
-
-            </div>
-
-
-
-            <div class="timeline-toolbar-right">
-
-              <span>
-                −
-              </span>
-
-              <input
-                id="timelineZoom"
-                type="range"
-                min="45"
-                max="240"
-                value="100"
-              />
-
-              <span>
-                +
-              </span>
-
-            </div>
-
-          </div>
-
-
-
-          <div
-            id="timelineScroll"
-            class="timeline-scroll"
-          >
-
-
-            <div
-              id="timelineContent"
-              class="timeline-content"
-            >
-
-
-              <div
-                id="timelineRuler"
-                class="timeline-ruler"
-              ></div>
-
-
-
-              <!-- VIDEO TRACK -->
-
-              <div class="timeline-track-row">
-
-
-                <div class="track-label">
-
-                  <span class="track-icon video-track-icon">
-                    V
-                  </span>
-
-
-                  <div>
-
-                    <strong>
-                      Video
-                    </strong>
-
-                    <small>
-                      V1
-                    </small>
-
-                  </div>
-
-                </div>
-
-
-                <div
-                  id="videoTrack"
-                  class="track-lane"
-                ></div>
-
-              </div>
-
-
-
-              <!-- IMAGE TRACK -->
-
-              <div class="timeline-track-row">
-
-
-                <div class="track-label">
-
-                  <span class="track-icon">
-                    P
-                  </span>
-
-
-                  <div>
-
-                    <strong>
-                      Photos
-                    </strong>
-
-                    <small>
-                      P1
-                    </small>
-
-                  </div>
-
-                </div>
-
-
-                <div
-                  id="imageTrack"
-                  class="track-lane"
-                ></div>
-
-              </div>
-
-
-
-              <!-- TEXT TRACK -->
-
-              <div class="timeline-track-row">
-
-
-                <div class="track-label">
-
-                  <span class="track-icon">
-                    T
-                  </span>
-
-
-                  <div>
-
-                    <strong>
-                      Graphics
-                    </strong>
-
-                    <small>
-                      T1
-                    </small>
-
-                  </div>
-
-                </div>
-
-
-                <div
-                  id="textTrack"
-                  class="track-lane"
-                ></div>
-
-              </div>
-
-
-
-              <!-- BRAND TRACK -->
-
-              <div class="timeline-track-row">
-
-
-                <div class="track-label">
-
-                  <span class="track-icon">
-                    L
-                  </span>
-
-
-                  <div>
-
-                    <strong>
-                      Branding
-                    </strong>
-
-                    <small>
-                      L1
-                    </small>
-
-                  </div>
-
-                </div>
-
-
-                <div class="track-lane">
-
-                  <div
-                    id="logoTimelineBlock"
-                    class="timeline-block logo-block"
-                  >
-                    FWCWL BRAND
-                  </div>
-
-                </div>
-
-              </div>
-
-
-
-              <!-- AUDIO TRACK -->
-
-              <div class="timeline-track-row">
-
-
-                <div class="track-label">
-
-                  <span class="track-icon">
-                    A
-                  </span>
-
-
-                  <div>
-
-                    <strong>
-                      Audio
-                    </strong>
-
-                    <small>
-                      A1
-                    </small>
-
-                  </div>
-
-                </div>
-
-
-                <div
-                  id="audioTrack"
-                  class="track-lane"
-                ></div>
-
-              </div>
-
-
-
-              <!-- PLAYHEAD -->
-
-              <div
-                id="timelinePlayhead"
-                class="timeline-playhead"
-              >
-
-                <div
-                  id="timelinePlayheadHandle"
-                  class="playhead-handle"
-                ></div>
-
-                <div class="playhead-line"></div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-
-    <!-- ===================================================
-         POSTER RIGHT PANEL
-         PosterEditor populates the inspector.
-    ==================================================== -->
-
-    <aside
-      id="posterRightPanel"
-      class="right-sidebar"
-    >
-
-
-      <div class="right-header">
-
-        <div class="panel-eyebrow">
-          PRO INSPECTOR
-        </div>
-
-        <h2>
-          Poster Editor
-        </h2>
-
-        <p>
-          Layer-based editing, typography, photo adjustments and effects.
-        </p>
-
-      </div>
-
-
-      <div class="right-scroll"></div>
-
-
-      <div class="right-footer"></div>
-
-    </aside>
-
-
-
-    <!-- ===================================================
-         VIDEO RIGHT PANEL
-    ==================================================== -->
-
-    <aside
-      id="videoRightPanel"
-      class="right-sidebar hidden"
-    >
-
-
-      <div class="right-header">
-
-        <div class="panel-eyebrow">
-          INSPECTOR
-        </div>
-
-        <h2>
-          Video
-        </h2>
-
-        <p>
-          Fine-tune your selected timeline element.
-        </p>
-
-      </div>
-
-
-
-      <div class="right-scroll">
-
-
-        <!-- CLIP -->
-
-        <section class="inspector-section">
-
-
-          <div class="inspector-title-row">
-
-            <div class="inspector-title">
-              CLIP
-            </div>
-
-            <span
-              id="selectedClipBadge"
-              class="selected-badge"
-            >
-              None selected
-            </span>
-
-          </div>
-
-
-
-          <div class="form-grid-2">
-
-
-            <div class="form-field">
-
-              <label>
-                Trim In
-              </label>
-
-              <input
-                id="clipTrimStart"
-                type="number"
-                min="0"
-                step="0.05"
-                value="0"
-              />
-
-            </div>
-
-
-            <div class="form-field">
-
-              <label>
-                Trim Out
-              </label>
-
-              <input
-                id="clipTrimEnd"
-                type="number"
-                min="0"
-                step="0.05"
-                value="0"
-              />
-
-            </div>
-
-          </div>
-
-
-
-          <div class="form-field">
-
-            <label>
-              Playback Speed
-            </label>
-
-            <select id="clipSpeed">
-
-              <option value="0.25">
-                0.25×
-              </option>
-
-              <option value="0.5">
-                0.5×
-              </option>
-
-              <option value="0.75">
-                0.75×
-              </option>
-
-              <option
-                value="1"
-                selected
-              >
-                1×
-              </option>
-
-              <option value="1.25">
-                1.25×
-              </option>
-
-              <option value="1.5">
-                1.5×
-              </option>
-
-              <option value="2">
-                2×
-              </option>
-
-            </select>
-
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Volume
-              </label>
-
-              <span id="clipVolumeValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="clipVolume"
-              type="range"
-              min="0"
-              max="100"
-              value="100"
-            />
-
-          </div>
-
-        </section>
-
-
-
-        <!-- TRANSFORM -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            TRANSFORM
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Scale
-              </label>
-
-              <span id="clipScaleValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="clipScale"
-              type="range"
-              min="50"
-              max="250"
-              value="100"
-            />
-
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Horizontal
-              </label>
-
-              <span id="clipXValue">
-                50%
-              </span>
-
-            </div>
-
-            <input
-              id="clipX"
-              type="range"
-              min="0"
-              max="100"
-              value="50"
-            />
-
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Vertical
-              </label>
-
-              <span id="clipYValue">
-                50%
-              </span>
-
-            </div>
-
-            <input
-              id="clipY"
-              type="range"
-              min="0"
-              max="100"
-              value="50"
-            />
-
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Rotation
-              </label>
-
-              <span id="clipRotationValue">
-                0°
-              </span>
-
-            </div>
-
-            <input
-              id="clipRotation"
-              type="range"
-              min="-180"
-              max="180"
-              value="0"
-            />
-
-          </div>
-
-        </section>
-
-
-
-        <!-- COLOR -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            COLOR
-          </div>
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Brightness
-              </label>
-
-              <span id="clipBrightnessValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="clipBrightness"
-              type="range"
-              min="20"
-              max="180"
-              value="100"
-            />
-
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Saturation
-              </label>
-
-              <span id="clipSaturationValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="clipSaturation"
-              type="range"
-              min="0"
-              max="220"
-              value="100"
-            />
-
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Contrast
-              </label>
-
-              <span id="clipContrastValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="clipContrast"
-              type="range"
-              min="20"
-              max="180"
-              value="100"
-            />
-
-          </div>
-
-        </section>
-
-
-
-        <!-- TRANSITIONS -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            TRANSITIONS
-          </div>
-
-
-          <div class="form-grid-2">
-
-
-            <div class="form-field">
-
-              <label>
-                In
-              </label>
-
-              <select id="clipTransitionIn">
-
-                <option value="none">
-                  None
-                </option>
-
-                <option value="fade">
-                  Fade
-                </option>
-
-                <option value="zoom">
-                  Zoom
-                </option>
-
-                <option value="slide">
-                  Slide
-                </option>
-
-                <option value="flash">
-                  Flash
-                </option>
-
-              </select>
-
-            </div>
-
-
-
-            <div class="form-field">
-
-              <label>
-                Out
-              </label>
-
-              <select id="clipTransitionOut">
-
-                <option value="none">
-                  None
-                </option>
-
-                <option value="fade">
-                  Fade
-                </option>
-
-                <option value="zoom">
-                  Zoom
-                </option>
-
-                <option value="slide">
-                  Slide
-                </option>
-
-                <option value="flash">
-                  Flash
-                </option>
-
-              </select>
-
-            </div>
-
-          </div>
-
-        </section>
-
-
-
-        <!-- VIDEO GRAPHICS -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            CRICKET GRAPHIC
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Main Title
-            </label>
-
-            <input
-              id="videoTitleText"
-              type="text"
-              value="MATCH DAY"
-            />
-
-          </div>
-
-
-
-          <div class="form-field">
-
-            <label>
-              Supporting Text
-            </label>
-
-            <input
-              id="videoSubtitleText"
-              type="text"
-              value="FWCWL • TAMPA, FLORIDA"
-            />
-
-          </div>
-
-
-
-          <div class="form-field">
-
-            <label>
-              Score / Stat
-            </label>
-
-            <input
-              id="videoScoreText"
-              type="text"
-              placeholder="186/5"
-            />
-
-          </div>
-
-
-
-          <div class="form-grid-2">
-
-
-            <div class="form-field">
-
-              <label>
-                Start
-              </label>
-
-              <input
-                id="videoTextStart"
-                type="number"
-                min="0"
-                step="0.1"
-                value="0"
-              />
-
-            </div>
-
-
-
-            <div class="form-field">
-
-              <label>
-                End
-              </label>
-
-              <input
-                id="videoTextEnd"
-                type="number"
-                min="0"
-                step="0.1"
-                value="5"
-              />
-
-            </div>
-
-          </div>
-
-
-
-          <div class="form-field">
-
-            <label>
-              Animation
-            </label>
-
-            <select id="videoTextAnimation">
-
-              <option value="fade">
-                Fade
-              </option>
-
-              <option value="rise">
-                Rise
-              </option>
-
-              <option value="pop">
-                Pop
-              </option>
-
-              <option value="slide">
-                Slide
-              </option>
-
-              <option value="none">
-                None
-              </option>
-
-            </select>
-
-          </div>
-
-        </section>
-
-
-
-        <!-- VIDEO BRAND -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            BRAND
-          </div>
-
-
-          <label class="switch-row">
-
-            <div>
-
-              <strong>
-                Official FWCWL Logo
-              </strong>
-
-              <span>
-                Show throughout video
-              </span>
-
-            </div>
-
-            <input
-              id="videoShowLogo"
-              type="checkbox"
-              checked
-            />
-
-            <span class="switch-ui"></span>
-
-          </label>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Logo Size
-              </label>
-
-              <span id="videoLogoSizeValue">
-                100%
-              </span>
-
-            </div>
-
-            <input
-              id="videoLogoSize"
-              type="range"
-              min="50"
-              max="180"
-              value="100"
-            />
-
-          </div>
-
-        </section>
-
-
-
-        <!-- AUDIO -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            AUDIO
-          </div>
-
-
-          <div
-            id="audioStatusCard"
-            class="audio-status"
-          >
-            No background music
-          </div>
-
-
-
-          <div class="field-block">
-
-            <div class="range-head">
-
-              <label>
-                Music Volume
-              </label>
-
-              <span id="videoMusicVolumeValue">
-                60%
-              </span>
-
-            </div>
-
-            <input
-              id="videoMusicVolume"
-              type="range"
-              min="0"
-              max="100"
-              value="60"
-            />
-
-          </div>
-
-        </section>
-
-
-
-        <!-- EXPORT -->
-
-        <section class="inspector-section">
-
-          <div class="inspector-title">
-            EXPORT
-          </div>
-
-
-          <div class="form-field">
-
-            <label>
-              Quality
-            </label>
-
-            <select id="videoExportQuality">
-
-              <option value="standard">
-                Standard
-              </option>
-
-              <option
-                value="high"
-                selected
-              >
-                High
-              </option>
-
-              <option value="maximum">
-                Maximum
-              </option>
-
-            </select>
-
-          </div>
-
-
-
-          <div class="form-field">
-
-            <label>
-              Frame Rate
-            </label>
-
-            <select id="videoExportFps">
-
-              <option value="24">
-                24 FPS
-              </option>
-
-              <option
-                value="30"
-                selected
-              >
-                30 FPS
-              </option>
-
-              <option value="60">
-                60 FPS
-              </option>
-
-            </select>
-
-          </div>
-
-        </section>
-
-      </div>
-
-
-
-      <!-- VIDEO FOOTER -->
-
-      <div class="right-footer">
 
 
         <button
-          id="videoExportBtn"
-          class="export-main-btn"
+          id="posterResetBtn"
+          class="secondary-button"
+          type="button"
+        >
+          Reset
+        </button>
+
+
+        <button
+          id="posterExportTopBtn"
+          class="export-button"
           type="button"
         >
 
           <span>
-
-            <strong>
-              Export Video
-            </strong>
-
-            <small id="videoExportTypeLabel">
-              High quality
-            </small>
-
+            Export
           </span>
 
-          <span>
+          <span class="export-arrow">
             ↓
           </span>
 
         </button>
 
+      </div>
+
+    </header>
 
 
-        <div
-          id="videoExportProgressWrap"
-          class="export-progress-wrap hidden"
-        >
+    <!-- =======================================================
+         POSTER WORKSPACE
+    ======================================================== -->
+
+    <main
+      id="posterWorkspace"
+      class="workspace poster-workspace"
+    >
 
 
-          <div class="export-progress-head">
+      <!-- =====================================================
+           LEFT SIDEBAR
+      ====================================================== -->
+
+      <aside
+        id="posterLeftPanel"
+        class="sidebar left-sidebar"
+      >
+
+
+        <!-- LEFT NAV -->
+
+        <nav class="sidebar-tabs">
+
+          <button
+            class="sidebar-tab active"
+            data-poster-tab="templates"
+            type="button"
+          >
+
+            <span class="tab-icon">
+              ▦
+            </span>
 
             <span>
-              Rendering video
+              Templates
             </span>
 
-            <span id="videoExportProgressLabel">
-              0%
+          </button>
+
+
+          <button
+            class="sidebar-tab"
+            data-poster-tab="media"
+            type="button"
+          >
+
+            <span class="tab-icon">
+              ▧
             </span>
+
+            <span>
+              Media
+            </span>
+
+          </button>
+
+
+          <button
+            class="sidebar-tab"
+            data-poster-tab="brand"
+            type="button"
+          >
+
+            <span class="tab-icon">
+              ◆
+            </span>
+
+            <span>
+              Brand
+            </span>
+
+          </button>
+
+        </nav>
+
+
+        <!-- LEFT CONTENT -->
+
+        <div class="sidebar-content">
+
+
+          <!-- ===============================================
+               TEMPLATE PANEL
+          ================================================ -->
+
+          <section
+            id="posterTemplatesPanel"
+            class="left-tab-panel active side-panel"
+          >
+
+
+            <div class="panel-header cricket-template-header">
+
+              <div>
+
+                <div class="panel-eyebrow">
+                  FWCWL DESIGN LIBRARY
+                </div>
+
+                <h2>
+                  Cricket Templates
+                </h2>
+
+                <p>
+                  Match graphics, player features,
+                  results, rustic designs and
+                  layered premium cricket artwork.
+                </p>
+
+              </div>
+
+
+              <div
+                id="posterTemplateCount"
+                class="template-count"
+              >
+                48
+              </div>
+
+            </div>
+
+
+            <!-- SEARCH -->
+
+            <div class="template-search">
+
+              <span class="template-search-icon">
+                ⌕
+              </span>
+
+              <input
+                id="posterTemplateSearch"
+                type="search"
+                placeholder="Search match day, vintage, grunge..."
+                autocomplete="off"
+              />
+
+            </div>
+
+
+            <!-- FILTERS -->
+
+            <div
+              id="posterTemplateFilters"
+              class="template-filters"
+            >
+
+              <button
+                class="filter-chip active"
+                data-filter="all"
+                type="button"
+              >
+                All
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="match"
+                type="button"
+              >
+                Match
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="team"
+                type="button"
+              >
+                Team
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="result"
+                type="button"
+              >
+                Results
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="event"
+                type="button"
+              >
+                Events
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="social"
+                type="button"
+              >
+                Social
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="rustic"
+                type="button"
+              >
+                Rustic
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="layered"
+                type="button"
+              >
+                Layered
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="vintage"
+                type="button"
+              >
+                Vintage
+              </button>
+
+
+              <button
+                class="filter-chip"
+                data-filter="editorial"
+                type="button"
+              >
+                Editorial
+              </button>
+
+            </div>
+
+
+            <!--
+              IMPORTANT:
+              poster-editor.js dynamically renders the
+              actual poster templates into this grid.
+
+              The same renderer is used for:
+              • thumbnail preview
+              • editor canvas
+              • exported artwork
+
+              Therefore thumbnails stay visually identical
+              to the template opened in the editor.
+            -->
+
+            <div
+              id="posterTemplateGrid"
+              class="template-grid cricket-template-grid"
+            ></div>
+
+
+            <div
+              id="posterTemplateEmpty"
+              class="template-empty hidden"
+            >
+
+              <strong>
+                No templates found
+              </strong>
+
+              <span>
+                Try another search or category.
+              </span>
+
+            </div>
+
+          </section>
+
+
+          <!-- ===============================================
+               MEDIA PANEL
+               poster-editor.js replaces/enhances content.
+          ================================================ -->
+
+          <section
+            id="posterMediaPanel"
+            class="left-tab-panel side-panel"
+          >
+
+            <div class="panel-header">
+
+              <div>
+
+                <div class="panel-eyebrow">
+                  CREATIVE ASSETS
+                </div>
+
+                <h2>
+                  Media
+                </h2>
+
+                <p>
+                  Add player photos, match action
+                  images, sponsor logos and
+                  cricket elements.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <label
+              class="upload-zone"
+              for="posterInitialMediaInput"
+            >
+
+              <input
+                id="posterInitialMediaInput"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                hidden
+              />
+
+              <span class="upload-icon">
+                ＋
+              </span>
+
+              <strong>
+                Add Photo
+              </strong>
+
+              <span>
+                JPG · PNG · WEBP
+              </span>
+
+            </label>
+
+          </section>
+
+
+          <!-- ===============================================
+               BRAND PANEL
+               poster-editor.js replaces/enhances content.
+          ================================================ -->
+
+          <section
+            id="posterBrandPanel"
+            class="left-tab-panel side-panel"
+          >
+
+            <div class="panel-header">
+
+              <div>
+
+                <div class="panel-eyebrow">
+                  FWCWL BRAND SYSTEM
+                </div>
+
+                <h2>
+                  Brand
+                </h2>
+
+                <p>
+                  Maintain a consistent league
+                  identity across every design.
+                </p>
+
+              </div>
+
+            </div>
+
+
+            <div class="official-brand-card">
+
+              <div class="brand-preview-logo">
+
+                <img
+                  src="assets/fwcwl-logo.jpeg"
+                  alt="FWCWL"
+                />
+
+              </div>
+
+
+              <div>
+
+                <strong>
+                  Official FWCWL
+                </strong>
+
+                <p>
+                  Protected logo layer.
+                </p>
+
+              </div>
+
+            </div>
+
+          </section>
+
+        </div>
+
+      </aside>
+
+
+      <!-- =====================================================
+           POSTER CANVAS WORKSPACE
+      ====================================================== -->
+
+      <section class="canvas-workspace">
+
+
+        <!-- CANVAS TOOLBAR -->
+
+        <div class="canvas-toolbar">
+
+
+          <div class="canvas-toolbar-left">
+
+
+            <div class="canvas-format-control">
+
+              <span class="toolbar-micro-label">
+                FORMAT
+              </span>
+
+
+              <select
+                id="posterCanvasSize"
+                aria-label="Poster size"
+              >
+
+                <option
+                  value="portrait"
+                  selected
+                >
+                  Instagram Portrait · 1080 × 1350
+                </option>
+
+
+                <option value="square">
+                  Instagram Square · 1080 × 1080
+                </option>
+
+
+                <option value="story">
+                  Story / Reel Cover · 1080 × 1920
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <button
+              id="posterSafeZoneBtn"
+              class="toolbar-toggle"
+              type="button"
+            >
+
+              <span class="toggle-dot"></span>
+
+              Safe Area
+
+            </button>
+
+
+            <button
+              id="posterSnapBtn"
+              class="toolbar-toggle active"
+              type="button"
+            >
+
+              <span class="toggle-dot"></span>
+
+              Snap
+
+            </button>
 
           </div>
 
 
-          <div class="export-progress-track">
+          <div class="canvas-toolbar-right">
 
-            <div
-              id="videoExportProgressBar"
-              class="export-progress-bar"
-            ></div>
+
+            <button
+              id="posterFitBtn"
+              class="canvas-fit-button"
+              type="button"
+            >
+              Fit
+            </button>
+
+
+            <div class="zoom-control">
+
+              <button
+                id="posterZoomOutBtn"
+                type="button"
+                aria-label="Zoom out"
+              >
+                −
+              </button>
+
+
+              <span id="posterZoomValue">
+                50%
+              </span>
+
+
+              <button
+                id="posterZoomInBtn"
+                type="button"
+                aria-label="Zoom in"
+              >
+                +
+              </button>
+
+            </div>
 
           </div>
 
         </div>
 
+
+        <!-- STAGE -->
+
+        <div class="poster-stage-area">
+
+
+          <div class="stage-scroll">
+
+
+            <div
+              id="posterStage"
+              class="stage"
+            >
+
+              <canvas
+                id="posterCanvas"
+                width="1080"
+                height="1350"
+              ></canvas>
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+        <!-- STATUS BAR -->
+
+        <div class="canvas-statusbar">
+
+
+          <div class="canvas-status-left">
+
+            <span class="status-dot"></span>
+
+            <span>
+              FWCWL POSTER ENGINE
+            </span>
+
+          </div>
+
+
+          <div class="canvas-status-center">
+
+            <span>
+              Click any text, photo or element to edit
+            </span>
+
+          </div>
+
+
+          <div class="canvas-status-right">
+
+            <span id="posterDimensions">
+              1080 × 1350
+            </span>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- =====================================================
+           RIGHT PROPERTIES SIDEBAR
+      ====================================================== -->
+
+      <aside
+        id="posterRightPanel"
+        class="sidebar right-sidebar"
+      >
+
+
+        <div class="properties-heading">
+
+          <div>
+
+            <span class="panel-eyebrow">
+              PROPERTIES
+            </span>
+
+            <strong>
+              Edit Design
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <!--
+          poster-editor.js completely builds the
+          professional contextual inspector here.
+        -->
+
+        <div class="right-scroll properties-scroll">
+
+
+          <div class="property-section">
+
+            <div class="section-toggle">
+
+              <div>
+
+                <span class="section-label">
+                  SELECTED LAYER
+                </span>
+
+                <strong>
+                  Select an object
+                </strong>
+
+              </div>
+
+            </div>
+
+
+            <div class="section-content">
+
+              <p class="inspector-placeholder-text">
+                Select text, a photo, graphic or
+                shape on the canvas to access
+                professional editing controls.
+              </p>
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+        <div class="right-footer">
+
+
+          <button
+            id="posterDownloadPngBtn"
+            class="download-button"
+            type="button"
+          >
+
+            <span>
+
+              <strong>
+                Export Poster
+              </strong>
+
+              <small>
+                PNG · JPG · High Resolution
+              </small>
+
+            </span>
+
+
+            <span>
+              ↓
+            </span>
+
+          </button>
+
+        </div>
+
+      </aside>
+
+    </main>
+
+
+    <!-- =======================================================
+         VIDEO EDITOR INSERTION POINT
+
+         video-editor.js dynamically creates:
+         #fwcwlVideoStudio
+
+         directly after .workspace.
+    ======================================================== -->
+
+
+  </div>
+
+
+  <!-- =========================================================
+       NOSCRIPT
+  ========================================================== -->
+
+  <noscript>
+
+    <div
+      style="
+        position:fixed;
+        inset:0;
+        z-index:999999;
+        display:grid;
+        place-items:center;
+        padding:30px;
+        color:#fff;
+        background:#080a0d;
+        font-family:Arial,sans-serif;
+        text-align:center;
+      "
+    >
+
+      <div>
+
+        <h2>
+          JavaScript Required
+        </h2>
+
+        <p>
+          FWCWL Creative Studio requires
+          JavaScript to run the Poster and
+          Video editors.
+        </p>
+
       </div>
 
-    </aside>
+    </div>
 
-  </main>
-
-</div>
+  </noscript>
 
 
+  <!-- =========================================================
+       APPLICATION SCRIPTS
+  ========================================================== -->
 
-<!-- =====================================================
-     HIDDEN VIDEO / AUDIO PLAYBACK SOURCES
-====================================================== -->
-
-<video
-  id="videoSource"
-  playsinline
-  preload="auto"
-  style="display:none"
-></video>
+  <script
+    type="module"
+    src="poster-editor.js"
+  ></script>
 
 
-<audio
-  id="audioSource"
-  preload="auto"
-  loop
-  style="display:none"
-></audio>
-
-
-
-<!-- =====================================================
-     APP
-====================================================== -->
-
-<script
-  type="module"
-  src="app.js"
-></script>
+  <script
+    type="module"
+    src="video-editor.js"
+  ></script>
 
 
 </body>
-
 </html>
