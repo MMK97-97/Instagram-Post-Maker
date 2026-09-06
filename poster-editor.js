@@ -1,17 +1,55 @@
+/* ============================================================
+   FWCWL CREATIVE STUDIO
+   POSTER EDITOR V9.3
+   ============================================================
+
+   SELF-CONTAINED POSTER ENGINE
+
+   Includes:
+   • 48+ cricket templates
+   • Exact template thumbnails
+   • Text layers
+   • Photo layers
+   • Cricket graphic layers
+   • Drag editing
+   • Layer manager
+   • Visibility / lock
+   • Typography controls
+   • Photo adjustments
+   • Position / scale / rotation
+   • Duplicate / reorder / delete
+   • Undo / redo
+   • Safe area
+   • Snap
+   • Responsive canvas fitting
+   • PNG / JPG export
+   • FWCWL official branding
+   • Enhanced Properties inspector
+   • Stronger selected-layer visibility
+   • Canvas design controls
+   • Texture-strength control
+   • Keyboard shortcuts
+
+   No external JS imports.
+============================================================ */
+
 (() => {
   "use strict";
 
+
   /* ==========================================================
-     HELPERS
+     DOM HELPERS
   ========================================================== */
 
   const $ = selector =>
     document.querySelector(selector);
 
+
   const $$ = selector =>
     Array.from(
       document.querySelectorAll(selector)
     );
+
 
   const clamp = (
     value,
@@ -26,12 +64,14 @@
       )
     );
 
+
   const uid = prefix =>
     `${prefix}-${Math.random()
       .toString(36)
       .slice(2, 10)}-${Date.now()
       .toString(36)
-      .slice(-5)}`;
+      .slice(-6)}`;
+
 
   const escapeHtml = value =>
     String(value ?? "")
@@ -41,53 +81,71 @@
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
 
-  const hex = value => {
-    let v =
+
+  const normalizeHex = value => {
+    let color =
       String(value || "")
         .trim();
 
-    if (!v.startsWith("#")) {
-      v = `#${v}`;
+    if (!color.startsWith("#")) {
+      color = `#${color}`;
     }
 
-    return /^#[0-9a-fA-F]{6}$/.test(v)
-      ? v.toUpperCase()
+    return /^#[0-9a-fA-F]{6}$/.test(color)
+      ? color.toUpperCase()
       : null;
   };
+
 
   const rgba = (
     color,
     alpha
   ) => {
-    const value =
+    const cleaned =
       String(
         color || "#ffffff"
       ).replace("#", "");
 
-    const n =
+    const expanded =
+      cleaned.length === 3
+        ? cleaned
+            .split("")
+            .map(char => char + char)
+            .join("")
+        : cleaned;
+
+    const number =
       parseInt(
-        value.length === 3
-          ? value
-              .split("")
-              .map(x => x + x)
-              .join("")
-          : value,
+        expanded,
         16
       );
 
-    if (Number.isNaN(n)) {
+    if (
+      Number.isNaN(number)
+    ) {
       return `rgba(255,255,255,${alpha})`;
     }
 
     return `rgba(${
-      (n >> 16) & 255
+      (number >> 16) & 255
     },${
-      (n >> 8) & 255
+      (number >> 8) & 255
     },${
-      n & 255
+      number & 255
     },${alpha})`;
   };
 
+
+  const cloneSerializable =
+    object =>
+      JSON.parse(
+        JSON.stringify(object)
+      );
+
+
+  /* ==========================================================
+     CANVAS HELPERS
+  ========================================================== */
 
   function roundedRect(
     ctx,
@@ -148,35 +206,40 @@
 
 
   /* ==========================================================
-     FORMATS
+     POSTER FORMATS
   ========================================================== */
 
   const FORMATS = {
+
     portrait: {
       width: 1080,
       height: 1350,
-      label: "Portrait"
+      label:
+        "Instagram Portrait"
     },
 
     square: {
       width: 1080,
       height: 1080,
-      label: "Square"
+      label:
+        "Instagram Square"
     },
 
     story: {
       width: 1080,
       height: 1920,
-      label: "Story"
+      label:
+        "Story / Reel Cover"
     }
+
   };
 
 
   /* ==========================================================
-     TEMPLATE LIBRARY
+     TEMPLATE FACTORY
   ========================================================== */
 
-  const T = (
+  const template = (
     id,
     name,
     category,
@@ -194,34 +257,44 @@
     kicker,
     title,
     detail,
+
     cta:
       options.cta ||
       "FWCWL",
-    palette,
+
     align:
       options.align ||
       "left",
+
     titleSize:
       options.titleSize ||
       120,
+
     titleY:
       options.titleY ||
       50,
+
     titleWidth:
       options.titleWidth ||
       80,
+
     font:
       options.font ||
       "Montserrat",
+
     texture:
       options.texture ||
       0
   });
 
 
+  /* ==========================================================
+     CRICKET TEMPLATE LIBRARY
+  ========================================================== */
+
   const TEMPLATES = [
 
-    T(
+    template(
       "match-day",
       "Match Day",
       "match",
@@ -229,13 +302,18 @@
       "FWCWL • MATCH DAY",
       "TAMPA\nVS RIVALS",
       "SATURDAY • 10:00 AM • TAMPA",
-      ["#09090b", "#551019", "#f1c34d"],
+      [
+        "#09090b",
+        "#551019",
+        "#f1c34d"
+      ],
       {
         titleSize: 132
       }
     ),
 
-    T(
+
+    template(
       "big-vs",
       "Big VS",
       "match",
@@ -243,16 +321,22 @@
       "THE SHOWDOWN",
       "TEAM A\nVS\nTEAM B",
       "TWO TEAMS • ONE WINNER",
-      ["#061522", "#65141f", "#f1c34d"],
+      [
+        "#061522",
+        "#65141f",
+        "#f1c34d"
+      ],
       {
         align: "center",
         titleSize: 122,
         titleY: 37,
-        font: "Bebas Neue"
+        font:
+          "Bebas Neue"
       }
     ),
 
-    T(
+
+    template(
       "next-fixture",
       "Next Fixture",
       "match",
@@ -260,13 +344,18 @@
       "NEXT FIXTURE",
       "SATURDAY\n10:00 AM",
       "TAMPA • FLORIDA",
-      ["#111317", "#4b1017", "#f1c34d"],
+      [
+        "#111317",
+        "#4b1017",
+        "#f1c34d"
+      ],
       {
         titleSize: 115
       }
     ),
 
-    T(
+
+    template(
       "game-day",
       "Game Day",
       "match",
@@ -274,13 +363,18 @@
       "IT'S TIME",
       "GAME\nDAY",
       "FWCWL • PRIME TIME CRICKET",
-      ["#04151d", "#0e3440", "#f1c34d"],
+      [
+        "#04151d",
+        "#0e3440",
+        "#f1c34d"
+      ],
       {
         titleSize: 158
       }
     ),
 
-    T(
+
+    template(
       "night-match",
       "Night Match",
       "match",
@@ -288,13 +382,18 @@
       "UNDER THE LIGHTS",
       "GAME\nNIGHT",
       "FRIDAY • 7:30 PM",
-      ["#03090f", "#102a3a", "#e5b63a"],
+      [
+        "#03090f",
+        "#102a3a",
+        "#e5b63a"
+      ],
       {
         titleSize: 150
       }
     ),
 
-    T(
+
+    template(
       "rivalry",
       "Rivalry",
       "match",
@@ -302,13 +401,18 @@
       "RIVALRY SERIES",
       "NO\nFRIENDS",
       "ONLY CRICKET",
-      ["#0c0e12", "#66131d", "#f1c34d"],
+      [
+        "#0c0e12",
+        "#66131d",
+        "#f1c34d"
+      ],
       {
         titleSize: 142
       }
     ),
 
-    T(
+
+    template(
       "pre-match",
       "Pre-Match",
       "match",
@@ -316,13 +420,18 @@
       "MATCH PREVIEW",
       "READY\nTO GO",
       "THE COUNTDOWN STARTS NOW",
-      ["#071418", "#4a1017", "#efc34f"],
+      [
+        "#071418",
+        "#4a1017",
+        "#efc34f"
+      ],
       {
         titleSize: 140
       }
     ),
 
-    T(
+
+    template(
       "match-centre",
       "Match Centre",
       "match",
@@ -330,13 +439,18 @@
       "FWCWL MATCH CENTRE",
       "LIVE\nCRICKET",
       "SCORES • STATS • UPDATES",
-      ["#071515", "#142820", "#f1c34d"],
+      [
+        "#071515",
+        "#142820",
+        "#f1c34d"
+      ],
       {
         titleSize: 136
       }
     ),
 
-    T(
+
+    template(
       "playing-xi",
       "Playing XI",
       "team",
@@ -344,13 +458,18 @@
       "MATCH PLAN",
       "PLAYING\nXI",
       "TEAM SHEET",
-      ["#061b19", "#102922", "#f1c34d"],
+      [
+        "#061b19",
+        "#102922",
+        "#f1c34d"
+      ],
       {
         titleSize: 148
       }
     ),
 
-    T(
+
+    template(
       "squad",
       "Squad Reveal",
       "team",
@@ -358,13 +477,18 @@
       "FWCWL SQUAD",
       "MEET\nTHE TEAM",
       "READY FOR BATTLE",
-      ["#130e11", "#5e1520", "#efc04a"],
+      [
+        "#130e11",
+        "#5e1520",
+        "#efc04a"
+      ],
       {
         titleSize: 132
       }
     ),
 
-    T(
+
+    template(
       "captain",
       "Captain",
       "team",
@@ -372,13 +496,18 @@
       "LEADING THE SIDE",
       "OUR\nCAPTAIN",
       "LEADERSHIP • BELIEF • INTENT",
-      ["#06131b", "#321016", "#f1c34d"],
+      [
+        "#06131b",
+        "#321016",
+        "#f1c34d"
+      ],
       {
         titleSize: 150
       }
     ),
 
-    T(
+
+    template(
       "vice-captain",
       "Vice Captain",
       "team",
@@ -386,13 +515,18 @@
       "LEADERSHIP GROUP",
       "VICE\nCAPTAIN",
       "READY TO LEAD",
-      ["#06141a", "#48131c", "#d9ac37"],
+      [
+        "#06141a",
+        "#48131c",
+        "#d9ac37"
+      ],
       {
         titleSize: 132
       }
     ),
 
-    T(
+
+    template(
       "player-spotlight",
       "Player Spotlight",
       "team",
@@ -400,14 +534,19 @@
       "FWCWL PLAYER SERIES",
       "PLAYER\nSPOTLIGHT",
       "NAME • ROLE • TEAM",
-      ["#061a1d", "#521620", "#f1c34d"],
+      [
+        "#061a1d",
+        "#521620",
+        "#f1c34d"
+      ],
       {
         titleSize: 126,
         titleWidth: 60
       }
     ),
 
-    T(
+
+    template(
       "new-signing",
       "Player Signing",
       "team",
@@ -415,13 +554,18 @@
       "WELCOME TO THE TEAM",
       "NEW\nSIGNING",
       "THE JOURNEY BEGINS",
-      ["#0a1014", "#59111a", "#f1c34d"],
+      [
+        "#0a1014",
+        "#59111a",
+        "#f1c34d"
+      ],
       {
         titleSize: 140
       }
     ),
 
-    T(
+
+    template(
       "training-day",
       "Training Day",
       "team",
@@ -429,13 +573,18 @@
       "PUT IN THE WORK",
       "TRAINING\nDAY",
       "NO SHORTCUTS",
-      ["#081518", "#1d2e2c", "#e9bb43"],
+      [
+        "#081518",
+        "#1d2e2c",
+        "#e9bb43"
+      ],
       {
         titleSize: 140
       }
     ),
 
-    T(
+
+    template(
       "team-culture",
       "Team Culture",
       "team",
@@ -443,14 +592,19 @@
       "FWCWL • CRICKET CULTURE",
       "PLAY\nHARD",
       "ONE TEAM • ONE PURPOSE",
-      ["#32110d", "#6c2b1a", "#f0bf47"],
+      [
+        "#32110d",
+        "#6c2b1a",
+        "#f0bf47"
+      ],
       {
         titleSize: 152,
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "potm",
       "Player of the Match",
       "result",
@@ -458,14 +612,19 @@
       "OUTSTANDING PERFORMANCE",
       "PLAYER OF\nTHE MATCH",
       "A PERFORMANCE THAT CHANGED THE GAME",
-      ["#171019", "#681d2c", "#d5a83b"],
+      [
+        "#171019",
+        "#681d2c",
+        "#d5a83b"
+      ],
       {
         titleSize: 116,
         titleWidth: 62
       }
     ),
 
-    T(
+
+    template(
       "mvp",
       "MVP",
       "result",
@@ -473,15 +632,21 @@
       "MOST VALUABLE PLAYER",
       "MVP",
       "PURE IMPACT • PURE PERFORMANCE",
-      ["#090909", "#2e220d", "#f6cd54"],
+      [
+        "#090909",
+        "#2e220d",
+        "#f6cd54"
+      ],
       {
         align: "center",
         titleSize: 220,
-        font: "Bebas Neue"
+        font:
+          "Bebas Neue"
       }
     ),
 
-    T(
+
+    template(
       "result",
       "Match Result",
       "result",
@@ -489,13 +654,18 @@
       "FINAL RESULT",
       "VICTORY",
       "WON BY 24 RUNS",
-      ["#06171b", "#49131a", "#f1c34d"],
+      [
+        "#06171b",
+        "#49131a",
+        "#f1c34d"
+      ],
       {
         titleSize: 160
       }
     ),
 
-    T(
+
+    template(
       "scorecard",
       "Scorecard",
       "result",
@@ -503,14 +673,20 @@
       "FINAL SCORE",
       "186 / 5",
       "20 OVERS • TARGET 163",
-      ["#050708", "#182327", "#f1c34d"],
+      [
+        "#050708",
+        "#182327",
+        "#f1c34d"
+      ],
       {
         titleSize: 180,
-        font: "Bebas Neue"
+        font:
+          "Bebas Neue"
       }
     ),
 
-    T(
+
+    template(
       "live-score",
       "Live Score",
       "result",
@@ -518,14 +694,20 @@
       "● LIVE",
       "142 / 4",
       "16.2 OVERS • NEED 38 FROM 22",
-      ["#061219", "#181b20", "#e93d49"],
+      [
+        "#061219",
+        "#181b20",
+        "#e93d49"
+      ],
       {
         titleSize: 180,
-        font: "Bebas Neue"
+        font:
+          "Bebas Neue"
       }
     ),
 
-    T(
+
+    template(
       "champions",
       "Champions",
       "result",
@@ -533,7 +715,11 @@
       "FWCWL CHAMPIONS",
       "CHAMPIONS",
       "THE TROPHY IS OURS",
-      ["#080808", "#33210b", "#f1c34d"],
+      [
+        "#080808",
+        "#33210b",
+        "#f1c34d"
+      ],
       {
         align: "center",
         titleSize: 148,
@@ -541,7 +727,8 @@
       }
     ),
 
-    T(
+
+    template(
       "top-scorer",
       "Top Scorer",
       "result",
@@ -549,13 +736,18 @@
       "BATSMAN OF THE SEASON",
       "TOP\nSCORER",
       "RUNS • AVERAGE • STRIKE RATE",
-      ["#0a1216", "#4e121c", "#e8b63e"],
+      [
+        "#0a1216",
+        "#4e121c",
+        "#e8b63e"
+      ],
       {
         titleSize: 148
       }
     ),
 
-    T(
+
+    template(
       "best-bowler",
       "Best Bowler",
       "result",
@@ -563,13 +755,18 @@
       "BOWLER OF THE SEASON",
       "BEST\nBOWLER",
       "WICKETS • ECONOMY • IMPACT",
-      ["#06171c", "#42121a", "#f1c34d"],
+      [
+        "#06171c",
+        "#42121a",
+        "#f1c34d"
+      ],
       {
         titleSize: 148
       }
     ),
 
-    T(
+
+    template(
       "final",
       "The Final",
       "event",
@@ -577,7 +774,11 @@
       "CHAMPIONSHIP",
       "THE\nFINAL",
       "ONE GAME • ONE TROPHY",
-      ["#08080a", "#431017", "#f2ca55"],
+      [
+        "#08080a",
+        "#431017",
+        "#f2ca55"
+      ],
       {
         align: "center",
         titleSize: 174,
@@ -585,7 +786,8 @@
       }
     ),
 
-    T(
+
+    template(
       "semi-final",
       "Semi Final",
       "event",
@@ -593,7 +795,11 @@
       "ONE STEP AWAY",
       "SEMI\nFINAL",
       "EVERY BALL MATTERS",
-      ["#071120", "#711623", "#f1c34d"],
+      [
+        "#071120",
+        "#711623",
+        "#f1c34d"
+      ],
       {
         align: "center",
         titleSize: 160,
@@ -601,7 +807,8 @@
       }
     ),
 
-    T(
+
+    template(
       "tournament",
       "Tournament",
       "event",
@@ -609,13 +816,18 @@
       "FWCWL PRESENTS",
       "WINTER\nLEAGUE",
       "TAMPA • FLORIDA",
-      ["#052023", "#10504e", "#edbc42"],
+      [
+        "#052023",
+        "#10504e",
+        "#edbc42"
+      ],
       {
         titleSize: 144
       }
     ),
 
-    T(
+
+    template(
       "registration",
       "Registration",
       "event",
@@ -623,13 +835,18 @@
       "REGISTRATION IS OPEN",
       "JOIN\nTHE LEAGUE",
       "TEAMS • PLAYERS • CRICKET",
-      ["#111013", "#5c131d", "#f1c34d"],
+      [
+        "#111013",
+        "#5c131d",
+        "#f1c34d"
+      ],
       {
         titleSize: 138
       }
     ),
 
-    T(
+
+    template(
       "tryouts",
       "Tryouts",
       "event",
@@ -637,13 +854,18 @@
       "SHOW US YOUR GAME",
       "OPEN\nTRYOUTS",
       "YOUR NEXT INNINGS STARTS HERE",
-      ["#06171b", "#1e3a43", "#f1c34d"],
+      [
+        "#06171b",
+        "#1e3a43",
+        "#f1c34d"
+      ],
       {
         titleSize: 150
       }
     ),
 
-    T(
+
+    template(
       "auction",
       "Player Auction",
       "event",
@@ -651,13 +873,18 @@
       "FWCWL AUCTION NIGHT",
       "PLAYER\nAUCTION",
       "BUILD YOUR SQUAD",
-      ["#140f11", "#5b121b", "#f1c34d"],
+      [
+        "#140f11",
+        "#5b121b",
+        "#f1c34d"
+      ],
       {
         titleSize: 138
       }
     ),
 
-    T(
+
+    template(
       "schedule",
       "Season Schedule",
       "event",
@@ -665,13 +892,18 @@
       "SEASON 2026",
       "FIXTURE\nDROP",
       "THE ROAD STARTS HERE",
-      ["#081116", "#3d1016", "#f1c34d"],
+      [
+        "#081116",
+        "#3d1016",
+        "#f1c34d"
+      ],
       {
         titleSize: 144
       }
     ),
 
-    T(
+
+    template(
       "opening",
       "Opening Ceremony",
       "event",
@@ -679,14 +911,19 @@
       "FWCWL OPENING NIGHT",
       "LET THE\nSEASON BEGIN",
       "WELCOME TO THE LEAGUE",
-      ["#090909", "#41141b", "#efc04b"],
+      [
+        "#090909",
+        "#41141b",
+        "#efc04b"
+      ],
       {
         align: "center",
         titleSize: 116
       }
     ),
 
-    T(
+
+    template(
       "milestone",
       "Milestone",
       "social",
@@ -694,13 +931,18 @@
       "CAREER MILESTONE",
       "100",
       "A LANDMARK INNINGS",
-      ["#071419", "#50131c", "#f1c34d"],
+      [
+        "#071419",
+        "#50131c",
+        "#f1c34d"
+      ],
       {
         titleSize: 230
       }
     ),
 
-    T(
+
+    template(
       "birthday",
       "Birthday",
       "social",
@@ -708,13 +950,18 @@
       "FWCWL FAMILY",
       "HAPPY\nBIRTHDAY",
       "WISHING YOU A GREAT YEAR",
-      ["#160f18", "#6b203c", "#f1c34d"],
+      [
+        "#160f18",
+        "#6b203c",
+        "#f1c34d"
+      ],
       {
         titleSize: 134
       }
     ),
 
-    T(
+
+    template(
       "sponsor",
       "Sponsor",
       "social",
@@ -722,13 +969,18 @@
       "OFFICIAL PARTNER",
       "WELCOME\nABOARD",
       "PROUDLY PARTNERING WITH FWCWL",
-      ["#0a0b0d", "#232529", "#f1c34d"],
+      [
+        "#0a0b0d",
+        "#232529",
+        "#f1c34d"
+      ],
       {
         titleSize: 126
       }
     ),
 
-    T(
+
+    template(
       "thank-you",
       "Thank You",
       "social",
@@ -736,13 +988,18 @@
       "FROM THE FWCWL FAMILY",
       "THANK\nYOU",
       "FOR YOUR SUPPORT",
-      ["#091417", "#47121a", "#f1c34d"],
+      [
+        "#091417",
+        "#47121a",
+        "#f1c34d"
+      ],
       {
         titleSize: 162
       }
     ),
 
-    T(
+
+    template(
       "breaking",
       "Breaking News",
       "social",
@@ -750,13 +1007,18 @@
       "FWCWL • BREAKING",
       "BIG\nNEWS",
       "OFFICIAL ANNOUNCEMENT",
-      ["#090a0d", "#601019", "#f1c34d"],
+      [
+        "#090a0d",
+        "#601019",
+        "#f1c34d"
+      ],
       {
         titleSize: 180
       }
     ),
 
-    T(
+
+    template(
       "highlights",
       "Match Highlights",
       "social",
@@ -764,13 +1026,18 @@
       "MATCH RECAP",
       "HIGHLIGHTS",
       "THE MOMENTS THAT DECIDED THE GAME",
-      ["#061419", "#55131d", "#f1c34d"],
+      [
+        "#061419",
+        "#55131d",
+        "#f1c34d"
+      ],
       {
         titleSize: 140
       }
     ),
 
-    T(
+
+    template(
       "brutalist",
       "Brutalist Match",
       "rustic",
@@ -778,14 +1045,19 @@
       "FWCWL MATCH CENTRE",
       "NO\nEXCUSES",
       "LIMITED • RAW • CRICKET",
-      ["#111111", "#1c1a16", "#d4ad4a"],
+      [
+        "#111111",
+        "#1c1a16",
+        "#d4ad4a"
+      ],
       {
         titleSize: 160,
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "film-grain",
       "Film Grain Player",
       "rustic",
@@ -793,14 +1065,19 @@
       "PLAYER FEATURE",
       "BUILT\nDIFFERENT",
       "GRIT • DISCIPLINE • GAME",
-      ["#221814", "#3a2820", "#d2aa48"],
+      [
+        "#221814",
+        "#3a2820",
+        "#d2aa48"
+      ],
       {
         titleSize: 140,
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "red-clay",
       "Red Clay Cricket",
       "rustic",
@@ -808,14 +1085,19 @@
       "FWCWL • CRICKET CULTURE",
       "PLAY\nHARD",
       "RUSTIC SERIES",
-      ["#35120d", "#722c1a", "#e8bb48"],
+      [
+        "#35120d",
+        "#722c1a",
+        "#e8bb48"
+      ],
       {
         titleSize: 150,
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "black-gold",
       "Black Gold Texture",
       "rustic",
@@ -823,14 +1105,19 @@
       "PREMIER CRICKET",
       "THE\nFINAL",
       "LIMITED EDITION",
-      ["#090909", "#171309", "#d6a93a"],
+      [
+        "#090909",
+        "#171309",
+        "#d6a93a"
+      ],
       {
         titleSize: 158,
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "weathered",
       "Weathered Fixture",
       "rustic",
@@ -838,14 +1125,19 @@
       "MATCH NOTICE",
       "NEXT\nFIXTURE",
       "FWCWL ARCHIVES",
-      ["#d8c7a6", "#9f8869", "#7f2226"],
+      [
+        "#d8c7a6",
+        "#9f8869",
+        "#7f2226"
+      ],
       {
         titleSize: 138,
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "player-collage",
       "Player Collage",
       "layered",
@@ -853,13 +1145,18 @@
       "FWCWL PLAYER SERIES",
       "PLAYER\nSPOTLIGHT",
       "LAYERED EDITORIAL",
-      ["#171016", "#6b1b27", "#efc14b"],
+      [
+        "#171016",
+        "#6b1b27",
+        "#efc14b"
+      ],
       {
         titleSize: 128
       }
     ),
 
-    T(
+
+    template(
       "tactical-lineup",
       "Tactical Lineup",
       "layered",
@@ -867,13 +1164,18 @@
       "MATCH PLAN",
       "PLAYING\nXI",
       "TACTICAL TEAM SHEET",
-      ["#061b18", "#142b22", "#f1c34d"],
+      [
+        "#061b18",
+        "#142b22",
+        "#f1c34d"
+      ],
       {
         titleSize: 148
       }
     ),
 
-    T(
+
+    template(
       "stacked-rivalry",
       "Stacked Rivalry",
       "layered",
@@ -881,14 +1183,19 @@
       "RIVALRY WEEK",
       "TEAM A\nVS\nTEAM B",
       "LAYERED MATCH SERIES",
-      ["#101118", "#701822", "#f1c34d"],
+      [
+        "#101118",
+        "#701822",
+        "#f1c34d"
+      ],
       {
         align: "center",
         titleSize: 118
       }
     ),
 
-    T(
+
+    template(
       "cutout-hero",
       "Cutout Hero",
       "layered",
@@ -896,13 +1203,18 @@
       "PLAYER FEATURE",
       "OWN\nTHE GAME",
       "FWCWL HERO SERIES",
-      ["#07141b", "#50131d", "#f1c34d"],
+      [
+        "#07141b",
+        "#50131d",
+        "#f1c34d"
+      ],
       {
         titleSize: 150
       }
     ),
 
-    T(
+
+    template(
       "retro",
       "Retro Cricket",
       "vintage",
@@ -910,15 +1222,21 @@
       "TAMPA CRICKET",
       "SUMMER\nCRICKET",
       "ARCHIVE SERIES",
-      ["#c8ac81", "#74464b", "#4b2b25"],
+      [
+        "#c8ac81",
+        "#74464b",
+        "#4b2b25"
+      ],
       {
         titleSize: 132,
-        font: "Playfair Display",
+        font:
+          "Playfair Display",
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "trophy-archive",
       "Trophy Archive",
       "vintage",
@@ -926,16 +1244,22 @@
       "FWCWL ARCHIVES",
       "CHAMPIONS",
       "A SEASON TO REMEMBER",
-      ["#d4bc8d", "#a78760", "#852c31"],
+      [
+        "#d4bc8d",
+        "#a78760",
+        "#852c31"
+      ],
       {
         align: "center",
         titleSize: 124,
-        font: "Playfair Display",
+        font:
+          "Playfair Display",
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "heritage",
       "Heritage Match",
       "vintage",
@@ -943,15 +1267,21 @@
       "HERITAGE SERIES",
       "CLASSIC\nCRICKET",
       "TRADITION MEETS COMPETITION",
-      ["#c6af88", "#675747", "#7b292c"],
+      [
+        "#c6af88",
+        "#675747",
+        "#7b292c"
+      ],
       {
         titleSize: 126,
-        font: "Playfair Display",
+        font:
+          "Playfair Display",
         texture: 1
       }
     ),
 
-    T(
+
+    template(
       "editorial-feature",
       "Editorial Feature",
       "editorial",
@@ -959,10 +1289,15 @@
       "THE FWCWL EDIT",
       "THE\nGAME",
       "A MODERN CRICKET STORY",
-      ["#eee4cf", "#cbb892", "#6f1d28"],
+      [
+        "#eee4cf",
+        "#cbb892",
+        "#6f1d28"
+      ],
       {
         titleSize: 158,
-        font: "Playfair Display"
+        font:
+          "Playfair Display"
       }
     )
 
@@ -970,7 +1305,7 @@
 
 
   /* ==========================================================
-     APP
+     POSTER EDITOR
   ========================================================== */
 
   class PosterEditor {
@@ -980,31 +1315,62 @@
       this.canvas =
         $("#posterCanvas");
 
+
+      if (!this.canvas) {
+        console.error(
+          "FWCWL Poster Editor: #posterCanvas not found."
+        );
+
+        return;
+      }
+
+
       this.ctx =
-        this.canvas.getContext("2d");
+        this.canvas.getContext(
+          "2d"
+        );
+
 
       this.assets =
         new Map();
 
+
       this.logo =
         new Image();
+
 
       this.logoReady =
         false;
 
+
       this.logo.onload =
         () => {
-          this.logoReady = true;
+          this.logoReady =
+            true;
+
           this.render();
+
           this.renderTemplates();
         };
+
+
+      this.logo.onerror =
+        () => {
+          this.logoReady =
+            false;
+
+          this.render();
+        };
+
 
       this.logo.src =
         "assets/fwcwl-logo.jpeg";
 
 
       this.state = {
-        format: "portrait",
+
+        format:
+          "portrait",
 
         width:
           FORMATS.portrait.width,
@@ -1039,94 +1405,128 @@
         selectedId:
           null,
 
+        textureStrength:
+          52,
+
         layers: []
+
       };
 
 
-      this.filter =
+      this.activeFilter =
         "all";
 
-      this.search =
+
+      this.searchTerm =
         "";
 
-      this.drag =
+
+      this.dragState =
         null;
+
 
       this.history =
         [];
 
+
       this.historyIndex =
         -1;
 
-      this.previewRaf =
-        null;
-
 
       this.bindUI();
+
 
       this.applyTemplate(
         "match-day",
         false
       );
 
+
       this.commit();
 
-      document.fonts?.ready
+
+      this.renderAssets();
+
+
+      this.renderInspector();
+
+
+      document.fonts
+        ?.ready
         ?.then(
           () => {
             this.render();
+
             this.renderTemplates();
           }
         );
+
 
       requestAnimationFrame(
         () =>
           this.fitCanvas()
       );
+
     }
 
 
     /* ========================================================
-       TEMPLATE
+       TEMPLATE HELPERS
     ======================================================== */
 
-    template() {
+    currentTemplate() {
+
       return (
         TEMPLATES.find(
-          template =>
-            template.id ===
+          item =>
+            item.id ===
             this.state.templateId
         ) ||
         TEMPLATES[0]
       );
+
     }
 
+
+    /* ========================================================
+       APPLY TEMPLATE
+    ======================================================== */
 
     applyTemplate(
       id,
       save = true
     ) {
-      const template =
+
+      const selectedTemplate =
         TEMPLATES.find(
           item =>
             item.id === id
         ) ||
         TEMPLATES[0];
 
-      const mediaLayers =
+
+      /*
+       * Preserve user-uploaded images when changing template.
+       */
+
+      const imageLayers =
         this.state.layers.filter(
           layer =>
-            layer.type === "image"
+            layer.type ===
+            "image"
         );
 
+
       this.state.templateId =
-        template.id;
+        selectedTemplate.id;
+
 
       this.state.accent =
-        template.palette[2];
+        selectedTemplate.palette[2];
+
 
       this.state.background =
-        template.palette[0];
+        selectedTemplate.palette[0];
 
 
       this.state.layers = [
@@ -1138,27 +1538,31 @@
           type:
             "text",
 
+          role:
+            "template",
+
           name:
             "Kicker",
 
           text:
-            template.kicker,
+            selectedTemplate.kicker,
 
           x:
-            template.align ===
+            selectedTemplate.align ===
             "center"
               ? 50
               : 7,
 
           y:
-            template.titleY -
+            selectedTemplate.titleY -
             10,
 
           width:
-            template.align ===
+            selectedTemplate.align ===
             "center"
               ? 82
-              : template.titleWidth,
+              : selectedTemplate
+                  .titleWidth,
 
           size:
             25,
@@ -1170,16 +1574,26 @@
             "DM Sans",
 
           color:
-            template.palette[2],
+            selectedTemplate
+              .palette[2],
 
           align:
-            template.align,
+            selectedTemplate.align,
 
           opacity:
             1,
 
+          lineHeight:
+            1,
+
           letterSpacing:
-            2
+            2,
+
+          visible:
+            true,
+
+          locked:
+            false
         },
 
 
@@ -1190,41 +1604,46 @@
           type:
             "text",
 
+          role:
+            "template",
+
           name:
             "Headline",
 
           text:
-            template.title,
+            selectedTemplate.title,
 
           x:
-            template.align ===
+            selectedTemplate.align ===
             "center"
               ? 50
               : 7,
 
           y:
-            template.titleY,
+            selectedTemplate.titleY,
 
           width:
-            template.titleWidth,
+            selectedTemplate
+              .titleWidth,
 
           size:
-            template.titleSize,
+            selectedTemplate
+              .titleSize,
 
           weight:
-            template.font ===
+            selectedTemplate.font ===
             "Bebas Neue"
               ? 400
               : 900,
 
           font:
-            template.font,
+            selectedTemplate.font,
 
           color:
             "#ffffff",
 
           align:
-            template.align,
+            selectedTemplate.align,
 
           opacity:
             1,
@@ -1233,7 +1652,13 @@
             .84,
 
           letterSpacing:
-            0
+            0,
+
+          visible:
+            true,
+
+          locked:
+            false
         },
 
 
@@ -1244,24 +1669,27 @@
           type:
             "text",
 
+          role:
+            "template",
+
           name:
             "Details",
 
           text:
-            template.detail,
+            selectedTemplate.detail,
 
           x:
-            template.align ===
+            selectedTemplate.align ===
             "center"
               ? 50
               : 7,
 
           y:
-            template.titleY +
+            selectedTemplate.titleY +
             28,
 
           width:
-            template.align ===
+            selectedTemplate.align ===
             "center"
               ? 78
               : 68,
@@ -1276,19 +1704,25 @@
             "DM Sans",
 
           color:
-            "rgba(255,255,255,.72)",
+            "#c8cbd0",
 
           align:
-            template.align,
+            selectedTemplate.align,
 
           opacity:
-            1,
+            .82,
 
           lineHeight:
             1.15,
 
           letterSpacing:
-            .4
+            .4,
+
+          visible:
+            true,
+
+          locked:
+            false
         },
 
 
@@ -1299,27 +1733,36 @@
           type:
             "text",
 
+          role:
+            "template",
+
           name:
             "Footer",
 
           text:
-            template.cta,
+            selectedTemplate.cta,
 
-          x: 7,
+          x:
+            7,
 
-          y: 91,
+          y:
+            91,
 
-          width: 45,
+          width:
+            45,
 
-          size: 19,
+          size:
+            19,
 
-          weight: 900,
+          weight:
+            900,
 
           font:
             "DM Sans",
 
           color:
-            template.palette[2],
+            selectedTemplate
+              .palette[2],
 
           align:
             "left",
@@ -1327,22 +1770,36 @@
           opacity:
             1,
 
+          lineHeight:
+            1,
+
           letterSpacing:
-            1.8
+            1.8,
+
+          visible:
+            true,
+
+          locked:
+            false
         },
 
-        ...mediaLayers
+
+        ...imageLayers
       ];
 
 
       this.state.selectedId =
         null;
 
+
       this.syncBrandUI();
+
 
       this.render();
 
+
       this.renderTemplates();
+
 
       this.renderInspector();
 
@@ -1350,6 +1807,7 @@
       if (save) {
         this.commit();
       }
+
     }
 
 
@@ -1358,55 +1816,74 @@
     ======================================================== */
 
     renderTemplates() {
+
       const grid =
         $("#posterTemplateGrid");
+
 
       if (!grid) {
         return;
       }
 
+
       const search =
-        this.search
+        this.searchTerm
           .trim()
           .toLowerCase();
 
+
       const filtered =
         TEMPLATES.filter(
-          template => {
-            const category =
-              this.filter === "all" ||
-              template.category ===
-              this.filter;
+          item => {
+
+            const matchesCategory =
+              this.activeFilter ===
+                "all" ||
+              item.category ===
+                this.activeFilter;
+
 
             const haystack =
               [
-                template.name,
-                template.category,
-                template.style,
-                template.kicker,
-                template.title
+                item.name,
+                item.category,
+                item.style,
+                item.kicker,
+                item.title,
+                item.detail
               ]
                 .join(" ")
                 .toLowerCase();
 
+
+            const matchesSearch =
+              !search ||
+              haystack.includes(
+                search
+              );
+
+
             return (
-              category &&
-              (
-                !search ||
-                haystack.includes(search)
-              )
+              matchesCategory &&
+              matchesSearch
             );
+
           }
         );
 
 
-      $("#posterTemplateCount")
-        .textContent =
-        filtered.length;
+      const counter =
+        $("#posterTemplateCount");
+
+
+      if (counter) {
+        counter.textContent =
+          filtered.length;
+      }
 
 
       $("#posterTemplateEmpty")
-        .classList
+        ?.classList
         .toggle(
           "hidden",
           filtered.length > 0
@@ -1416,16 +1893,21 @@
       grid.innerHTML =
         filtered
           .map(
-            template => `
+            item => `
               <button
                 class="template-card ${
-                  template.id ===
+                  item.id ===
                   this.state.templateId
                     ? "active"
                     : ""
                 }"
-                data-template-id="${template.id}"
+                data-template-id="${item.id}"
                 type="button"
+                aria-label="Use ${
+                  escapeHtml(
+                    item.name
+                  )
+                } template"
               >
 
                 <div class="template-art">
@@ -1433,22 +1915,23 @@
                   <canvas
                     width="216"
                     height="270"
-                    data-template-preview="${template.id}"
+                    data-template-preview="${item.id}"
                   ></canvas>
 
                 </div>
+
 
                 <div class="template-meta">
 
                   <strong>
                     ${escapeHtml(
-                      template.name
+                      item.name
                     )}
                   </strong>
 
                   <small>
                     ${escapeHtml(
-                      template.category
+                      item.category
                     )}
                   </small>
 
@@ -1466,110 +1949,139 @@
         )
         .forEach(
           button => {
+
             button.addEventListener(
               "click",
               () => {
+
                 this.applyTemplate(
                   button.dataset
                     .templateId
                 );
+
               }
             );
+
           }
         );
 
 
       requestAnimationFrame(
         () => {
+
           filtered.forEach(
-            template => {
-              const canvas =
+            item => {
+
+              const preview =
                 grid.querySelector(
-                  `[data-template-preview="${template.id}"]`
+                  `[data-template-preview="${item.id}"]`
                 );
 
-              if (!canvas) {
+
+              if (!preview) {
                 return;
               }
 
+
               const ctx =
-                canvas.getContext("2d");
+                preview.getContext(
+                  "2d"
+                );
+
 
               this.drawTemplatePreview(
                 ctx,
-                canvas.width,
-                canvas.height,
-                template
+                preview.width,
+                preview.height,
+                item
               );
+
             }
           );
+
         }
       );
+
     }
 
+
+    /* ========================================================
+       TEMPLATE PREVIEW
+    ======================================================== */
 
     drawTemplatePreview(
       ctx,
       width,
       height,
-      template
+      item
     ) {
+
       this.drawDesignBase(
         ctx,
         width,
         height,
-        template,
-        0
+        item
       );
 
 
       if (
-        this.logoReady
+        this.logoReady &&
+        this.logo.naturalWidth
       ) {
-        const maxW =
+
+        const maxWidth =
           width * .17;
 
-        const maxH =
+
+        const maxHeight =
           height * .09;
+
 
         const scale =
           Math.min(
-            maxW /
-            this.logo.naturalWidth,
-            maxH /
-            this.logo.naturalHeight
+            maxWidth /
+              this.logo.naturalWidth,
+
+            maxHeight /
+              this.logo.naturalHeight
           );
 
-        const w =
+
+        const logoWidth =
           this.logo.naturalWidth *
           scale;
 
-        const h =
+
+        const logoHeight =
           this.logo.naturalHeight *
           scale;
+
 
         ctx.drawImage(
           this.logo,
           width * .055,
           height * .035,
-          w,
-          h
+          logoWidth,
+          logoHeight
         );
+
       }
 
 
       const align =
-        template.align;
+        item.align;
+
 
       const x =
         align === "center"
           ? width / 2
           : width * .065;
 
-      const maxWidth =
+
+      const maxTextWidth =
         width *
         (
-          template.titleWidth /
+          item.titleWidth /
           100
         );
 
@@ -1577,25 +2089,28 @@
       ctx.textAlign =
         align;
 
+
       ctx.textBaseline =
         "top";
 
 
       ctx.fillStyle =
-        template.palette[2];
+        item.palette[2];
+
 
       ctx.font =
         `900 ${
           width * .026
         }px "DM Sans"`;
 
+
       ctx.fillText(
-        template.kicker,
+        item.kicker,
         x,
         height *
         (
           (
-            template.titleY -
+            item.titleY -
             10
           ) /
           100
@@ -1606,73 +2121,79 @@
       ctx.fillStyle =
         "#ffffff";
 
+
+      const titleSize =
+        width *
+        (
+          item.titleSize /
+          1080
+        );
+
+
       ctx.font =
         `${
-          template.font ===
+          item.font ===
           "Bebas Neue"
             ? 400
             : 900
-        } ${
-          width *
-          (
-            template.titleSize /
-            1080
-          )
-        }px "${template.font}"`;
+        } ${titleSize}px "${item.font}"`;
 
 
       const titleLines =
         this.wrapText(
           ctx,
-          template.title,
-          maxWidth
+          item.title,
+          maxTextWidth
         );
+
 
       let y =
         height *
         (
-          template.titleY /
+          item.titleY /
           100
         );
 
+
       const lineHeight =
-        width *
-        (
-          template.titleSize /
-          1080
-        ) *
+        titleSize *
         .84;
 
 
       titleLines.forEach(
         line => {
+
           ctx.fillText(
             line,
             x,
             y
           );
 
+
           y +=
             lineHeight;
+
         }
       );
 
 
       ctx.fillStyle =
-        "rgba(255,255,255,.58)";
+        "rgba(255,255,255,.62)";
+
 
       ctx.font =
         `700 ${
           width * .019
         }px "DM Sans"`;
 
+
       ctx.fillText(
-        template.detail,
+        item.detail,
         x,
         height *
         (
           (
-            template.titleY +
+            item.titleY +
             29
           ) /
           100
@@ -1680,60 +2201,75 @@
       );
 
 
+      ctx.textAlign =
+        "right";
+
+
       ctx.fillStyle =
-        "rgba(255,255,255,.32)";
+        "rgba(255,255,255,.34)";
+
 
       ctx.font =
         `800 ${
           width * .016
         }px "DM Sans"`;
 
-      ctx.textAlign =
-        "right";
 
       ctx.fillText(
         "FWCWL",
         width * .94,
         height * .94
       );
+
     }
 
 
     /* ========================================================
-       DRAWING
+       MASTER RENDER
     ======================================================== */
 
     render(
       exporting = false
     ) {
+
       const ctx =
         this.ctx;
 
-      const W =
+
+      const width =
         this.state.width;
 
-      const H =
+
+      const height =
         this.state.height;
 
+
       if (
-        this.canvas.width !== W ||
-        this.canvas.height !== H
+        this.canvas.width !==
+          width ||
+        this.canvas.height !==
+          height
       ) {
-        this.canvas.width = W;
-        this.canvas.height = H;
+
+        this.canvas.width =
+          width;
+
+
+        this.canvas.height =
+          height;
+
       }
 
 
-      const template =
-        this.template();
+      const currentTemplate =
+        this.currentTemplate();
 
 
       this.drawDesignBase(
         ctx,
-        W,
-        H,
-        template,
-        0
+        width,
+        height,
+        currentTemplate
       );
 
 
@@ -1741,6 +2277,7 @@
         const layer of
         this.state.layers
       ) {
+
         if (
           layer.visible ===
           false
@@ -1748,19 +2285,21 @@
           continue;
         }
 
+
         this.drawLayer(
           ctx,
           layer,
-          W,
-          H
+          width,
+          height
         );
+
       }
 
 
       this.drawOfficialBrand(
         ctx,
-        W,
-        H
+        width,
+        height
       );
 
 
@@ -1768,11 +2307,13 @@
         this.state.safeZone &&
         !exporting
       ) {
+
         this.drawSafeZone(
           ctx,
-          W,
-          H
+          width,
+          height
         );
+
       }
 
 
@@ -1780,435 +2321,548 @@
         !exporting &&
         this.state.selectedId
       ) {
+
         const selected =
           this.getSelected();
 
+
         if (
-          selected?._bounds
+          selected &&
+          selected._bounds
         ) {
+
           this.drawSelection(
             ctx,
             selected._bounds,
-            W
+            width
           );
+
         }
+
       }
+
     }
 
 
+    /* ========================================================
+       BASE TEMPLATE ART
+    ======================================================== */
+
     drawDesignBase(
       ctx,
-      W,
-      H,
-      template,
-      time
+      width,
+      height,
+      item
     ) {
-      const p =
-        template.palette;
+
+      const palette =
+        item.palette;
+
 
       const gradient =
         ctx.createLinearGradient(
           0,
           0,
-          W,
-          H
+          width,
+          height
         );
+
 
       gradient.addColorStop(
         0,
-        p[0]
+        palette[0]
       );
+
 
       gradient.addColorStop(
         1,
-        p[1]
+        palette[1]
       );
+
 
       ctx.fillStyle =
         gradient;
 
+
       ctx.fillRect(
         0,
         0,
-        W,
-        H
+        width,
+        height
       );
 
 
       switch (
-        template.style
+        item.style
       ) {
 
         case "slash":
+
           this.drawSlashes(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "versus":
+
           this.drawVersus(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "fixture":
+
           this.drawFixture(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "stadium":
+
           this.drawStadium(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "split":
+
           this.drawSplit(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "lines":
+
           this.drawLines(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "score":
+
           this.drawScorePanel(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "lineup":
+        case "pitch":
+
           this.drawPitch(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "grid":
+
           this.drawGrid(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "captain":
+
           this.drawCaptain(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "player":
+
           this.drawPlayerPanel(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "award":
+
           this.drawAward(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "gold":
+        case "radial":
+
           this.drawGoldRays(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "result":
+
           this.drawResult(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "final":
+
           this.drawFinal(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
 
-        case "pitch":
-          this.drawPitch(
-            ctx,
-            W,
-            H,
-            p[2]
-          );
-          break;
 
         case "ticket":
+
           this.drawTicket(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "cards":
+
           this.drawCards(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "milestone":
+
           this.drawMilestone(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "confetti":
+
           this.drawConfetti(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "frame":
+
           this.drawFrame(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
 
-        case "radial":
-          this.drawGoldRays(
-            ctx,
-            W,
-            H,
-            p[2]
-          );
-          break;
 
         case "news":
+
           this.drawNews(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "brutalist":
+
           this.drawBrutalist(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "film":
+
           this.drawFilm(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "grit":
+
           this.drawGrit(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "gold-grit":
+
           this.drawGoldRays(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
 
           this.drawGrit(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "paper":
+
           this.drawPaper(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "collage":
+
           this.drawCollage(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "stack":
+
           this.drawStack(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "cutout":
+
           this.drawCutout(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
 
         case "retro":
+
           this.drawRetro(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
 
+
         case "editorial":
+
           this.drawEditorial(
             ctx,
-            W,
-            H,
-            p[2]
+            width,
+            height,
+            palette[2]
           );
+
           break;
+
       }
 
 
       const bottomShade =
         ctx.createLinearGradient(
           0,
-          H * .5,
+          height * .50,
           0,
-          H
+          height
         );
+
 
       bottomShade.addColorStop(
         0,
         "rgba(0,0,0,0)"
       );
 
+
       bottomShade.addColorStop(
         1,
         "rgba(0,0,0,.44)"
       );
 
+
       ctx.fillStyle =
         bottomShade;
+
 
       ctx.fillRect(
         0,
         0,
-        W,
-        H
+        width,
+        height
       );
 
 
       if (
-        template.texture
+        item.texture
       ) {
+
         this.drawTexture(
           ctx,
-          W,
-          H
+          width,
+          height,
+          this.state.textureStrength
         );
+
       }
+
     }
 
 
+    /* ========================================================
+       TEMPLATE DECORATIONS
+    ======================================================== */
+
     drawSlashes(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 4;
         i++
       ) {
+
         ctx.save();
 
+
         ctx.translate(
-          W *
+          width *
           (
             .55 +
             i * .10
           ),
-          H * .45
+          height * .45
         );
 
-        ctx.rotate(-.25);
+
+        ctx.rotate(
+          -.25
+        );
+
 
         ctx.fillStyle =
           rgba(
@@ -2217,60 +2871,74 @@
             i * .015
           );
 
+
         ctx.fillRect(
           0,
-          -H * .65,
-          W * .07,
-          H * 1.3
+          -height * .65,
+          width * .07,
+          height * 1.30
         );
 
+
         ctx.restore();
+
       }
+
 
       ctx.fillStyle =
         accent;
 
+
       ctx.fillRect(
-        W * .07,
-        H * .82,
-        W * .12,
-        H * .004
+        width * .07,
+        height * .82,
+        width * .12,
+        height * .004
       );
+
     }
 
 
     drawVersus(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(84,12,22,.38)";
 
+
       ctx.beginPath();
 
+
       ctx.moveTo(
-        W * .52,
+        width * .52,
         0
       );
 
+
       ctx.lineTo(
-        W,
+        width,
         0
       );
 
-      ctx.lineTo(
-        W,
-        H
-      );
 
       ctx.lineTo(
-        W * .40,
-        H
+        width,
+        height
       );
+
+
+      ctx.lineTo(
+        width * .40,
+        height
+      );
+
 
       ctx.closePath();
+
 
       ctx.fill();
 
@@ -2281,53 +2949,70 @@
           .34
         );
 
+
       ctx.lineWidth =
-        W * .008;
+        width * .008;
+
 
       ctx.beginPath();
 
+
       ctx.arc(
-        W * .5,
-        H * .44,
-        W * .17,
+        width * .50,
+        height * .44,
+        width * .17,
         0,
         Math.PI * 2
       );
 
+
       ctx.stroke();
+
     }
 
 
     drawFixture(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         "rgba(255,255,255,.045)";
 
-      ctx.lineWidth = 2;
+
+      ctx.lineWidth =
+        2;
+
 
       for (
-        let y = H * .16;
-        y < H;
-        y += H * .055
+        let y =
+          height * .16;
+        y < height;
+        y +=
+          height * .055
       ) {
+
         ctx.beginPath();
+
 
         ctx.moveTo(
           0,
           y
         );
 
+
         ctx.lineTo(
-          W,
+          width,
           y
         );
 
+
         ctx.stroke();
+
       }
+
 
       ctx.fillStyle =
         rgba(
@@ -2335,74 +3020,89 @@
           .10
         );
 
+
       ctx.fillRect(
-        W * .70,
-        H * .17,
-        W * .20,
-        H * .19
+        width * .70,
+        height * .17,
+        width * .20,
+        height * .19
       );
+
     }
 
 
     drawStadium(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 7;
         i++
       ) {
+
         const x =
-          W *
+          width *
           (
             .08 +
             i * .14
           );
 
+
         const beam =
           ctx.createLinearGradient(
             x,
             0,
-            W / 2,
-            H * .75
+            width / 2,
+            height * .75
           );
+
 
         beam.addColorStop(
           0,
           "rgba(255,255,255,.10)"
         );
 
+
         beam.addColorStop(
           1,
           "rgba(255,255,255,0)"
         );
 
+
         ctx.fillStyle =
           beam;
 
+
         ctx.beginPath();
 
+
         ctx.moveTo(
-          x - W * .018,
+          x - width * .018,
           0
         );
 
+
         ctx.lineTo(
-          x + W * .018,
+          x + width * .018,
           0
         );
 
+
         ctx.lineTo(
-          W / 2,
-          H * .76
+          width / 2,
+          height * .76
         );
+
 
         ctx.closePath();
 
+
         ctx.fill();
+
       }
 
 
@@ -2412,76 +3112,92 @@
           .25
         );
 
+
       ctx.lineWidth =
-        W * .003;
+        width * .003;
+
 
       ctx.beginPath();
 
+
       ctx.ellipse(
-        W / 2,
-        H * .87,
-        W * .36,
-        H * .065,
+        width / 2,
+        height * .87,
+        width * .36,
+        height * .065,
         0,
         0,
         Math.PI * 2
       );
 
+
       ctx.stroke();
+
     }
 
 
     drawSplit(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         rgba(
           accent,
           .08
         );
 
+
       ctx.beginPath();
 
+
       ctx.moveTo(
-        W * .67,
+        width * .67,
         0
       );
 
+
       ctx.lineTo(
-        W,
+        width,
         0
       );
 
-      ctx.lineTo(
-        W,
-        H
-      );
 
       ctx.lineTo(
-        W * .42,
-        H
+        width,
+        height
       );
+
+
+      ctx.lineTo(
+        width * .42,
+        height
+      );
+
 
       ctx.closePath();
 
+
       ctx.fill();
+
     }
 
 
     drawLines(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 8;
         i++
       ) {
+
         ctx.strokeStyle =
           rgba(
             accent,
@@ -2489,13 +3205,16 @@
             i * .005
           );
 
+
         ctx.lineWidth =
-          W * .003;
+          width * .003;
+
 
         ctx.beginPath();
 
+
         ctx.moveTo(
-          W *
+          width *
           (
             .58 +
             i * .04
@@ -2503,39 +3222,47 @@
           0
         );
 
+
         ctx.lineTo(
-          W *
+          width *
           (
             .35 +
             i * .05
           ),
-          H
+          height
         );
 
+
         ctx.stroke();
+
       }
+
     }
 
 
     drawScorePanel(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(0,0,0,.20)";
 
+
       roundedRect(
         ctx,
-        W * .08,
-        H * .25,
-        W * .84,
-        H * .40,
-        W * .026
+        width * .08,
+        height * .25,
+        width * .84,
+        height * .40,
+        width * .026
       );
 
+
       ctx.fill();
+
 
       ctx.strokeStyle =
         rgba(
@@ -2543,65 +3270,78 @@
           .26
         );
 
+
       ctx.lineWidth =
-        W * .003;
+        width * .003;
+
 
       ctx.stroke();
+
     }
 
 
     drawPitch(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         rgba(
           accent,
           .18
         );
 
+
       ctx.lineWidth =
-        W * .003;
+        width * .003;
+
 
       ctx.strokeRect(
-        W * .62,
-        H * .18,
-        W * .25,
-        H * .52
+        width * .62,
+        height * .18,
+        width * .25,
+        height * .52
       );
+
 
       ctx.beginPath();
 
+
       ctx.arc(
-        W * .745,
-        H * .44,
-        W * .06,
+        width * .745,
+        height * .44,
+        width * .06,
         0,
         Math.PI * 2
       );
 
+
       ctx.stroke();
+
     }
 
 
     drawGrid(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let row = 0;
         row < 4;
         row++
       ) {
+
         for (
           let col = 0;
           col < 3;
           col++
         ) {
+
           ctx.fillStyle =
             row === 0 &&
             col === 0
@@ -2611,96 +3351,116 @@
                 )
               : "rgba(255,255,255,.025)";
 
+
           roundedRect(
             ctx,
-            W *
+            width *
             (
               .59 +
               col * .105
             ),
-            H *
+            height *
             (
               .43 +
               row * .07
             ),
-            W * .09,
-            H * .05,
-            W * .008
+            width * .09,
+            height * .05,
+            width * .008
           );
 
+
           ctx.fill();
+
         }
+
       }
+
     }
 
 
     drawCaptain(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         rgba(
           accent,
           .28
         );
 
+
       ctx.lineWidth =
-        W * .006;
+        width * .006;
+
 
       ctx.beginPath();
 
+
       ctx.moveTo(
-        W * .68,
-        H * .26
+        width * .68,
+        height * .26
       );
 
-      ctx.lineTo(
-        W * .77,
-        H * .19
-      );
 
       ctx.lineTo(
-        W * .87,
-        H * .26
+        width * .77,
+        height * .19
       );
 
-      ctx.lineTo(
-        W * .82,
-        H * .39
-      );
 
       ctx.lineTo(
-        W * .72,
-        H * .39
+        width * .87,
+        height * .26
       );
+
+
+      ctx.lineTo(
+        width * .82,
+        height * .39
+      );
+
+
+      ctx.lineTo(
+        width * .72,
+        height * .39
+      );
+
 
       ctx.closePath();
 
+
       ctx.stroke();
+
     }
 
 
     drawPlayerPanel(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(255,255,255,.025)";
 
+
       roundedRect(
         ctx,
-        W * .61,
-        H * .18,
-        W * .30,
-        H * .52,
-        W * .025
+        width * .61,
+        height * .18,
+        width * .30,
+        height * .52,
+        width * .025
       );
 
+
       ctx.fill();
+
 
       ctx.strokeStyle =
         rgba(
@@ -2708,35 +3468,42 @@
           .30
         );
 
+
       ctx.lineWidth =
-        W * .006;
+        width * .006;
+
 
       ctx.beginPath();
 
+
       ctx.arc(
-        W * .76,
-        H * .37,
-        W * .15,
+        width * .76,
+        height * .37,
+        width * .15,
         0,
         Math.PI * 2
       );
 
+
       ctx.stroke();
+
     }
 
 
     drawAward(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       this.drawPlayerPanel(
         ctx,
-        W,
-        H,
+        width,
+        height,
         accent
       );
+
 
       ctx.fillStyle =
         rgba(
@@ -2744,36 +3511,43 @@
           .12
         );
 
+
       ctx.font =
         `400 ${
-          W * .18
+          width * .18
         }px "Bebas Neue"`;
+
 
       ctx.fillText(
         "01",
-        W * .61,
-        H * .65
+        width * .61,
+        height * .65
       );
+
     }
 
 
     drawGoldRays(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 18;
         i++
       ) {
+
         ctx.save();
 
+
         ctx.translate(
-          W / 2,
-          H * .43
+          width / 2,
+          height * .43
         );
+
 
         ctx.rotate(
           i /
@@ -2781,6 +3555,7 @@
           Math.PI *
           2
         );
+
 
         ctx.fillStyle =
           rgba(
@@ -2790,36 +3565,43 @@
               : .055
           );
 
+
         ctx.fillRect(
-          W * .13,
-          -W * .008,
-          W * .34,
-          W * .016
+          width * .13,
+          -width * .008,
+          width * .34,
+          width * .016
         );
 
+
         ctx.restore();
+
       }
+
     }
 
 
     drawResult(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         rgba(
           accent,
           .08
         );
 
+
       ctx.fillRect(
-        W * .68,
+        width * .68,
         0,
-        W * .32,
-        H
+        width * .32,
+        height
       );
+
 
       ctx.strokeStyle =
         rgba(
@@ -2827,60 +3609,70 @@
           .25
         );
 
+
       ctx.lineWidth =
-        W * .003;
+        width * .003;
+
 
       ctx.strokeRect(
-        W * .05,
-        H * .06,
-        W * .90,
-        H * .88
+        width * .05,
+        height * .06,
+        width * .90,
+        height * .88
       );
+
     }
 
 
     drawFinal(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         rgba(
           accent,
           .42
         );
 
+
       ctx.lineWidth =
-        W * .003;
+        width * .003;
+
 
       ctx.strokeRect(
-        W * .04,
-        H * .025,
-        W * .92,
-        H * .95
+        width * .04,
+        height * .025,
+        width * .92,
+        height * .95
       );
+
 
       this.drawGoldRays(
         ctx,
-        W,
-        H,
+        width,
+        height,
         accent
       );
+
     }
 
 
     drawTicket(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 7;
         i++
       ) {
+
         ctx.fillStyle =
           i % 2
             ? "rgba(255,255,255,.018)"
@@ -2889,45 +3681,52 @@
                 .035
               );
 
+
         ctx.fillRect(
-          W *
+          width *
           (
             .60 +
             i * .042
           ),
-          H * .17,
-          W * .024,
-          H * .58
+          height * .17,
+          width * .024,
+          height * .58
         );
+
       }
+
     }
 
 
     drawCards(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 3;
         i++
       ) {
+
         ctx.save();
 
+
         ctx.translate(
-          W *
+          width *
           (
             .67 +
             i * .055
           ),
-          H *
+          height *
           (
             .34 +
             i * .06
           )
         );
+
 
         ctx.rotate(
           (
@@ -2935,6 +3734,7 @@
           ) *
           .09
         );
+
 
         ctx.fillStyle =
           i === 1
@@ -2944,69 +3744,83 @@
               )
             : "rgba(255,255,255,.025)";
 
+
         roundedRect(
           ctx,
-          -W * .11,
-          -H * .13,
-          W * .22,
-          H * .26,
-          W * .015
+          -width * .11,
+          -height * .13,
+          width * .22,
+          height * .26,
+          width * .015
         );
+
 
         ctx.fill();
 
+
         ctx.restore();
+
       }
+
     }
 
 
     drawMilestone(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         rgba(
           accent,
           .25
         );
 
+
       ctx.lineWidth =
-        W * .013;
+        width * .013;
+
 
       ctx.beginPath();
 
+
       ctx.arc(
-        W * .76,
-        H * .39,
-        W * .15,
+        width * .76,
+        height * .39,
+        width * .15,
         0,
         Math.PI * 2
       );
 
+
       ctx.stroke();
+
     }
 
 
     drawConfetti(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 34;
         i++
       ) {
+
         const x =
           Math.abs(
             Math.sin(
               i * 81.17
             )
           ) *
-          W;
+          width;
+
 
         const y =
           Math.abs(
@@ -3014,90 +3828,116 @@
               i * 13.71
             )
           ) *
-          H;
+          height;
+
 
         ctx.save();
+
 
         ctx.translate(
           x,
           y
         );
 
-        ctx.rotate(i);
+
+        ctx.rotate(
+          i
+        );
+
 
         ctx.fillStyle =
           i % 3 === 0
             ? "#ffffff"
             : accent;
 
+
         ctx.globalAlpha =
           .18;
 
+
         ctx.fillRect(
-          -W * .004,
-          -W * .011,
-          W * .008,
-          W * .022
+          -width * .004,
+          -width * .011,
+          width * .008,
+          width * .022
         );
 
+
         ctx.restore();
+
       }
+
     }
 
 
     drawFrame(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         rgba(
           accent,
           .30
         );
 
+
       ctx.lineWidth =
-        W * .003;
+        width * .003;
+
 
       ctx.strokeRect(
-        W * .05,
-        H * .04,
-        W * .90,
-        H * .92
+        width * .05,
+        height * .04,
+        width * .90,
+        height * .92
       );
+
 
       ctx.strokeStyle =
         "rgba(255,255,255,.05)";
 
+
       ctx.strokeRect(
-        W * .61,
-        H * .25,
-        W * .28,
-        H * .31
+        width * .61,
+        height * .25,
+        width * .28,
+        height * .31
       );
+
     }
 
 
     drawNews(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
-        let x = -W * .1;
-        x < W * 1.2;
-        x += W * .12
+        let x =
+          -width * .1;
+        x < width * 1.2;
+        x +=
+          width * .12
       ) {
+
         ctx.save();
+
 
         ctx.translate(
           x,
-          H * .73
+          height * .73
         );
 
-        ctx.rotate(-.28);
+
+        ctx.rotate(
+          -.28
+        );
+
 
         ctx.fillStyle =
           rgba(
@@ -3105,73 +3945,89 @@
             .10
           );
 
+
         ctx.fillRect(
           0,
-          -H * .18,
-          W * .033,
-          H * .36
+          -height * .18,
+          width * .033,
+          height * .36
         );
 
+
         ctx.restore();
+
       }
+
     }
 
 
     drawBrutalist(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         rgba(
           accent,
           .10
         );
 
+
       ctx.beginPath();
 
+
       ctx.moveTo(
-        W * .56,
+        width * .56,
         0
       );
 
+
       ctx.lineTo(
-        W,
+        width,
         0
       );
 
-      ctx.lineTo(
-        W * .78,
-        H
-      );
 
       ctx.lineTo(
-        W * .35,
-        H
+        width * .78,
+        height
       );
+
+
+      ctx.lineTo(
+        width * .35,
+        height
+      );
+
 
       ctx.closePath();
 
+
       ctx.fill();
+
     }
 
 
     drawFilm(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(255,225,185,.035)";
 
+
       ctx.fillRect(
-        W * .55,
+        width * .55,
         0,
-        W * .10,
-        H
+        width * .10,
+        height
       );
+
 
       ctx.fillStyle =
         rgba(
@@ -3179,70 +4035,84 @@
           .06
         );
 
+
       ctx.fillRect(
-        W * .68,
+        width * .68,
         0,
-        W * .20,
-        H
+        width * .20,
+        height
       );
+
     }
 
 
     drawGrit(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         rgba(
           accent,
           .08
         );
 
+
       ctx.beginPath();
 
+
       ctx.moveTo(
-        W * .65,
+        width * .65,
         0
       );
 
+
       ctx.lineTo(
-        W,
+        width,
         0
       );
 
-      ctx.lineTo(
-        W * .84,
-        H
-      );
 
       ctx.lineTo(
-        W * .44,
-        H
+        width * .84,
+        height
       );
+
+
+      ctx.lineTo(
+        width * .44,
+        height
+      );
+
 
       ctx.closePath();
 
+
       ctx.fill();
+
     }
 
 
     drawPaper(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(255,255,255,.08)";
 
+
       ctx.fillRect(
-        W * .57,
+        width * .57,
         0,
-        W * .18,
-        H
+        width * .18,
+        height
       );
+
 
       ctx.fillStyle =
         rgba(
@@ -3250,40 +4120,46 @@
           .09
         );
 
+
       ctx.fillRect(
         0,
-        H * .82,
-        W,
-        H * .04
+        height * .82,
+        width,
+        height * .04
       );
+
     }
 
 
     drawCollage(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 3;
         i++
       ) {
+
         ctx.save();
 
+
         ctx.translate(
-          W *
+          width *
           (
             .65 +
             i * .07
           ),
-          H *
+          height *
           (
             .38 +
             i * .045
           )
         );
+
 
         ctx.rotate(
           (
@@ -3291,6 +4167,7 @@
           ) *
           .08
         );
+
 
         ctx.fillStyle =
           i === 1
@@ -3300,29 +4177,35 @@
               )
             : "rgba(255,255,255,.035)";
 
+
         ctx.fillRect(
-          -W * .12,
-          -H * .16,
-          W * .24,
-          H * .32
+          -width * .12,
+          -height * .16,
+          width * .24,
+          height * .32
         );
 
+
         ctx.restore();
+
       }
+
     }
 
 
     drawStack(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       for (
         let i = 0;
         i < 4;
         i++
       ) {
+
         ctx.fillStyle =
           rgba(
             accent,
@@ -3330,39 +4213,44 @@
             i * .022
           );
 
+
         ctx.fillRect(
-          W *
+          width *
           (
             .53 +
             i * .055
           ),
-          H *
+          height *
           (
             .12 +
             i * .06
           ),
-          W * .31,
-          H * .58
+          width * .31,
+          height * .58
         );
+
       }
+
     }
 
 
     drawCutout(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       const glow =
         ctx.createRadialGradient(
-          W * .75,
-          H * .38,
+          width * .75,
+          height * .38,
           0,
-          W * .75,
-          H * .38,
-          W * .35
+          width * .75,
+          height * .38,
+          width * .35
         );
+
 
       glow.addColorStop(
         0,
@@ -3372,72 +4260,85 @@
         )
       );
 
+
       glow.addColorStop(
         1,
         "rgba(0,0,0,0)"
       );
 
+
       ctx.fillStyle =
         glow;
+
 
       ctx.fillRect(
         0,
         0,
-        W,
-        H
+        width,
+        height
       );
+
     }
 
 
     drawRetro(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.strokeStyle =
         rgba(
           accent,
           .32
         );
 
+
       ctx.lineWidth =
-        W * .006;
+        width * .006;
+
 
       ctx.strokeRect(
-        W * .045,
-        H * .04,
-        W * .91,
-        H * .92
+        width * .045,
+        height * .04,
+        width * .91,
+        height * .92
       );
+
 
       ctx.fillStyle =
         "rgba(255,255,255,.05)";
 
+
       ctx.fillRect(
-        W * .60,
+        width * .60,
         0,
-        W * .08,
-        H
+        width * .08,
+        height
       );
+
     }
 
 
     drawEditorial(
       ctx,
-      W,
-      H,
+      width,
+      height,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(255,255,255,.14)";
 
+
       ctx.fillRect(
-        W * .64,
+        width * .64,
         0,
-        W * .36,
-        H
+        width * .36,
+        height
       );
+
 
       ctx.fillStyle =
         rgba(
@@ -3445,37 +4346,73 @@
           .10
         );
 
+
       ctx.fillRect(
         0,
-        H * .75,
-        W,
-        H * .015
+        height * .75,
+        width,
+        height * .015
       );
+
     }
 
 
+    /* ========================================================
+       TEXTURE
+    ======================================================== */
+
     drawTexture(
       ctx,
-      W,
-      H
+      width,
+      height,
+      strength
     ) {
+
+      const amount =
+        clamp(
+          strength,
+          0,
+          100
+        ) /
+        100;
+
+
+      if (
+        amount <= 0
+      ) {
+        return;
+      }
+
+
       ctx.save();
 
+
       ctx.globalAlpha =
-        .08;
+        .025 +
+        amount * .12;
+
+
+      const count =
+        Math.round(
+          180 +
+          amount * 520
+        );
+
 
       for (
         let i = 0;
-        i < 520;
+        i < count;
         i++
       ) {
+
         const x =
           Math.abs(
             Math.sin(
               i * 128.73
             )
           ) *
-          W;
+          width;
+
 
         const y =
           Math.abs(
@@ -3483,9 +4420,10 @@
               i * 43.17
             )
           ) *
-          H;
+          height;
 
-        const s =
+
+        const size =
           1 +
           Math.abs(
             Math.sin(
@@ -3494,139 +4432,173 @@
           ) *
           3;
 
+
         ctx.fillStyle =
           i % 3
             ? "#000000"
             : "#ffffff";
 
+
         ctx.fillRect(
           x,
           y,
-          s,
-          s
+          size,
+          size
         );
+
       }
 
+
       ctx.restore();
+
     }
 
 
     /* ========================================================
-       LAYERS
+       LAYER RENDERER
     ======================================================== */
 
     drawLayer(
       ctx,
       layer,
-      W,
-      H
+      width,
+      height
     ) {
+
       if (
         layer.type ===
         "text"
       ) {
+
         this.drawTextLayer(
           ctx,
           layer,
-          W,
-          H
+          width,
+          height
         );
+
       }
+
 
       if (
         layer.type ===
         "image"
       ) {
+
         this.drawImageLayer(
           ctx,
           layer,
-          W,
-          H
+          width,
+          height
         );
+
       }
+
 
       if (
         layer.type ===
         "element"
       ) {
+
         this.drawElementLayer(
           ctx,
           layer,
-          W,
-          H
+          width,
+          height
         );
+
       }
+
     }
 
+
+    /* ========================================================
+       TEXT LAYER
+    ======================================================== */
 
     drawTextLayer(
       ctx,
       layer,
-      W,
-      H
+      width,
+      height
     ) {
-      const scale =
-        W / 1080;
 
-      const size =
+      const scale =
+        width /
+        1080;
+
+
+      const fontSize =
         layer.size *
         scale;
 
+
       const x =
-        W *
+        width *
         (
           layer.x /
           100
         );
 
+
       const y =
-        H *
+        height *
         (
           layer.y /
           100
         );
 
+
       const maxWidth =
-        W *
+        width *
         (
           layer.width /
           100
         );
 
+
       ctx.save();
+
 
       ctx.globalAlpha =
         layer.opacity ??
         1;
 
+
       ctx.fillStyle =
         layer.color ||
         "#ffffff";
+
 
       ctx.font =
         `${
           layer.weight ||
           700
-        } ${size}px "${
+        } ${fontSize}px "${
           layer.font ||
           "Montserrat"
         }"`;
+
 
       ctx.textAlign =
         layer.align ||
         "left";
 
+
       ctx.textBaseline =
         "top";
+
 
       ctx.shadowColor =
         "rgba(0,0,0,.42)";
 
+
       ctx.shadowBlur =
-        size * .08;
+        fontSize * .08;
+
 
       ctx.shadowOffsetY =
-        size * .035;
+        fontSize * .035;
 
 
       const lines =
@@ -3636,36 +4608,25 @@
           maxWidth
         );
 
+
       const lineHeight =
-        size *
+        fontSize *
         (
           layer.lineHeight ||
           1
         );
 
-      let anchorX = x;
-
-      if (
-        layer.align ===
-        "center"
-      ) {
-        anchorX = x;
-      }
-
-      if (
-        layer.align ===
-        "right"
-      ) {
-        anchorX = x;
-      }
-
 
       lines.forEach(
-        (line, index) => {
+        (
+          line,
+          index
+        ) => {
+
           this.fillTrackedText(
             ctx,
             line,
-            anchorX,
+            x,
             y +
             index *
             lineHeight,
@@ -3674,6 +4635,7 @@
             layer.align ||
             "left"
           );
+
         }
       );
 
@@ -3686,54 +4648,73 @@
         );
 
 
-      let left = x;
+      let left =
+        x;
+
 
       if (
         layer.align ===
         "center"
       ) {
+
         left =
           x -
           maxWidth / 2;
+
       }
+
 
       if (
         layer.align ===
         "right"
       ) {
+
         left =
           x -
           maxWidth;
+
       }
 
 
       layer._bounds = {
-        x: left,
+        x:
+          left,
+
         y,
+
         width:
           maxWidth,
+
         height:
           textHeight
       };
 
 
       ctx.restore();
+
     }
 
+
+    /* ========================================================
+       IMAGE LAYER
+    ======================================================== */
 
     drawImageLayer(
       ctx,
       layer,
-      W,
-      H
+      width,
+      height
     ) {
+
       const asset =
         this.assets.get(
           layer.assetId
         );
 
+
       if (
-        !asset?.image
+        !asset ||
+        !asset.image
       ) {
         return;
       }
@@ -3742,22 +4723,25 @@
       const image =
         asset.image;
 
+
       const centerX =
-        W *
+        width *
         (
           layer.x /
           100
         );
 
+
       const centerY =
-        H *
+        height *
         (
           layer.y /
           100
         );
 
+
       const boxWidth =
-        W *
+        width *
         (
           layer.width /
           100
@@ -3767,9 +4751,11 @@
           1
         );
 
+
       const ratio =
         image.naturalHeight /
         image.naturalWidth;
+
 
       const boxHeight =
         boxWidth *
@@ -3778,10 +4764,12 @@
 
       ctx.save();
 
+
       ctx.translate(
         centerX,
         centerY
       );
+
 
       ctx.rotate(
         (
@@ -3792,9 +4780,11 @@
         180
       );
 
+
       ctx.globalAlpha =
         layer.opacity ??
         1;
+
 
       ctx.filter = [
         `brightness(${
@@ -3855,44 +4845,54 @@
 
 
       ctx.restore();
+
     }
 
+
+    /* ========================================================
+       ELEMENT LAYER
+    ======================================================== */
 
     drawElementLayer(
       ctx,
       layer,
-      W,
-      H
+      width,
+      height
     ) {
+
       const x =
-        W *
+        width *
         (
           layer.x /
           100
         );
 
+
       const y =
-        H *
+        height *
         (
           layer.y /
           100
         );
+
 
       const scale =
         (
           layer.scale ||
           1
         ) *
-        W /
+        width /
         1080;
 
 
       ctx.save();
 
+
       ctx.translate(
         x,
         y
       );
+
 
       ctx.rotate(
         (
@@ -3903,10 +4903,12 @@
         180
       );
 
+
       ctx.scale(
         scale,
         scale
       );
+
 
       ctx.globalAlpha =
         layer.opacity ??
@@ -3923,50 +4925,68 @@
       ) {
 
         case "ball":
+
           this.drawBallElement(
             ctx,
             color
           );
+
           break;
 
+
         case "wickets":
+
           this.drawWicketsElement(
             ctx,
             color
           );
+
           break;
 
+
         case "vs":
+
           this.drawVsElement(
             ctx,
             color
           );
+
           break;
 
+
         case "score":
+
           this.drawScoreElement(
             ctx,
             color
           );
+
           break;
 
+
         case "trophy":
+
           this.drawTrophyElement(
             ctx,
             color
           );
+
           break;
 
+
         case "frame":
+
           this.drawFrameElement(
             ctx,
             color
           );
+
           break;
+
       }
 
 
-      const base =
+      const baseSize =
         layer.kind ===
         "frame"
           ? 320
@@ -3976,38 +4996,50 @@
       layer._bounds = {
         x:
           x -
-          base *
-          scale /
-          2,
+          (
+            baseSize *
+            scale /
+            2
+          ),
 
         y:
           y -
-          base *
-          scale /
-          2,
+          (
+            baseSize *
+            scale /
+            2
+          ),
 
         width:
-          base *
+          baseSize *
           scale,
 
         height:
-          base *
+          baseSize *
           scale
       };
 
 
       ctx.restore();
+
     }
 
+
+    /* ========================================================
+       CRICKET ELEMENTS
+    ======================================================== */
 
     drawBallElement(
       ctx,
       accent
     ) {
+
       ctx.fillStyle =
         "#9b1c29";
 
+
       ctx.beginPath();
+
 
       ctx.arc(
         0,
@@ -4017,26 +5049,35 @@
         Math.PI * 2
       );
 
+
       ctx.fill();
+
 
       ctx.strokeStyle =
         "#f0d5d7";
 
-      ctx.lineWidth = 5;
+
+      ctx.lineWidth =
+        5;
+
 
       ctx.beginPath();
+
 
       ctx.moveTo(
         -10,
         -62
       );
 
+
       ctx.lineTo(
         10,
         62
       );
 
+
       ctx.stroke();
+
 
       ctx.strokeStyle =
         rgba(
@@ -4044,9 +5085,13 @@
           .55
         );
 
-      ctx.lineWidth = 2;
+
+      ctx.lineWidth =
+        2;
+
 
       ctx.beginPath();
+
 
       ctx.arc(
         0,
@@ -4056,7 +5101,9 @@
         Math.PI * 2
       );
 
+
       ctx.stroke();
+
     }
 
 
@@ -4064,8 +5111,10 @@
       ctx,
       accent
     ) {
+
       ctx.fillStyle =
         "#f3ead4";
+
 
       [
         -45,
@@ -4073,6 +5122,7 @@
         45
       ].forEach(
         x => {
+
           roundedRect(
             ctx,
             x - 7,
@@ -4082,12 +5132,16 @@
             4
           );
 
+
           ctx.fill();
+
         }
       );
 
+
       ctx.fillStyle =
         accent;
+
 
       ctx.fillRect(
         -57,
@@ -4096,12 +5150,14 @@
         9
       );
 
+
       ctx.fillRect(
         4,
         -108,
         53,
         9
       );
+
     }
 
 
@@ -4109,15 +5165,21 @@
       ctx,
       accent
     ) {
+
       ctx.fillStyle =
         "rgba(8,9,11,.92)";
+
 
       ctx.strokeStyle =
         accent;
 
-      ctx.lineWidth = 6;
+
+      ctx.lineWidth =
+        6;
+
 
       ctx.beginPath();
+
 
       ctx.arc(
         0,
@@ -4127,27 +5189,35 @@
         Math.PI * 2
       );
 
+
       ctx.fill();
 
+
       ctx.stroke();
+
 
       ctx.fillStyle =
         "#ffffff";
 
+
       ctx.font =
         '400 86px "Bebas Neue"';
+
 
       ctx.textAlign =
         "center";
 
+
       ctx.textBaseline =
         "middle";
+
 
       ctx.fillText(
         "VS",
         0,
         6
       );
+
     }
 
 
@@ -4155,13 +5225,18 @@
       ctx,
       accent
     ) {
+
       ctx.fillStyle =
         "#101317";
+
 
       ctx.strokeStyle =
         accent;
 
-      ctx.lineWidth = 3;
+
+      ctx.lineWidth =
+        3;
+
 
       roundedRect(
         ctx,
@@ -4172,27 +5247,35 @@
         14
       );
 
+
       ctx.fill();
 
+
       ctx.stroke();
+
 
       ctx.fillStyle =
         "#ffffff";
 
+
       ctx.font =
         '400 62px "Bebas Neue"';
+
 
       ctx.textAlign =
         "center";
 
+
       ctx.textBaseline =
         "middle";
+
 
       ctx.fillText(
         "186 / 5",
         0,
         -3
       );
+
     }
 
 
@@ -4200,8 +5283,10 @@
       ctx,
       accent
     ) {
+
       ctx.fillStyle =
         accent;
+
 
       roundedRect(
         ctx,
@@ -4212,7 +5297,9 @@
         30
       );
 
+
       ctx.fill();
+
 
       ctx.fillRect(
         -12,
@@ -4220,6 +5307,7 @@
         24,
         75
       );
+
 
       roundedRect(
         ctx,
@@ -4230,7 +5318,9 @@
         7
       );
 
+
       ctx.fill();
+
     }
 
 
@@ -4238,10 +5328,14 @@
       ctx,
       accent
     ) {
+
       ctx.strokeStyle =
         accent;
 
-      ctx.lineWidth = 4;
+
+      ctx.lineWidth =
+        4;
+
 
       ctx.strokeRect(
         -155,
@@ -4249,112 +5343,144 @@
         310,
         310
       );
+
     }
 
 
     /* ========================================================
-       BRAND
+       OFFICIAL FWCWL BRAND
     ======================================================== */
 
     drawOfficialBrand(
       ctx,
-      W,
-      H
+      width,
+      height
     ) {
+
       if (
         this.state.showLogo
       ) {
+
         if (
           this.logoReady &&
           this.logo.naturalWidth
         ) {
-          const maxW =
-            W * .12;
 
-          const maxH =
-            H * .07;
+          const maxWidth =
+            width * .12;
+
+
+          const maxHeight =
+            height * .07;
+
 
           const scale =
             Math.min(
-              maxW /
-              this.logo.naturalWidth,
-              maxH /
-              this.logo.naturalHeight
+              maxWidth /
+                this.logo.naturalWidth,
+
+              maxHeight /
+                this.logo.naturalHeight
             );
 
-          const width =
+
+          const logoWidth =
             this.logo.naturalWidth *
             scale;
 
-          const height =
+
+          const logoHeight =
             this.logo.naturalHeight *
             scale;
 
+
           ctx.save();
+
 
           ctx.shadowColor =
             "rgba(0,0,0,.48)";
 
+
           ctx.shadowBlur =
-            W * .012;
+            width * .012;
+
 
           ctx.drawImage(
             this.logo,
-            W * .052,
-            H * .032,
-            width,
-            height
+            width * .052,
+            height * .032,
+            logoWidth,
+            logoHeight
           );
 
+
           ctx.restore();
+
         } else {
+
           ctx.fillStyle =
             this.state.accent;
 
+
           ctx.font =
             `900 ${
-              W * .032
+              width * .032
             }px "Montserrat"`;
+
 
           ctx.fillText(
             "FWCWL",
-            W * .055,
-            H * .045
+            width * .055,
+            height * .045
           );
+
         }
+
       }
 
 
       ctx.save();
 
+
       ctx.textAlign =
         "right";
+
 
       ctx.fillStyle =
         "rgba(255,255,255,.40)";
 
+
       ctx.font =
         `800 ${
-          W * .014
+          width * .014
         }px "DM Sans"`;
+
 
       ctx.fillText(
         this.state.brandName ||
         "FWCWL",
-        W * .94,
-        H * .955
+        width * .94,
+        height * .955
       );
 
+
       ctx.restore();
+
     }
 
 
+    /* ========================================================
+       SAFE ZONE
+    ======================================================== */
+
     drawSafeZone(
       ctx,
-      W,
-      H
+      width,
+      height
     ) {
+
       ctx.save();
+
 
       ctx.strokeStyle =
         rgba(
@@ -4362,45 +5488,59 @@
           .60
         );
 
+
       ctx.lineWidth =
-        W * .002;
+        width * .002;
+
 
       ctx.setLineDash([
-        W * .010,
-        W * .007
+        width * .010,
+        width * .007
       ]);
 
+
       ctx.strokeRect(
-        W * .055,
-        H * .055,
-        W * .89,
-        H * .89
+        width * .055,
+        height * .055,
+        width * .89,
+        height * .89
       );
 
+
       ctx.restore();
+
     }
 
+
+    /* ========================================================
+       SELECTED LAYER OUTLINE
+    ======================================================== */
 
     drawSelection(
       ctx,
       bounds,
-      W
+      width
     ) {
+
       ctx.save();
+
 
       ctx.strokeStyle =
         this.state.accent;
 
+
       ctx.lineWidth =
         Math.max(
           2,
-          W * .002
+          width * .002
         );
 
+
       ctx.setLineDash([
-        W * .007,
-        W * .005
+        width * .007,
+        width * .005
       ]);
+
 
       ctx.strokeRect(
         bounds.x,
@@ -4409,9 +5549,12 @@
         bounds.height
       );
 
+
       ctx.setLineDash([]);
 
-      [
+
+      const points = [
+
         [
           bounds.x,
           bounds.y
@@ -4435,31 +5578,42 @@
           bounds.y +
           bounds.height
         ]
-      ].forEach(
+
+      ];
+
+
+      points.forEach(
         point => {
+
           ctx.fillStyle =
             this.state.accent;
 
+
           ctx.beginPath();
+
 
           ctx.arc(
             point[0],
             point[1],
-            W * .006,
+            width * .006,
             0,
             Math.PI * 2
           );
 
+
           ctx.fill();
+
         }
       );
 
+
       ctx.restore();
+
     }
 
 
     /* ========================================================
-       TEXT
+       TEXT HELPERS
     ======================================================== */
 
     wrapText(
@@ -4467,28 +5621,46 @@
       text,
       maxWidth
     ) {
+
       const paragraphs =
         String(
           text || ""
         ).split("\n");
 
-      const lines = [];
+
+      const result = [];
 
 
       paragraphs.forEach(
         paragraph => {
+
+          if (
+            paragraph === ""
+          ) {
+
+            result.push("");
+
+            return;
+
+          }
+
+
           const words =
-            paragraph.split(/\s+/);
+            paragraph
+              .split(/\s+/);
+
 
           let current = "";
 
 
           words.forEach(
             word => {
+
               const test =
                 current
                   ? `${current} ${word}`
                   : word;
+
 
               if (
                 ctx.measureText(test)
@@ -4496,28 +5668,36 @@
                   maxWidth &&
                 current
               ) {
-                lines.push(
+
+                result.push(
                   current
                 );
 
+
                 current =
                   word;
+
               } else {
+
                 current =
                   test;
+
               }
+
             }
           );
 
 
-          lines.push(
+          result.push(
             current
           );
+
         }
       );
 
 
-      return lines;
+      return result;
+
     }
 
 
@@ -4529,88 +5709,117 @@
       spacing,
       align
     ) {
+
       if (!spacing) {
+
         ctx.fillText(
           text,
           x,
           y
         );
 
+
         return;
+
       }
 
 
-      const chars =
+      const characters =
         [...text];
 
+
       const widths =
-        chars.map(
-          char =>
-            ctx.measureText(char)
-              .width
+        characters.map(
+          character =>
+            ctx.measureText(
+              character
+            ).width
         );
 
-      const total =
+
+      const totalWidth =
         widths.reduce(
           (
             sum,
-            width
+            current
           ) =>
-            sum + width,
+            sum +
+            current,
           0
         ) +
         spacing *
         Math.max(
           0,
-          chars.length - 1
+          characters.length -
+          1
         );
 
 
-      let cursor = x;
+      let cursor =
+        x;
+
 
       if (
         align === "center"
       ) {
+
         cursor -=
-          total / 2;
+          totalWidth / 2;
+
       }
+
 
       if (
         align === "right"
       ) {
+
         cursor -=
-          total;
+          totalWidth;
+
       }
+
+
+      const oldAlignment =
+        ctx.textAlign;
 
 
       ctx.textAlign =
         "left";
 
 
-      chars.forEach(
+      characters.forEach(
         (
-          char,
+          character,
           index
         ) => {
+
           ctx.fillText(
-            char,
+            character,
             cursor,
             y
           );
 
+
           cursor +=
             widths[index] +
             spacing;
+
         }
       );
+
+
+      ctx.textAlign =
+        oldAlignment;
+
     }
 
 
     /* ========================================================
-       SELECT / DRAG
+       SELECTION
     ======================================================== */
 
     getSelected() {
+
       return (
         this.state.layers.find(
           layer =>
@@ -4619,6 +5828,7 @@
         ) ||
         null
       );
+
     }
 
 
@@ -4626,50 +5836,69 @@
       x,
       y
     ) {
+
       for (
-        let i =
+        let index =
           this.state.layers.length -
           1;
-        i >= 0;
-        i--
+        index >= 0;
+        index--
       ) {
-        const layer =
-          this.state.layers[i];
 
-        const b =
+        const layer =
+          this.state.layers[
+            index
+          ];
+
+
+        const bounds =
           layer._bounds;
 
+
         if (
-          !b ||
+          !bounds ||
           layer.visible ===
-          false ||
+            false ||
           layer.locked
         ) {
           continue;
         }
 
+
         if (
-          x >= b.x &&
-          x <= b.x + b.width &&
-          y >= b.y &&
-          y <= b.y + b.height
+          x >= bounds.x &&
+          x <=
+            bounds.x +
+            bounds.width &&
+          y >= bounds.y &&
+          y <=
+            bounds.y +
+            bounds.height
         ) {
+
           return layer;
+
         }
+
       }
 
+
       return null;
+
     }
 
 
     pointerCoordinates(
       event
     ) {
+
       const rect =
         this.canvas
           .getBoundingClientRect();
 
+
       return {
+
         x:
           (
             event.clientX -
@@ -4689,17 +5918,25 @@
             this.canvas.height /
             rect.height
           )
+
       };
+
     }
 
+
+    /* ========================================================
+       POINTER DOWN
+    ======================================================== */
 
     onPointerDown(
       event
     ) {
+
       const point =
         this.pointerCoordinates(
           event
         );
+
 
       const layer =
         this.hitTest(
@@ -4709,14 +5946,19 @@
 
 
       if (!layer) {
+
         this.state.selectedId =
           null;
 
+
         this.render();
+
 
         this.renderInspector();
 
+
         return;
+
       }
 
 
@@ -4724,59 +5966,80 @@
         layer.id;
 
 
-      this.drag = {
+      this.dragState = {
+
         layer,
+
         startX:
           point.x,
+
         startY:
           point.y,
+
         originalX:
           layer.x,
+
         originalY:
           layer.y
+
       };
 
 
-      this.canvas.setPointerCapture?.(
-        event.pointerId
-      );
+      this.canvas
+        .setPointerCapture
+        ?.(
+          event.pointerId
+        );
 
 
       this.render();
 
+
       this.renderInspector();
+
     }
 
+
+    /* ========================================================
+       POINTER MOVE
+    ======================================================== */
 
     onPointerMove(
       event
     ) {
-      if (!this.drag) {
+
+      if (
+        !this.dragState
+      ) {
         return;
       }
+
 
       const point =
         this.pointerCoordinates(
           event
         );
 
+
       const dx =
         point.x -
-        this.drag.startX;
+        this.dragState.startX;
+
 
       const dy =
         point.y -
-        this.drag.startY;
+        this.dragState.startY;
 
 
-      let x =
-        this.drag.originalX +
+      let newX =
+        this.dragState.originalX +
         dx /
         this.state.width *
         100;
 
-      let y =
-        this.drag.originalY +
+
+      let newY =
+        this.dragState.originalY +
         dy /
         this.state.height *
         100;
@@ -4785,28 +6048,34 @@
       if (
         this.state.snap
       ) {
-        x =
-          Math.round(
-            x * 2
-          ) / 2;
 
-        y =
+        newX =
           Math.round(
-            y * 2
-          ) / 2;
+            newX * 2
+          ) /
+          2;
+
+
+        newY =
+          Math.round(
+            newY * 2
+          ) /
+          2;
+
       }
 
 
-      this.drag.layer.x =
+      this.dragState.layer.x =
         clamp(
-          x,
+          newX,
           0,
           100
         );
 
-      this.drag.layer.y =
+
+      this.dragState.layer.y =
         clamp(
-          y,
+          newY,
           0,
           100
         );
@@ -4814,35 +6083,58 @@
 
       this.render();
 
+
       this.renderInspectorValues();
-    }
 
-
-    onPointerUp() {
-      if (!this.drag) {
-        return;
-      }
-
-      this.drag = null;
-
-      this.commit();
     }
 
 
     /* ========================================================
-       ADD MEDIA
+       POINTER UP
+    ======================================================== */
+
+    onPointerUp() {
+
+      if (
+        !this.dragState
+      ) {
+        return;
+      }
+
+
+      this.dragState =
+        null;
+
+
+      this.commit();
+
+    }
+
+
+    /* ========================================================
+       MEDIA IMPORT
     ======================================================== */
 
     async importImages(
       files
     ) {
+
+      const fileList =
+        Array.from(
+          files || []
+        );
+
+
       for (
         const file of
-        Array.from(files)
+        fileList
       ) {
+
         if (
           !file.type
-            .startsWith("image/")
+            .startsWith(
+              "image/"
+            )
         ) {
           continue;
         }
@@ -4853,12 +6145,38 @@
             file
           );
 
+
         const image =
           new Image();
 
-        image.src = url;
 
-        await image.decode();
+        image.src =
+          url;
+
+
+        try {
+
+          await image.decode();
+
+        } catch {
+
+          await new Promise(
+            (
+              resolve,
+              reject
+            ) => {
+
+              image.onload =
+                resolve;
+
+
+              image.onerror =
+                reject;
+
+            }
+          );
+
+        }
 
 
         const id =
@@ -4875,79 +6193,24 @@
             image
           }
         );
+
       }
 
 
       this.renderAssets();
+
     }
 
 
-    addImageLayer(
-      assetId
-    ) {
-      const asset =
-        this.assets.get(
-          assetId
-        );
-
-      if (!asset) {
-        return;
-      }
-
-
-      const layer = {
-        id:
-          uid("image"),
-
-        type:
-          "image",
-
-        name:
-          asset.name,
-
-        assetId,
-
-        x: 67,
-
-        y: 45,
-
-        width: 46,
-
-        scale: 1,
-
-        rotation: 0,
-
-        opacity: 1,
-
-        brightness: 0,
-
-        contrast: 0,
-
-        saturation: 0,
-
-        blur: 0
-      };
-
-
-      this.state.layers.push(
-        layer
-      );
-
-      this.state.selectedId =
-        layer.id;
-
-
-      this.render();
-
-      this.renderInspector();
-
-      this.commit();
-    }
-
+    /* ========================================================
+       ASSET GRID
+    ======================================================== */
 
     renderAssets() {
+
       const grid =
         $("#posterAssetGrid");
+
 
       if (!grid) {
         return;
@@ -4960,42 +6223,60 @@
         );
 
 
+      if (
+        !assets.length
+      ) {
+
+        grid.innerHTML = `
+          <div class="empty-state">
+
+            <strong>
+              No uploaded media
+            </strong>
+
+            <span>
+              Upload a player or match photo.
+            </span>
+
+          </div>
+        `;
+
+
+        return;
+
+      }
+
+
       grid.innerHTML =
-        assets.length
-          ? assets
-              .map(
-                asset => `
-                  <button
-                    class="asset-card"
-                    data-poster-asset="${asset.id}"
-                    type="button"
+        assets
+          .map(
+            asset => `
+              <button
+                class="asset-card"
+                data-poster-asset="${asset.id}"
+                type="button"
+              >
+
+                <div class="asset-thumb">
+
+                  <img
+                    src="${asset.url}"
+                    alt=""
                   >
 
-                    <div class="asset-thumb">
-                      <img
-                        src="${asset.url}"
-                        alt=""
-                      >
-                    </div>
+                </div>
 
-                    <strong>
-                      ${escapeHtml(
-                        asset.name
-                      )}
-                    </strong>
 
-                  </button>
-                `
-              )
-              .join("")
-          : `
-              <div class="empty-state">
-                <strong>No uploaded media</strong>
-                <span>
-                  Upload a player or match photo.
-                </span>
-              </div>
-            `;
+                <strong>
+                  ${escapeHtml(
+                    asset.name
+                  )}
+                </strong>
+
+              </button>
+            `
+          )
+          .join("");
 
 
       grid
@@ -5004,74 +6285,178 @@
         )
         .forEach(
           button => {
+
             button.addEventListener(
               "click",
-              () =>
+              () => {
+
                 this.addImageLayer(
                   button.dataset
                     .posterAsset
-                )
+                );
+
+              }
             );
+
           }
         );
+
     }
 
 
     /* ========================================================
-       ADD TEXT / ELEMENT
+       ADD IMAGE
+    ======================================================== */
+
+    addImageLayer(
+      assetId
+    ) {
+
+      const asset =
+        this.assets.get(
+          assetId
+        );
+
+
+      if (!asset) {
+        return;
+      }
+
+
+      const layer = {
+
+        id:
+          uid("image"),
+
+        type:
+          "image",
+
+        role:
+          "user",
+
+        name:
+          asset.name,
+
+        assetId,
+
+        x:
+          68,
+
+        y:
+          45,
+
+        width:
+          45,
+
+        scale:
+          1,
+
+        rotation:
+          0,
+
+        opacity:
+          1,
+
+        brightness:
+          0,
+
+        contrast:
+          0,
+
+        saturation:
+          0,
+
+        blur:
+          0,
+
+        visible:
+          true,
+
+        locked:
+          false
+
+      };
+
+
+      this.state.layers.push(
+        layer
+      );
+
+
+      this.state.selectedId =
+        layer.id;
+
+
+      this.render();
+
+
+      this.renderInspector();
+
+
+      this.commit();
+
+    }
+
+
+    /* ========================================================
+       ADD TEXT
     ======================================================== */
 
     addText(
       type
     ) {
+
+      const headline =
+        type ===
+        "headline";
+
+
       const layer = {
+
         id:
           uid("text"),
 
         type:
           "text",
 
+        role:
+          "user",
+
         name:
-          type ===
-          "headline"
+          headline
             ? "Custom Headline"
             : "Custom Subtitle",
 
         text:
-          type ===
-          "headline"
+          headline
             ? "YOUR HEADLINE"
             : "Add supporting text",
 
-        x: 10,
+        x:
+          10,
 
         y:
-          type ===
-          "headline"
+          headline
             ? 52
             : 67,
 
         width:
-          type ===
-          "headline"
+          headline
             ? 75
             : 65,
 
         size:
-          type ===
-          "headline"
+          headline
             ? 120
             : 30,
 
         weight:
-          type ===
-          "headline"
+          headline
             ? 900
             : 650,
 
         font:
-          type ===
-          "headline"
+          headline
             ? "Montserrat"
             : "DM Sans",
 
@@ -5081,15 +6466,23 @@
         align:
           "left",
 
-        opacity: 1,
+        opacity:
+          1,
 
         lineHeight:
-          type ===
-          "headline"
+          headline
             ? .9
             : 1.1,
 
-        letterSpacing: 0
+        letterSpacing:
+          0,
+
+        visible:
+          true,
+
+        locked:
+          false
+
       };
 
 
@@ -5097,58 +6490,94 @@
         layer
       );
 
+
       this.state.selectedId =
         layer.id;
 
+
       this.render();
+
 
       this.renderInspector();
 
+
       this.commit();
+
     }
 
+
+    /* ========================================================
+       ADD CRICKET ELEMENT
+    ======================================================== */
 
     addElement(
       kind
     ) {
+
+      const names = {
+
+        ball:
+          "Cricket Ball",
+
+        wickets:
+          "Wickets",
+
+        vs:
+          "VS Badge",
+
+        score:
+          "Score Graphic",
+
+        trophy:
+          "Trophy",
+
+        frame:
+          "Frame"
+
+      };
+
+
       const layer = {
+
         id:
           uid("element"),
 
         type:
           "element",
 
+        role:
+          "user",
+
         kind,
 
         name:
-          {
-            ball:
-              "Cricket Ball",
-            wickets:
-              "Wickets",
-            vs:
-              "VS Badge",
-            score:
-              "Score Graphic",
-            trophy:
-              "Trophy",
-            frame:
-              "Frame"
-          }[kind] ||
+          names[kind] ||
           "Element",
 
-        x: 72,
+        x:
+          72,
 
-        y: 43,
+        y:
+          43,
 
-        scale: 1,
+        scale:
+          1,
 
-        rotation: 0,
+        rotation:
+          0,
 
-        opacity: 1,
+        opacity:
+          1,
 
         color:
-          this.state.accent
+          this.state.accent,
+
+        visible:
+          true,
+
+        locked:
+          false
+
       };
 
 
@@ -5156,33 +6585,47 @@
         layer
       );
 
+
       this.state.selectedId =
         layer.id;
 
+
       this.render();
+
 
       this.renderInspector();
 
+
       this.commit();
+
     }
 
 
     /* ========================================================
-       INSPECTOR
+       PROPERTIES INSPECTOR
     ======================================================== */
 
     renderInspector() {
+
       const container =
         $("#posterInspector");
+
+
+      if (!container) {
+        return;
+      }
+
 
       const layer =
         this.getSelected();
 
 
       if (!layer) {
+
         $("#posterInspectorTitle")
           .textContent =
           "Edit Design";
+
 
         $("#posterInspectorType")
           .textContent =
@@ -5200,14 +6643,60 @@
               Canvas Settings
             </h3>
 
+
             ${this.rangeHtml(
-              "posterOverlayStrength",
+              "posterTextureStrength",
               "Texture Strength",
               0,
               100,
-              0,
+              this.state
+                .textureStrength,
               "%"
             )}
+
+
+            <label class="field">
+
+              <span>
+                Accent Color
+              </span>
+
+              <input
+                id="insCanvasAccent"
+                type="color"
+                value="${this.state.accent}"
+              >
+
+            </label>
+
+
+            <label class="switch-row">
+
+              <div>
+
+                <strong>
+                  Official FWCWL Logo
+                </strong>
+
+                <span>
+                  Keep league branding visible
+                </span>
+
+              </div>
+
+              <input
+                id="insCanvasLogo"
+                type="checkbox"
+                ${
+                  this.state.showLogo
+                    ? "checked"
+                    : ""
+                }
+              >
+
+              <i></i>
+
+            </label>
 
           </div>
 
@@ -5218,22 +6707,38 @@
               LAYERS
             </div>
 
+            <h3>
+              ${
+                this.state.layers
+                  .length
+              } Design Layers
+            </h3>
+
             ${this.layersHtml()}
 
           </div>
 
 
           <div class="inspector-help">
-            Select any text, photo or cricket
-            graphic on the canvas to edit it.
-            You can drag selected objects directly
-            on the artwork.
+            Select a text layer, photo or cricket element
+            from the canvas or Layers panel.
+
+            Drag selected objects directly on the poster.
+            Use Properties for typography, positioning,
+            scale, opacity, photo adjustments, ordering
+            and layer management.
           </div>
         `;
 
+
+        this.bindCanvasInspector();
+
+
         this.bindLayerRows();
 
+
         return;
+
       }
 
 
@@ -5241,6 +6746,7 @@
         .textContent =
         layer.name ||
         "Selected Layer";
+
 
       $("#posterInspectorType")
         .textContent =
@@ -5251,14 +6757,17 @@
         layer.type ===
         "text"
       ) {
+
         container.innerHTML =
           this.textInspectorHtml(
             layer
           );
 
+
         this.bindTextInspector(
           layer
         );
+
       }
 
 
@@ -5266,14 +6775,17 @@
         layer.type ===
         "image"
       ) {
+
         container.innerHTML =
           this.imageInspectorHtml(
             layer
           );
 
+
         this.bindImageInspector(
           layer
         );
+
       }
 
 
@@ -5281,19 +6793,113 @@
         layer.type ===
         "element"
       ) {
+
         container.innerHTML =
           this.elementInspectorHtml(
             layer
           );
 
+
         this.bindElementInspector(
           layer
         );
+
       }
+
     }
 
 
+    /* ========================================================
+       DEFAULT CANVAS INSPECTOR BINDING
+    ======================================================== */
+
+    bindCanvasInspector() {
+
+      this.bindRange(
+        "#posterTextureStrength",
+        value => {
+
+          this.state.textureStrength =
+            value;
+
+
+          this.render();
+
+        }
+      );
+
+
+      this.bindInput(
+        "#insCanvasAccent",
+        "input",
+        event => {
+
+          this.state.accent =
+            event.target.value;
+
+
+          this.render();
+
+        },
+        true
+      );
+
+
+      $("#insCanvasLogo")
+        ?.addEventListener(
+          "change",
+          event => {
+
+            this.state.showLogo =
+              event.target.checked;
+
+
+            this.syncBrandUI();
+
+
+            this.render();
+
+
+            this.commit();
+
+          }
+        );
+
+    }
+
+
+    /* ========================================================
+       LAYER LIST
+    ======================================================== */
+
     layersHtml() {
+
+      const typeInfo = {
+
+        text: {
+          icon:
+            "T",
+          label:
+            "TEXT"
+        },
+
+        image: {
+          icon:
+            "▧",
+          label:
+            "PHOTO"
+        },
+
+        element: {
+          icon:
+            "◇",
+          label:
+            "ELEMENT"
+        }
+
+      };
+
+
       return `
         <div class="layer-list">
 
@@ -5301,87 +6907,142 @@
             .slice()
             .reverse()
             .map(
-              layer => `
-                <div
-                  class="layer-row ${
-                    layer.id ===
-                    this.state.selectedId
-                      ? "active"
-                      : ""
-                  }"
-                >
+              layer => {
 
-                  <button
-                    data-layer-visible="${layer.id}"
-                    type="button"
+                const info =
+                  typeInfo[
+                    layer.type
+                  ] || {
+                    icon:
+                      "◇",
+                    label:
+                      String(
+                        layer.type ||
+                        "LAYER"
+                      )
+                        .toUpperCase()
+                  };
+
+
+                const active =
+                  layer.id ===
+                  this.state.selectedId;
+
+
+                const visible =
+                  layer.visible !==
+                  false;
+
+
+                return `
+                  <div
+                    class="layer-row ${
+                      active
+                        ? "active"
+                        : ""
+                    }"
+                    data-layer-row="${layer.id}"
                   >
-                    ${
-                      layer.visible ===
-                      false
-                        ? "○"
-                        : "●"
-                    }
-                  </button>
 
-
-                  <button
-                    class="layer-main"
-                    data-layer-select="${layer.id}"
-                    type="button"
-                  >
-
-                    <span class="layer-icon">
+                    <button
+                      data-layer-visible="${layer.id}"
+                      type="button"
+                      title="${
+                        visible
+                          ? "Hide layer"
+                          : "Show layer"
+                      }"
+                      aria-label="${
+                        visible
+                          ? "Hide layer"
+                          : "Show layer"
+                      }"
+                    >
                       ${
-                        layer.type ===
-                        "text"
-                          ? "T"
-                          : layer.type ===
-                            "image"
-                            ? "▧"
-                            : "◇"
+                        visible
+                          ? "●"
+                          : "○"
                       }
-                    </span>
-
-                    <span>
-                      <strong>
-                        ${escapeHtml(
-                          layer.name ||
-                          layer.type
-                        )}
-                      </strong>
-
-                      <small>
-                        ${layer.type}
-                      </small>
-                    </span>
-
-                  </button>
+                    </button>
 
 
-                  <button
-                    data-layer-lock="${layer.id}"
-                    type="button"
-                  >
-                    ${
-                      layer.locked
-                        ? "■"
-                        : "□"
-                    }
-                  </button>
+                    <button
+                      class="layer-main"
+                      data-layer-select="${layer.id}"
+                      type="button"
+                    >
 
-                </div>
-              `
+                      <span class="layer-icon">
+                        ${info.icon}
+                      </span>
+
+
+                      <span>
+
+                        <strong>
+                          ${escapeHtml(
+                            layer.name ||
+                            layer.type
+                          )}
+                        </strong>
+
+                        <small>
+                          ${
+                            info.label
+                          }${
+                            layer.locked
+                              ? " • LOCKED"
+                              : ""
+                          }
+                        </small>
+
+                      </span>
+
+                    </button>
+
+
+                    <button
+                      data-layer-lock="${layer.id}"
+                      type="button"
+                      title="${
+                        layer.locked
+                          ? "Unlock layer"
+                          : "Lock layer"
+                      }"
+                      aria-label="${
+                        layer.locked
+                          ? "Unlock layer"
+                          : "Lock layer"
+                      }"
+                    >
+                      ${
+                        layer.locked
+                          ? "■"
+                          : "□"
+                      }
+                    </button>
+
+                  </div>
+                `;
+
+              }
             )
             .join("")}
 
         </div>
       `;
+
     }
 
+
+    /* ========================================================
+       TEXT INSPECTOR
+    ======================================================== */
 
     textInspectorHtml(
       layer
     ) {
+
       return `
         <div class="inspector-section">
 
@@ -5389,14 +7050,23 @@
             CONTENT
           </div>
 
+          <h3>
+            Text Content
+          </h3>
+
+
           <label class="field">
-            <span>Text</span>
+
+            <span>
+              Text
+            </span>
 
             <textarea
               id="insText"
             >${escapeHtml(
               layer.text
             )}</textarea>
+
           </label>
 
         </div>
@@ -5408,10 +7078,18 @@
             TYPOGRAPHY
           </div>
 
+          <h3>
+            Type Styling
+          </h3>
+
+
           <div class="grid-2">
 
             <label class="field">
-              <span>Font</span>
+
+              <span>
+                Font
+              </span>
 
               <select id="insFont">
 
@@ -5425,6 +7103,7 @@
                   .map(
                     font => `
                       <option
+                        value="${font}"
                         ${
                           layer.font ===
                           font
@@ -5439,11 +7118,15 @@
                   .join("")}
 
               </select>
+
             </label>
 
 
             <label class="field">
-              <span>Weight</span>
+
+              <span>
+                Weight
+              </span>
 
               <select id="insWeight">
 
@@ -5475,6 +7158,7 @@
                   .join("")}
 
               </select>
+
             </label>
 
           </div>
@@ -5511,18 +7195,38 @@
           )}
 
 
+          ${this.rangeHtml(
+            "insLineHeight",
+            "Line Height",
+            60,
+            180,
+            (
+              layer.lineHeight ||
+              1
+            ) *
+            100,
+            "%"
+          )}
+
+
           <label class="field">
-            <span>Color</span>
+
+            <span>
+              Color
+            </span>
 
             <input
               id="insTextColor"
               type="color"
               value="${
-                layer.color.startsWith("#")
+                String(
+                  layer.color
+                ).startsWith("#")
                   ? layer.color
                   : "#ffffff"
               }"
             >
+
           </label>
 
 
@@ -5563,12 +7267,18 @@
 
         ${this.layerActionsHtml()}
       `;
+
     }
 
+
+    /* ========================================================
+       PHOTO INSPECTOR
+    ======================================================== */
 
     imageInspectorHtml(
       layer
     ) {
+
       return `
         <div class="inspector-section">
 
@@ -5585,7 +7295,7 @@
 
           ${this.rangeHtml(
             "insImageWidth",
-            "Size",
+            "Photo Width",
             10,
             120,
             layer.width,
@@ -5601,7 +7311,8 @@
             (
               layer.scale ||
               1
-            ) * 100,
+            ) *
+            100,
             "%"
           )}
 
@@ -5619,6 +7330,11 @@
             ADJUST
           </div>
 
+          <h3>
+            Photo Adjustments
+          </h3>
+
+
           ${this.rangeHtml(
             "insBrightness",
             "Brightness",
@@ -5628,6 +7344,7 @@
             0,
             ""
           )}
+
 
           ${this.rangeHtml(
             "insContrast",
@@ -5639,6 +7356,7 @@
             ""
           )}
 
+
           ${this.rangeHtml(
             "insSaturation",
             "Saturation",
@@ -5648,6 +7366,7 @@
             0,
             ""
           )}
+
 
           ${this.rangeHtml(
             "insBlur",
@@ -5664,12 +7383,18 @@
 
         ${this.layerActionsHtml()}
       `;
+
     }
 
+
+    /* ========================================================
+       ELEMENT INSPECTOR
+    ======================================================== */
 
     elementInspectorHtml(
       layer
     ) {
+
       return `
         <div class="inspector-section">
 
@@ -5685,7 +7410,10 @@
 
 
           <label class="field">
-            <span>Color</span>
+
+            <span>
+              Element Color
+            </span>
 
             <input
               id="insElementColor"
@@ -5695,6 +7423,7 @@
                 this.state.accent
               }"
             >
+
           </label>
 
         </div>
@@ -5707,18 +7436,29 @@
 
         ${this.layerActionsHtml()}
       `;
+
     }
 
+
+    /* ========================================================
+       TRANSFORM INSPECTOR
+    ======================================================== */
 
     transformInspectorHtml(
       layer
     ) {
+
       return `
         <div class="inspector-section">
 
           <div class="micro-label">
             TRANSFORM
           </div>
+
+          <h3>
+            Position & Size
+          </h3>
+
 
           ${this.rangeHtml(
             "insX",
@@ -5729,6 +7469,7 @@
             "%"
           )}
 
+
           ${this.rangeHtml(
             "insY",
             "Vertical",
@@ -5737,6 +7478,7 @@
             layer.y,
             "%"
           )}
+
 
           ${
             layer.type ===
@@ -5749,11 +7491,13 @@
                   (
                     layer.scale ||
                     1
-                  ) * 100,
+                  ) *
+                  100,
                   "%"
                 )
               : ""
           }
+
 
           ${
             layer.type !==
@@ -5770,6 +7514,7 @@
               : ""
           }
 
+
           ${this.rangeHtml(
             "insOpacity",
             "Opacity",
@@ -5778,22 +7523,34 @@
             (
               layer.opacity ??
               1
-            ) * 100,
+            ) *
+            100,
             "%"
           )}
 
         </div>
       `;
+
     }
 
 
+    /* ========================================================
+       LAYER ACTIONS
+    ======================================================== */
+
     layerActionsHtml() {
+
       return `
         <div class="inspector-section">
 
           <div class="micro-label">
             ARRANGE
           </div>
+
+          <h3>
+            Layer Order
+          </h3>
+
 
           <div class="action-grid">
 
@@ -5804,6 +7561,7 @@
               Bring Forward
             </button>
 
+
             <button
               id="insSendBackward"
               type="button"
@@ -5811,12 +7569,14 @@
               Send Backward
             </button>
 
+
             <button
               id="insDuplicate"
               type="button"
             >
               Duplicate
             </button>
+
 
             <button
               id="insDelete"
@@ -5837,12 +7597,24 @@
             LAYERS
           </div>
 
+          <h3>
+            ${
+              this.state.layers
+                .length
+            } Design Layers
+          </h3>
+
           ${this.layersHtml()}
 
         </div>
       `;
+
     }
 
+
+    /* ========================================================
+       RANGE HTML
+    ======================================================== */
 
     rangeHtml(
       id,
@@ -5852,20 +7624,27 @@
       value,
       suffix
     ) {
+
       return `
         <label class="range-field">
 
           <div>
+
             <span>
               ${label}
             </span>
 
-            <b id="${id}Value">
+            <b
+              id="${id}Value"
+              data-suffix="${suffix}"
+            >
               ${Math.round(
                 Number(value)
               )}${suffix}
             </b>
+
           </div>
+
 
           <input
             id="${id}"
@@ -5877,20 +7656,29 @@
 
         </label>
       `;
+
     }
 
+
+    /* ========================================================
+       TEXT INSPECTOR BINDINGS
+    ======================================================== */
 
     bindTextInspector(
       layer
     ) {
+
       this.bindInput(
         "#insText",
         "input",
         event => {
+
           layer.text =
             event.target.value;
 
+
           this.render();
+
         },
         true
       );
@@ -5900,12 +7688,16 @@
         "#insFont",
         "change",
         event => {
+
           layer.font =
             event.target.value;
 
+
           this.render();
 
+
           this.commit();
+
         }
       );
 
@@ -5914,14 +7706,18 @@
         "#insWeight",
         "change",
         event => {
+
           layer.weight =
             Number(
               event.target.value
             );
 
+
           this.render();
 
+
           this.commit();
+
         }
       );
 
@@ -5929,8 +7725,13 @@
       this.bindRange(
         "#insSize",
         value => {
-          layer.size = value;
+
+          layer.size =
+            value;
+
+
           this.render();
+
         }
       );
 
@@ -5938,8 +7739,13 @@
       this.bindRange(
         "#insTextWidth",
         value => {
-          layer.width = value;
+
+          layer.width =
+            value;
+
+
           this.render();
+
         }
       );
 
@@ -5947,10 +7753,28 @@
       this.bindRange(
         "#insLetterSpacing",
         value => {
+
           layer.letterSpacing =
             value;
 
+
           this.render();
+
+        }
+      );
+
+
+      this.bindRange(
+        "#insLineHeight",
+        value => {
+
+          layer.lineHeight =
+            value /
+            100;
+
+
+          this.render();
+
         }
       );
 
@@ -5959,10 +7783,13 @@
         "#insTextColor",
         "input",
         event => {
+
           layer.color =
             event.target.value;
 
+
           this.render();
+
         },
         true
       );
@@ -5972,20 +7799,27 @@
         "[data-text-align]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
             () => {
+
               layer.align =
                 button.dataset
                   .textAlign;
 
+
               this.render();
+
 
               this.renderInspector();
 
+
               this.commit();
+
             }
           );
+
         }
       );
 
@@ -5994,22 +7828,33 @@
         layer
       );
 
+
       this.bindLayerActions();
 
+
       this.bindLayerRows();
+
     }
 
+
+    /* ========================================================
+       IMAGE INSPECTOR BINDINGS
+    ======================================================== */
 
     bindImageInspector(
       layer
     ) {
+
       this.bindRange(
         "#insImageWidth",
         value => {
+
           layer.width =
             value;
 
+
           this.render();
+
         }
       );
 
@@ -6017,10 +7862,14 @@
       this.bindRange(
         "#insImageScale",
         value => {
+
           layer.scale =
-            value / 100;
+            value /
+            100;
+
 
           this.render();
+
         }
       );
 
@@ -6028,10 +7877,13 @@
       this.bindRange(
         "#insBrightness",
         value => {
+
           layer.brightness =
             value;
 
+
           this.render();
+
         }
       );
 
@@ -6039,10 +7891,13 @@
       this.bindRange(
         "#insContrast",
         value => {
+
           layer.contrast =
             value;
 
+
           this.render();
+
         }
       );
 
@@ -6050,10 +7905,13 @@
       this.bindRange(
         "#insSaturation",
         value => {
+
           layer.saturation =
             value;
 
+
           this.render();
+
         }
       );
 
@@ -6061,10 +7919,13 @@
       this.bindRange(
         "#insBlur",
         value => {
+
           layer.blur =
             value;
 
+
           this.render();
+
         }
       );
 
@@ -6073,23 +7934,34 @@
         layer
       );
 
+
       this.bindLayerActions();
 
+
       this.bindLayerRows();
+
     }
 
+
+    /* ========================================================
+       ELEMENT INSPECTOR BINDINGS
+    ======================================================== */
 
     bindElementInspector(
       layer
     ) {
+
       this.bindInput(
         "#insElementColor",
         "input",
         event => {
+
           layer.color =
             event.target.value;
 
+
           this.render();
+
         },
         true
       );
@@ -6099,20 +7971,33 @@
         layer
       );
 
+
       this.bindLayerActions();
 
+
       this.bindLayerRows();
+
     }
 
+
+    /* ========================================================
+       TRANSFORM BINDINGS
+    ======================================================== */
 
     bindTransformInspector(
       layer
     ) {
+
       this.bindRange(
         "#insX",
         value => {
-          layer.x = value;
+
+          layer.x =
+            value;
+
+
           this.render();
+
         }
       );
 
@@ -6120,8 +8005,13 @@
       this.bindRange(
         "#insY",
         value => {
-          layer.y = value;
+
+          layer.y =
+            value;
+
+
           this.render();
+
         }
       );
 
@@ -6129,52 +8019,74 @@
       if (
         $("#insScale")
       ) {
+
         this.bindRange(
           "#insScale",
           value => {
+
             layer.scale =
-              value / 100;
+              value /
+              100;
+
 
             this.render();
+
           }
         );
+
       }
 
 
       if (
         $("#insRotation")
       ) {
+
         this.bindRange(
           "#insRotation",
           value => {
+
             layer.rotation =
               value;
 
+
             this.render();
+
           }
         );
+
       }
 
 
       this.bindRange(
         "#insOpacity",
         value => {
+
           layer.opacity =
-            value / 100;
+            value /
+            100;
+
 
           this.render();
+
         }
       );
+
     }
 
 
+    /* ========================================================
+       LAYER ACTION BINDINGS
+    ======================================================== */
+
     bindLayerActions() {
+
       $("#insDuplicate")
         ?.addEventListener(
           "click",
           () =>
             this.duplicateSelected()
         );
+
 
       $("#insDelete")
         ?.addEventListener(
@@ -6183,39 +8095,57 @@
             this.deleteSelected()
         );
 
+
       $("#insBringForward")
         ?.addEventListener(
           "click",
           () =>
-            this.moveSelected(1)
+            this.moveSelected(
+              1
+            )
         );
+
 
       $("#insSendBackward")
         ?.addEventListener(
           "click",
           () =>
-            this.moveSelected(-1)
+            this.moveSelected(
+              -1
+            )
         );
+
     }
 
 
+    /* ========================================================
+       LAYER ROW BINDINGS
+    ======================================================== */
+
     bindLayerRows() {
+
       $$(
         "[data-layer-select]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
             () => {
+
               this.state.selectedId =
                 button.dataset
                   .layerSelect;
 
+
               this.render();
 
+
               this.renderInspector();
+
             }
           );
+
         }
       );
 
@@ -6224,9 +8154,14 @@
         "[data-layer-visible]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
-            () => {
+            event => {
+
+              event.stopPropagation();
+
+
               const layer =
                 this.state.layers.find(
                   item =>
@@ -6235,21 +8170,28 @@
                       .layerVisible
                 );
 
+
               if (!layer) {
                 return;
               }
+
 
               layer.visible =
                 layer.visible ===
                 false;
 
+
               this.render();
+
 
               this.renderInspector();
 
+
               this.commit();
+
             }
           );
+
         }
       );
 
@@ -6258,9 +8200,14 @@
         "[data-layer-lock]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
-            () => {
+            event => {
+
+              event.stopPropagation();
+
+
               const layer =
                 this.state.layers.find(
                   item =>
@@ -6269,68 +8216,111 @@
                       .layerLock
                 );
 
+
               if (!layer) {
                 return;
               }
 
+
               layer.locked =
                 !layer.locked;
 
+
+              this.render();
+
+
               this.renderInspector();
 
+
               this.commit();
+
             }
           );
+
         }
       );
+
     }
 
 
+    /* ========================================================
+       UPDATE INSPECTOR AFTER DRAG
+    ======================================================== */
+
     renderInspectorValues() {
+
       const selected =
         this.getSelected();
+
 
       if (!selected) {
         return;
       }
 
+
       const x =
         $("#insX");
+
 
       const y =
         $("#insY");
 
+
       if (x) {
+
         x.value =
           selected.x;
 
-        $("#insXValue")
-          .textContent =
-          `${Math.round(
-            selected.x
-          )}%`;
+
+        const label =
+          $("#insXValue");
+
+
+        if (label) {
+
+          label.textContent =
+            `${Math.round(
+              selected.x
+            )}%`;
+
+        }
+
       }
 
+
       if (y) {
+
         y.value =
           selected.y;
 
-        $("#insYValue")
-          .textContent =
-          `${Math.round(
-            selected.y
-          )}%`;
+
+        const label =
+          $("#insYValue");
+
+
+        if (label) {
+
+          label.textContent =
+            `${Math.round(
+              selected.y
+            )}%`;
+
+        }
+
       }
+
     }
 
 
     /* ========================================================
-       LAYER COMMANDS
+       DUPLICATE
     ======================================================== */
 
     duplicateSelected() {
+
       const layer =
         this.getSelected();
+
 
       if (!layer) {
         return;
@@ -6338,29 +8328,38 @@
 
 
       const copy =
-        JSON.parse(
-          JSON.stringify(layer)
+        cloneSerializable(
+          layer
         );
 
+
       copy.id =
-        uid(layer.type);
+        uid(
+          layer.type
+        );
+
 
       copy.name =
         `${layer.name} Copy`;
 
+
       copy.x =
         clamp(
-          layer.x + 2,
+          layer.x +
+          2,
           0,
           100
         );
 
+
       copy.y =
         clamp(
-          layer.y + 2,
+          layer.y +
+          2,
           0,
           100
         );
+
 
       delete copy._bounds;
 
@@ -6369,24 +8368,36 @@
         copy
       );
 
+
       this.state.selectedId =
         copy.id;
 
+
       this.render();
+
 
       this.renderInspector();
 
+
       this.commit();
+
     }
 
 
+    /* ========================================================
+       DELETE
+    ======================================================== */
+
     deleteSelected() {
+
       const id =
         this.state.selectedId;
+
 
       if (!id) {
         return;
       }
+
 
       this.state.layers =
         this.state.layers.filter(
@@ -6394,28 +8405,41 @@
             layer.id !== id
         );
 
+
       this.state.selectedId =
         null;
 
+
       this.render();
+
 
       this.renderInspector();
 
+
       this.commit();
+
     }
 
+
+    /* ========================================================
+       MOVE LAYER
+    ======================================================== */
 
     moveSelected(
       direction
     ) {
+
       const id =
         this.state.selectedId;
 
+
       const index =
-        this.state.layers.findIndex(
-          layer =>
-            layer.id === id
-        );
+        this.state.layers
+          .findIndex(
+            layer =>
+              layer.id === id
+          );
+
 
       if (
         index < 0
@@ -6426,32 +8450,49 @@
 
       const target =
         clamp(
-          index + direction,
+          index +
+          direction,
           0,
-          this.state.layers.length -
+          this.state.layers
+            .length -
           1
         );
+
+
+      if (
+        target ===
+        index
+      ) {
+        return;
+      }
 
 
       const [
         layer
       ] =
-        this.state.layers.splice(
-          index,
-          1
+        this.state.layers
+          .splice(
+            index,
+            1
+          );
+
+
+      this.state.layers
+        .splice(
+          target,
+          0,
+          layer
         );
 
-      this.state.layers.splice(
-        target,
-        0,
-        layer
-      );
 
       this.render();
 
+
       this.renderInspector();
 
+
       this.commit();
+
     }
 
 
@@ -6460,25 +8501,35 @@
     ======================================================== */
 
     snapshot() {
+
       return JSON.stringify({
+
         ...this.state,
+
         layers:
           this.state.layers.map(
             layer => {
+
               const copy = {
                 ...layer
               };
 
+
               delete copy._bounds;
 
+
               return copy;
+
             }
           )
+
       });
+
     }
 
 
     commit() {
+
       const snapshot =
         this.snapshot();
 
@@ -6507,37 +8558,47 @@
 
       if (
         this.history.length >
-        60
+        80
       ) {
+
         this.history.shift();
+
       }
 
 
       this.historyIndex =
         this.history.length -
         1;
+
     }
 
 
     restoreSnapshot(
       snapshot
     ) {
+
       this.state =
         JSON.parse(
           snapshot
         );
 
+
       this.syncAllUI();
+
 
       this.render();
 
+
       this.renderInspector();
 
+
       this.renderTemplates();
+
     }
 
 
     undo() {
+
       if (
         this.historyIndex <=
         0
@@ -6545,17 +8606,21 @@
         return;
       }
 
+
       this.historyIndex--;
+
 
       this.restoreSnapshot(
         this.history[
           this.historyIndex
         ]
       );
+
     }
 
 
     redo() {
+
       if (
         this.historyIndex >=
         this.history.length -
@@ -6564,25 +8629,32 @@
         return;
       }
 
+
       this.historyIndex++;
+
 
       this.restoreSnapshot(
         this.history[
           this.historyIndex
         ]
       );
+
     }
 
 
     /* ========================================================
-       FORMAT / ZOOM
+       FORMAT
     ======================================================== */
 
     changeFormat(
       format
     ) {
+
       const definition =
-        FORMATS[format];
+        FORMATS[
+          format
+        ];
+
 
       if (!definition) {
         return;
@@ -6592,29 +8664,51 @@
       this.state.format =
         format;
 
+
       this.state.width =
         definition.width;
+
 
       this.state.height =
         definition.height;
 
 
-      $("#posterDimensions")
-        .textContent =
-        `${definition.width} × ${definition.height}`;
+      const dimensions =
+        $("#posterDimensions");
+
+
+      if (dimensions) {
+
+        dimensions.textContent =
+          `${
+            definition.width
+          } × ${
+            definition.height
+          }`;
+
+      }
 
 
       this.render();
 
+
       this.fitCanvas();
 
+
       this.commit();
+
     }
 
 
+    /* ========================================================
+       FIT CANVAS
+    ======================================================== */
+
     fitCanvas() {
+
       const stage =
         $("#posterStage");
+
 
       if (!stage) {
         return;
@@ -6622,21 +8716,28 @@
 
 
       const availableWidth =
-        stage.clientWidth -
-        70;
+        Math.max(
+          100,
+          stage.clientWidth -
+          70
+        );
+
 
       const availableHeight =
-        stage.clientHeight -
-        60;
+        Math.max(
+          100,
+          stage.clientHeight -
+          60
+        );
 
 
       const zoom =
         Math.min(
           availableWidth /
-          this.state.width,
+            this.state.width,
 
           availableHeight /
-          this.state.height,
+            this.state.height,
 
           1
         );
@@ -6650,18 +8751,26 @@
 
 
       this.applyZoom();
+
     }
 
 
+    /* ========================================================
+       APPLY ZOOM
+    ======================================================== */
+
     applyZoom() {
+
       const zoom =
         this.state.zoom;
+
 
       this.canvas.style.width =
         `${
           this.state.width *
           zoom
         }px`;
+
 
       this.canvas.style.height =
         `${
@@ -6670,21 +8779,31 @@
         }px`;
 
 
-      $("#posterZoomValue")
-        .textContent =
-        `${
-          Math.round(
-            zoom * 100
-          )
-        }%`;
+      const label =
+        $("#posterZoomValue");
+
+
+      if (label) {
+
+        label.textContent =
+          `${
+            Math.round(
+              zoom *
+              100
+            )
+          }%`;
+
+      }
+
     }
 
 
     /* ========================================================
-       EXPORT
+       EXPORT MODAL
     ======================================================== */
 
     openExport() {
+
       $("#posterExportBackdrop")
         ?.remove();
 
@@ -6694,8 +8813,10 @@
           "div"
         );
 
+
       modal.id =
         "posterExportBackdrop";
+
 
       modal.className =
         "export-backdrop";
@@ -6712,17 +8833,25 @@
             ×
           </button>
 
+
           <div class="micro-label">
             EXPORT STUDIO
           </div>
+
 
           <h2>
             Export Poster
           </h2>
 
+
           <p>
-            Export the current design at
-            full canvas resolution.
+            Export your design at full
+            ${
+              this.state.width
+            } × ${
+              this.state.height
+            }
+            resolution.
           </p>
 
 
@@ -6733,10 +8862,15 @@
               data-poster-export="png"
               type="button"
             >
-              <strong>PNG</strong>
+
+              <strong>
+                PNG
+              </strong>
+
               <span>
-                Highest visual quality
+                Maximum quality with crisp graphics
               </span>
+
             </button>
 
 
@@ -6745,10 +8879,15 @@
               data-poster-export="jpg"
               type="button"
             >
-              <strong>JPG</strong>
+
+              <strong>
+                JPG
+              </strong>
+
               <span>
-                Smaller social-media file
+                Optimized social-media image
               </span>
+
             </button>
 
           </div>
@@ -6763,11 +8902,28 @@
 
 
       $("#posterExportClose")
-        .addEventListener(
+        ?.addEventListener(
           "click",
           () =>
             modal.remove()
         );
+
+
+      modal.addEventListener(
+        "click",
+        event => {
+
+          if (
+            event.target ===
+            modal
+          ) {
+
+            modal.remove();
+
+          }
+
+        }
+      );
 
 
       modal
@@ -6776,60 +8932,106 @@
         )
         .forEach(
           button => {
+
             button.addEventListener(
               "click",
               () => {
+
                 this.download(
                   button.dataset
                     .posterExport
                 );
 
+
                 modal.remove();
+
               }
             );
+
           }
         );
+
     }
 
+
+    /* ========================================================
+       DOWNLOAD
+    ======================================================== */
 
     download(
       format
     ) {
-      this.render(true);
+
+      this.render(
+        true
+      );
 
 
       const mime =
-        format === "jpg"
+        format ===
+        "jpg"
           ? "image/jpeg"
           : "image/png";
 
 
       const quality =
-        format === "jpg"
-          ? .94
+        format ===
+        "jpg"
+          ? .95
           : undefined;
 
 
       this.canvas.toBlob(
         blob => {
+
           if (!blob) {
+
+            this.render();
+
             return;
+
           }
+
 
           const url =
             URL.createObjectURL(
               blob
             );
 
+
           const link =
             document.createElement(
               "a"
             );
 
-          link.href = url;
+
+          const projectName =
+            (
+              $("#projectName")
+                ?.value ||
+              "fwcwl"
+            )
+              .trim()
+              .toLowerCase()
+              .replace(
+                /[^a-z0-9]+/g,
+                "-"
+              )
+              .replace(
+                /^-|-$/g,
+                ""
+              );
+
+
+          link.href =
+            url;
+
 
           link.download =
-            `fwcwl-${
+            `${
+              projectName ||
+              "fwcwl"
+            }-${
               this.state.templateId
             }.${
               format ===
@@ -6838,13 +9040,17 @@
                 : "png"
             }`;
 
+
           document.body.appendChild(
             link
           );
 
+
           link.click();
 
+
           link.remove();
+
 
           setTimeout(
             () =>
@@ -6854,11 +9060,14 @@
             2000
           );
 
+
           this.render();
+
         },
         mime,
         quality
       );
+
     }
 
 
@@ -6867,131 +9076,194 @@
     ======================================================== */
 
     reset() {
+
       const confirmed =
         window.confirm(
           "Reset the current poster design?"
         );
 
+
       if (!confirmed) {
         return;
       }
+
+
+      this.state.textureStrength =
+        52;
+
+
+      this.state.safeZone =
+        false;
+
+
+      this.state.snap =
+        true;
+
 
       this.applyTemplate(
         "match-day",
         false
       );
 
+
       this.state.selectedId =
         null;
 
+
+      this.syncAllUI();
+
+
       this.render();
+
 
       this.renderInspector();
 
+
       this.commit();
+
     }
 
 
     /* ========================================================
-       UI
+       GLOBAL UI BINDINGS
     ======================================================== */
 
     bindUI() {
+
+      /* ------------------------------------------------------
+         LEFT PANEL TABS
+      ------------------------------------------------------ */
+
       $$(
         "[data-poster-tab]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
             () => {
+
               $$(
                 "[data-poster-tab]"
               ).forEach(
                 item =>
-                  item.classList.remove(
-                    "active"
-                  )
-              );
-
-              button.classList.add(
-                "active"
-              );
-
-
-              $$(".poster-left-panel")
-                .forEach(
-                  panel =>
-                    panel.classList.remove(
+                  item.classList
+                    .remove(
                       "active"
                     )
-                );
-
-
-              const panel =
-                $(
-                  `#poster${
-                    button.dataset
-                      .posterTab
-                      .charAt(0)
-                      .toUpperCase() +
-                    button.dataset
-                      .posterTab
-                      .slice(1)
-                  }Panel`
-                );
-
-
-              panel?.classList.add(
-                "active"
               );
+
+
+              button.classList
+                .add(
+                  "active"
+                );
+
+
+              $$(
+                ".poster-left-panel"
+              ).forEach(
+                panel =>
+                  panel.classList
+                    .remove(
+                      "active"
+                    )
+              );
+
+
+              const name =
+                button.dataset
+                  .posterTab;
+
+
+              const id =
+                `#poster${
+                  name
+                    .charAt(0)
+                    .toUpperCase() +
+                  name.slice(1)
+                }Panel`;
+
+
+              $(id)
+                ?.classList
+                .add(
+                  "active"
+                );
+
             }
           );
+
         }
       );
 
+
+      /* ------------------------------------------------------
+         SEARCH
+      ------------------------------------------------------ */
 
       $("#posterTemplateSearch")
         ?.addEventListener(
           "input",
           event => {
-            this.search =
+
+            this.searchTerm =
               event.target.value;
 
+
             this.renderTemplates();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         FILTERS
+      ------------------------------------------------------ */
 
       $$(
         "[data-filter]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
             () => {
+
               $$(
                 "[data-filter]"
               ).forEach(
                 item =>
-                  item.classList.remove(
-                    "active"
-                  )
+                  item.classList
+                    .remove(
+                      "active"
+                    )
               );
 
-              button.classList.add(
-                "active"
-              );
 
-              this.filter =
+              button.classList
+                .add(
+                  "active"
+                );
+
+
+              this.activeFilter =
                 button.dataset
                   .filter;
 
+
               this.renderTemplates();
+
             }
           );
+
         }
       );
 
+
+      /* ------------------------------------------------------
+         MEDIA UPLOAD
+      ------------------------------------------------------ */
 
       $("#posterUploadMediaBtn")
         ?.addEventListener(
@@ -7006,64 +9278,98 @@
         ?.addEventListener(
           "change",
           async event => {
+
             await this.importImages(
               event.target.files
             );
 
+
             event.target.value =
               "";
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         ADD TEXT
+      ------------------------------------------------------ */
 
       $$(
         "[data-add-poster-text]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
-            () =>
+            () => {
+
               this.addText(
                 button.dataset
                   .addPosterText
-              )
+              );
+
+            }
           );
+
         }
       );
 
+
+      /* ------------------------------------------------------
+         ADD ELEMENT
+      ------------------------------------------------------ */
 
       $$(
         "[data-add-poster-element]"
       ).forEach(
         button => {
+
           button.addEventListener(
             "click",
-            () =>
+            () => {
+
               this.addElement(
                 button.dataset
                   .addPosterElement
-              )
+              );
+
+            }
           );
+
         }
       );
 
 
+      /* ------------------------------------------------------
+         FORMAT
+      ------------------------------------------------------ */
+
       $("#posterCanvasSize")
         ?.addEventListener(
           "change",
-          event =>
+          event => {
+
             this.changeFormat(
               event.target.value
-            )
+            );
+
+          }
         );
 
+
+      /* ------------------------------------------------------
+         SAFE AREA
+      ------------------------------------------------------ */
 
       $("#posterSafeZoneBtn")
         ?.addEventListener(
           "click",
           event => {
+
             this.state.safeZone =
               !this.state.safeZone;
+
 
             event.currentTarget
               .classList
@@ -7072,19 +9378,28 @@
                 this.state.safeZone
               );
 
+
             this.render();
 
+
             this.commit();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         SNAP
+      ------------------------------------------------------ */
 
       $("#posterSnapBtn")
         ?.addEventListener(
           "click",
           event => {
+
             this.state.snap =
               !this.state.snap;
+
 
             event.currentTarget
               .classList
@@ -7093,10 +9408,16 @@
                 this.state.snap
               );
 
+
             this.commit();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         FIT
+      ------------------------------------------------------ */
 
       $("#posterFitBtn")
         ?.addEventListener(
@@ -7106,19 +9427,26 @@
         );
 
 
+      /* ------------------------------------------------------
+         ZOOM
+      ------------------------------------------------------ */
+
       $("#posterZoomInBtn")
         ?.addEventListener(
           "click",
           () => {
+
             this.state.zoom =
               clamp(
                 this.state.zoom +
                 .05,
                 .10,
-                1.25
+                1.50
               );
 
+
             this.applyZoom();
+
           }
         );
 
@@ -7127,44 +9455,69 @@
         ?.addEventListener(
           "click",
           () => {
+
             this.state.zoom =
               clamp(
                 this.state.zoom -
                 .05,
                 .10,
-                1.25
+                1.50
               );
 
+
             this.applyZoom();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         BRAND NAME
+      ------------------------------------------------------ */
 
       $("#posterBrandName")
         ?.addEventListener(
           "input",
           event => {
+
             this.state.brandName =
               event.target.value;
 
+
             this.render();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         ACCENT
+      ------------------------------------------------------ */
 
       $("#posterAccentColor")
         ?.addEventListener(
           "input",
           event => {
+
             this.state.accent =
               event.target.value;
 
-            $("#posterAccentText")
-              .value =
-              event.target.value
-                .toUpperCase();
+
+            const text =
+              $("#posterAccentText");
+
+
+            if (text) {
+
+              text.value =
+                event.target.value
+                  .toUpperCase();
+
+            }
+
 
             this.render();
+
           }
         );
 
@@ -7173,59 +9526,128 @@
         ?.addEventListener(
           "change",
           event => {
-            const value =
-              hex(
+
+            const color =
+              normalizeHex(
                 event.target.value
               );
 
-            if (!value) {
+
+            if (!color) {
+
               this.syncBrandUI();
 
               return;
+
             }
 
+
             this.state.accent =
-              value;
+              color;
+
 
             this.syncBrandUI();
 
+
             this.render();
 
+
             this.commit();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         BACKGROUND BRAND SETTING
+      ------------------------------------------------------ */
 
       $("#posterBackgroundColor")
         ?.addEventListener(
           "input",
           event => {
+
             this.state.background =
               event.target.value;
 
-            $("#posterBackgroundText")
-              .value =
-              event.target.value
-                .toUpperCase();
 
-            this.render();
+            const text =
+              $("#posterBackgroundText");
+
+
+            if (text) {
+
+              text.value =
+                event.target.value
+                  .toUpperCase();
+
+            }
+
           }
         );
 
+
+      $("#posterBackgroundText")
+        ?.addEventListener(
+          "change",
+          event => {
+
+            const color =
+              normalizeHex(
+                event.target.value
+              );
+
+
+            if (!color) {
+
+              this.syncBrandUI();
+
+              return;
+
+            }
+
+
+            this.state.background =
+              color;
+
+
+            this.syncBrandUI();
+
+
+            this.commit();
+
+          }
+        );
+
+
+      /* ------------------------------------------------------
+         LOGO
+      ------------------------------------------------------ */
 
       $("#posterLogoToggle")
         ?.addEventListener(
           "change",
           event => {
+
             this.state.showLogo =
               event.target.checked;
 
+
             this.render();
 
+
+            this.renderInspector();
+
+
             this.commit();
+
           }
         );
 
+
+      /* ------------------------------------------------------
+         CANVAS POINTER
+      ------------------------------------------------------ */
 
       this.canvas.addEventListener(
         "pointerdown",
@@ -7235,6 +9657,7 @@
           )
       );
 
+
       this.canvas.addEventListener(
         "pointermove",
         event =>
@@ -7243,12 +9666,17 @@
           )
       );
 
+
       window.addEventListener(
         "pointerup",
         () =>
           this.onPointerUp()
       );
 
+
+      /* ------------------------------------------------------
+         HISTORY
+      ------------------------------------------------------ */
 
       $("#undoBtn")
         ?.addEventListener(
@@ -7266,6 +9694,10 @@
         );
 
 
+      /* ------------------------------------------------------
+         RESET
+      ------------------------------------------------------ */
+
       $("#resetBtn")
         ?.addEventListener(
           "click",
@@ -7273,6 +9705,10 @@
             this.reset()
         );
 
+
+      /* ------------------------------------------------------
+         EXPORT
+      ------------------------------------------------------ */
 
       $("#exportTopBtn")
         ?.addEventListener(
@@ -7290,6 +9726,10 @@
         );
 
 
+      /* ------------------------------------------------------
+         RESIZE
+      ------------------------------------------------------ */
+
       window.addEventListener(
         "resize",
         () =>
@@ -7297,77 +9737,265 @@
       );
 
 
+      /* ------------------------------------------------------
+         KEYBOARD
+      ------------------------------------------------------ */
+
       document.addEventListener(
         "keydown",
-        event => {
-          if (
-            $("#posterWorkspace")
-              ?.style
-              .display ===
-              "none"
-          ) {
-            return;
-          }
-
-
-          const target =
-            event.target;
-
-          if (
-            target instanceof
-              HTMLInputElement ||
-            target instanceof
-              HTMLTextAreaElement ||
-            target instanceof
-              HTMLSelectElement
-          ) {
-            return;
-          }
-
-
-          const command =
-            event.ctrlKey ||
-            event.metaKey;
-
-
-          if (
-            command &&
-            event.key
-              .toLowerCase() ===
-              "z"
-          ) {
-            event.preventDefault();
-
-            event.shiftKey
-              ? this.redo()
-              : this.undo();
-          }
-
-
-          if (
-            command &&
-            event.key
-              .toLowerCase() ===
-              "d"
-          ) {
-            event.preventDefault();
-
-            this.duplicateSelected();
-          }
-
-
-          if (
-            event.key ===
-              "Delete" ||
-            event.key ===
-              "Backspace"
-          ) {
-            this.deleteSelected();
-          }
-        }
+        event =>
+          this.handleKeyboard(
+            event
+          )
       );
+
     }
 
+
+    /* ========================================================
+       KEYBOARD SHORTCUTS
+    ======================================================== */
+
+    handleKeyboard(
+      event
+    ) {
+
+      const workspace =
+        $("#posterWorkspace");
+
+
+      if (
+        workspace &&
+        workspace.style.display ===
+        "none"
+      ) {
+        return;
+      }
+
+
+      const target =
+        event.target;
+
+
+      if (
+        target instanceof
+          HTMLInputElement ||
+        target instanceof
+          HTMLTextAreaElement ||
+        target instanceof
+          HTMLSelectElement
+      ) {
+        return;
+      }
+
+
+      const command =
+        event.ctrlKey ||
+        event.metaKey;
+
+
+      if (
+        command &&
+        event.key
+          .toLowerCase() ===
+          "z"
+      ) {
+
+        event.preventDefault();
+
+
+        if (
+          event.shiftKey
+        ) {
+
+          this.redo();
+
+        } else {
+
+          this.undo();
+
+        }
+
+
+        return;
+
+      }
+
+
+      if (
+        command &&
+        event.key
+          .toLowerCase() ===
+          "y"
+      ) {
+
+        event.preventDefault();
+
+
+        this.redo();
+
+
+        return;
+
+      }
+
+
+      if (
+        command &&
+        event.key
+          .toLowerCase() ===
+          "d"
+      ) {
+
+        event.preventDefault();
+
+
+        this.duplicateSelected();
+
+
+        return;
+
+      }
+
+
+      if (
+        event.key ===
+          "Delete" ||
+        event.key ===
+          "Backspace"
+      ) {
+
+        this.deleteSelected();
+
+
+        return;
+
+      }
+
+
+      const selected =
+        this.getSelected();
+
+
+      if (
+        !selected ||
+        selected.locked
+      ) {
+        return;
+      }
+
+
+      const step =
+        event.shiftKey
+          ? 1
+          : .25;
+
+
+      let changed =
+        false;
+
+
+      if (
+        event.key ===
+        "ArrowLeft"
+      ) {
+
+        selected.x =
+          clamp(
+            selected.x -
+            step,
+            0,
+            100
+          );
+
+
+        changed =
+          true;
+
+      }
+
+
+      if (
+        event.key ===
+        "ArrowRight"
+      ) {
+
+        selected.x =
+          clamp(
+            selected.x +
+            step,
+            0,
+            100
+          );
+
+
+        changed =
+          true;
+
+      }
+
+
+      if (
+        event.key ===
+        "ArrowUp"
+      ) {
+
+        selected.y =
+          clamp(
+            selected.y -
+            step,
+            0,
+            100
+          );
+
+
+        changed =
+          true;
+
+      }
+
+
+      if (
+        event.key ===
+        "ArrowDown"
+      ) {
+
+        selected.y =
+          clamp(
+            selected.y +
+            step,
+            0,
+            100
+          );
+
+
+        changed =
+          true;
+
+      }
+
+
+      if (changed) {
+
+        event.preventDefault();
+
+
+        this.render();
+
+
+        this.renderInspectorValues();
+
+
+        this.commit();
+
+      }
+
+    }
+
+
+    /* ========================================================
+       GENERIC INPUT BINDER
+    ======================================================== */
 
     bindInput(
       selector,
@@ -7375,76 +10003,95 @@
       handler,
       commitOnChange = false
     ) {
+
       const element =
         $(selector);
+
 
       if (!element) {
         return;
       }
+
 
       element.addEventListener(
         eventName,
         handler
       );
 
+
       if (
         commitOnChange &&
         eventName !==
         "change"
       ) {
+
         element.addEventListener(
           "change",
           () =>
             this.commit()
         );
+
       }
+
     }
 
+
+    /* ========================================================
+       RANGE BINDER
+    ======================================================== */
 
     bindRange(
       selector,
       callback
     ) {
+
       const input =
         $(selector);
+
 
       if (!input) {
         return;
       }
 
 
+      const valueLabel =
+        $(
+          `${selector}Value`
+        );
+
+
       input.addEventListener(
         "input",
         () => {
+
           const value =
             Number(
               input.value
             );
 
-          callback(value);
+
+          callback(
+            value
+          );
 
 
-          const label =
-            $(
-              `${selector}Value`
-            );
-
-          if (label) {
-            const old =
-              label.textContent;
+          if (
+            valueLabel
+          ) {
 
             const suffix =
-              old.includes("%")
-                ? "%"
-                : old.includes("°")
-                  ? "°"
-                  : "";
+              valueLabel.dataset
+                .suffix ||
+              "";
 
-            label.textContent =
+
+            valueLabel.textContent =
               `${Math.round(
                 value
               )}${suffix}`;
+
           }
+
         }
       );
 
@@ -7454,106 +10101,171 @@
         () =>
           this.commit()
       );
+
     }
 
 
+    /* ========================================================
+       SYNC BRAND UI
+    ======================================================== */
+
     syncBrandUI() {
+
       if (
         $("#posterBrandName")
       ) {
+
         $("#posterBrandName")
           .value =
           this.state.brandName;
+
       }
+
 
       if (
         $("#posterAccentColor")
       ) {
+
         $("#posterAccentColor")
           .value =
           this.state.accent;
+
       }
+
 
       if (
         $("#posterAccentText")
       ) {
+
         $("#posterAccentText")
           .value =
           this.state.accent
             .toUpperCase();
+
       }
+
 
       if (
         $("#posterBackgroundColor")
       ) {
+
         $("#posterBackgroundColor")
           .value =
           this.state.background;
+
       }
+
 
       if (
         $("#posterBackgroundText")
       ) {
+
         $("#posterBackgroundText")
           .value =
           this.state.background
             .toUpperCase();
+
       }
+
 
       if (
         $("#posterLogoToggle")
       ) {
+
         $("#posterLogoToggle")
           .checked =
           this.state.showLogo;
+
       }
+
     }
 
 
+    /* ========================================================
+       SYNC ALL UI
+    ======================================================== */
+
     syncAllUI() {
-      $("#posterCanvasSize")
-        .value =
-        this.state.format;
+
+      if (
+        $("#posterCanvasSize")
+      ) {
+
+        $("#posterCanvasSize")
+          .value =
+          this.state.format;
+
+      }
+
 
       $("#posterSafeZoneBtn")
-        .classList
+        ?.classList
         .toggle(
           "active",
           this.state.safeZone
         );
 
+
       $("#posterSnapBtn")
-        .classList
+        ?.classList
         .toggle(
           "active",
           this.state.snap
         );
 
-      $("#posterDimensions")
-        .textContent =
-        `${
-          this.state.width
-        } × ${
-          this.state.height
-        }`;
+
+      const dimensions =
+        $("#posterDimensions");
+
+
+      if (
+        dimensions
+      ) {
+
+        dimensions.textContent =
+          `${
+            this.state.width
+          } × ${
+            this.state.height
+          }`;
+
+      }
+
 
       this.syncBrandUI();
 
+
       this.applyZoom();
+
     }
 
   }
 
 
   /* ==========================================================
-     INIT
+     INITIALIZE
   ========================================================== */
 
   window.addEventListener(
     "DOMContentLoaded",
     () => {
-      window.FWCWLPosterEditor =
-        new PosterEditor();
+
+      try {
+
+        window.FWCWLPosterEditor =
+          new PosterEditor();
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          "FWCWL Poster Editor failed to initialize:",
+          error
+        );
+
+      }
+
     }
   );
 
