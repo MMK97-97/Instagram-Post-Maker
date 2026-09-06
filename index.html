@@ -335,77 +335,97 @@
 
     .brand {
 
-      min-width:
-        0;
+  min-width:
+    0;
 
-      display:
-        flex;
+  display:
+    flex;
 
-      align-items:
-        center;
+  align-items:
+    center;
 
-      gap:
-        11px;
+  gap:
+    13px;
 
-    }
+}
 
 
     .brand-logo {
 
-      width:
-        44px;
+  width:
+    52px;
 
-      height:
-        44px;
+  height:
+    52px;
 
-      flex:
-        0 0 44px;
+  flex:
+    0 0 52px;
 
-      overflow:
-        hidden;
+  overflow:
+    hidden;
 
-      display:
-        grid;
+  display:
+    grid;
 
-      place-items:
-        center;
+  place-items:
+    center;
 
-      border:
-        1px solid rgba(241,195,77,.28);
+  padding:
+    6px;
 
-      border-radius:
-        10px;
+  border:
+    1px solid rgba(241,195,77,.36);
 
-      background:
-        linear-gradient(
-          145deg,
-          #0b0d10,
-          #11100b
-        );
+  border-radius:
+    14px;
 
-      box-shadow:
-        0 8px 24px rgba(0,0,0,.28),
-        0 0 18px rgba(241,195,77,.05);
+  background:
 
-    }
+    radial-gradient(
+      circle at 50% 45%,
+      rgba(241,195,77,.12),
+      rgba(241,195,77,.03) 48%,
+      rgba(11,13,16,1) 82%
+    ),
+
+    linear-gradient(
+      145deg,
+      #111418,
+      #080a0d
+    );
+
+  box-shadow:
+    0 10px 26px rgba(0,0,0,.34),
+    0 0 0 1px rgba(241,195,77,.05),
+    0 0 18px rgba(241,195,77,.08);
+
+}
 
 
     .brand-logo img {
 
-      display:
-        block;
+  display:
+    block;
 
-      width:
-        100%;
+  width:
+    100%;
 
-      height:
-        100%;
+  height:
+    100%;
 
-      object-fit:
-        contain;
+  object-fit:
+    contain;
 
-    }
+  filter:
+    brightness(1.28)
+    contrast(1.22)
+    saturate(1.08)
+    drop-shadow(0 0 10px rgba(241,195,77,.16));
 
+  transform:
+    scale(1.08);
+
+}
 
     .brand-copy {
 
