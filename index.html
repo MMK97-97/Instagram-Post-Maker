@@ -1,1745 +1,429 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
   <meta charset="UTF-8">
-
-
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1, viewport-fit=cover"
-  >
-
-
-  <meta
-    name="theme-color"
-    content="#080a0d"
-  >
-
-
-  <meta
-    name="color-scheme"
-    content="dark"
-  >
-
-
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080a0d">
+  <meta name="color-scheme" content="dark">
   <meta
     name="description"
-    content="MK97 Creative Studio - Premium cricket poster and video editor."
+    content="MK97 Creative Studio — premium poster and video creation workspace."
   >
+  <title>MK97 Creative Studio</title>
 
-
-  <title>
-    MK97 Creative Studio
-  </title>
-
-
-  <!-- ======================================================
-       FONTS
-  ======================================================= -->
-
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-    rel="preconnect"
-    href="https://fonts.googleapis.com"
-  >
-
-
-  <link
-    rel="preconnect"
-    href="https://fonts.gstatic.com"
-    crossorigin
-  >
-
-
-  <link
-    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:wght@500;600;700;800;900&family=Poppins:wght@400;500;600;700;800;900&display=swap"
+    href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Montserrat:wght@500;600;700;800;900&display=swap"
     rel="stylesheet"
   >
 
+  <style>
+    :root {
+      --bg: #07090c;
+      --panel: #0b0e12;
+      --panel-2: #101419;
+      --line: rgba(255,255,255,.08);
+      --line-strong: rgba(255,255,255,.14);
+      --text: #f4f5f6;
+      --muted: #737b86;
+      --gold: #f1c34d;
+      --gold-soft: rgba(241,195,77,.08);
+    }
 
-  <!-- ======================================================
-       APP CSS
-       Increment version whenever styles.css changes.
-  ======================================================= -->
+    * {
+      box-sizing: border-box;
+    }
 
-  <link
-    rel="stylesheet"
-    href="styles.css?v=10.0.0"
-  >
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "DM Sans", system-ui, sans-serif;
+    }
 
+    body {
+      min-height: 100vh;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(241,195,77,.08), transparent 31%),
+        radial-gradient(circle at 15% 75%, rgba(255,255,255,.025), transparent 25%),
+        #07090c;
+    }
+
+    button,
+    a {
+      font: inherit;
+    }
+
+    .home-shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: 72px 1fr 44px;
+    }
+
+    .home-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7,9,12,.88);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+    }
+
+    .brand-logo {
+      width: 44px;
+      height: 44px;
+      overflow: hidden;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(241,195,77,.22);
+      border-radius: 10px;
+      background: #0b0d10;
+      box-shadow: 0 8px 24px rgba(0,0,0,.28);
+    }
+
+    .brand-logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .brand-copy {
+      display: flex;
+      align-items: baseline;
+      gap: 9px;
+      white-space: nowrap;
+    }
+
+    .brand-copy strong {
+      font-family: "Montserrat", sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      letter-spacing: .02em;
+    }
+
+    .brand-copy span {
+      color: #646b75;
+      font-size: 7px;
+      font-weight: 800;
+      letter-spacing: .16em;
+    }
+
+    .home-status {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #646c76;
+      font-size: 8px;
+      font-weight: 700;
+    }
+
+    .home-status i {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #3fd69d;
+      box-shadow: 0 0 12px rgba(63,214,157,.48);
+    }
+
+    .home-main {
+      width: min(1180px, calc(100% - 44px));
+      margin: 0 auto;
+      display: grid;
+      align-content: center;
+      padding: 64px 0 76px;
+    }
+
+    .eyebrow {
+      color: var(--gold);
+      font-size: 8px;
+      font-weight: 950;
+      letter-spacing: .14em;
+    }
+
+    .hero h1 {
+      max-width: 820px;
+      margin: 12px 0 0;
+      font-family: "Montserrat", sans-serif;
+      font-size: clamp(38px, 5vw, 72px);
+      line-height: .98;
+      letter-spacing: -.055em;
+      font-weight: 900;
+    }
+
+    .hero p {
+      max-width: 610px;
+      margin: 18px 0 0;
+      color: #7c848f;
+      font-size: 14px;
+      line-height: 1.65;
+    }
+
+    .studio-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 46px;
+    }
+
+    .studio-card {
+      position: relative;
+      min-height: 255px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      color: inherit;
+      text-decoration: none;
+      background:
+        linear-gradient(145deg, rgba(255,255,255,.025), rgba(255,255,255,.006)),
+        #0b0e12;
+      box-shadow: 0 18px 54px rgba(0,0,0,.20);
+      transition:
+        transform .22s ease,
+        border-color .22s ease,
+        box-shadow .22s ease,
+        background .22s ease;
+    }
+
+    .studio-card::before {
+      content: "";
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      top: -130px;
+      right: -95px;
+      border-radius: 50%;
+      border: 1px solid rgba(241,195,77,.11);
+      box-shadow:
+        0 0 0 34px rgba(241,195,77,.025),
+        0 0 0 70px rgba(241,195,77,.012);
+      pointer-events: none;
+    }
+
+    .studio-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(241,195,77,.28);
+      background:
+        linear-gradient(145deg, rgba(241,195,77,.055), rgba(255,255,255,.008)),
+        #0d1014;
+      box-shadow: 0 28px 70px rgba(0,0,0,.32);
+    }
+
+    .card-icon {
+      width: 47px;
+      height: 47px;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(241,195,77,.24);
+      border-radius: 12px;
+      color: var(--gold);
+      background: var(--gold-soft);
+      font-size: 17px;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .card-content small {
+      color: #5e6670;
+      font-size: 7px;
+      font-weight: 900;
+      letter-spacing: .12em;
+    }
+
+    .card-content h2 {
+      margin: 7px 0 0;
+      font-family: "Montserrat", sans-serif;
+      font-size: 25px;
+      letter-spacing: -.03em;
+    }
+
+    .card-content p {
+      max-width: 430px;
+      margin: 10px 0 0;
+      color: #747c87;
+      font-size: 11px;
+      line-height: 1.55;
+    }
+
+    .card-action {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 28px;
+      padding-top: 17px;
+      border-top: 1px solid rgba(255,255,255,.06);
+    }
+
+    .card-action strong {
+      font-size: 10px;
+      font-weight: 850;
+    }
+
+    .card-action span {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 9px;
+      color: #111;
+      background: var(--gold);
+      font-size: 14px;
+      transition: transform .2s ease;
+    }
+
+    .studio-card:hover .card-action span {
+      transform: translateX(3px);
+    }
+
+    .home-footer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid rgba(255,255,255,.05);
+      color: #434a53;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: .06em;
+    }
+
+    @media (max-width: 760px) {
+      .home-shell {
+        grid-template-rows: 66px 1fr 40px;
+      }
+
+      .home-topbar {
+        padding: 0 15px;
+      }
+
+      .brand-copy span,
+      .home-status span {
+        display: none;
+      }
+
+      .home-main {
+        width: min(100% - 28px, 1180px);
+        padding: 45px 0 58px;
+      }
+
+      .studio-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .studio-card {
+        min-height: 225px;
+      }
+    }
+  </style>
 </head>
 
-
 <body>
+  <div class="home-shell">
 
-  <!-- ========================================================
-       APP SHELL
-  ========================================================= -->
-
-  <div
-    id="appShell"
-    class="app-shell"
-  >
-
-
-    <!-- ======================================================
-         GLOBAL HEADER
-    ======================================================= -->
-
-    <header
-      id="globalTopbar"
-      class="topbar"
-    >
-
-
-      <!-- BRAND -->
-
+    <header class="home-topbar">
       <div class="brand">
-
-
-        <div class="brand-mark">
-
-          <img
-            src="assets/Mk97.png"
-            alt="MK97"
-            width="42"
-            height="42"
-          >
-
+        <div class="brand-logo">
+          <img src="assets/Mk97.png" alt="MK97">
         </div>
-
 
         <div class="brand-copy">
-
-          <strong>
-            MK97
-          </strong>
-
-          <span>
-            CREATIVE STUDIO
-          </span>
-
+          <strong>MK97</strong>
+          <span>CREATIVE STUDIO</span>
         </div>
-
       </div>
 
-
-      <!-- PROJECT -->
-
-      <div class="topbar-center">
-
-        <div class="project-field">
-
-          <span
-            class="project-dot"
-            aria-hidden="true"
-          ></span>
-
-
-          <input
-            id="projectName"
-            type="text"
-            value="FWCWL Campaign"
-            autocomplete="off"
-            spellcheck="false"
-            aria-label="Project name"
-          >
-
-        </div>
-
+      <div class="home-status">
+        <i></i>
+        <span>CREATIVE WORKSPACE</span>
       </div>
-
-
-      <!-- GLOBAL ACTIONS -->
-
-      <div class="topbar-actions">
-
-
-        <!-- MODE SWITCH -->
-
-        <div
-          class="mode-switch"
-          role="group"
-          aria-label="Editor mode"
-        >
-
-          <button
-            id="posterModeBtn"
-            class="mode-button active"
-            type="button"
-            aria-pressed="true"
-          >
-            <span aria-hidden="true">
-              ▧
-            </span>
-
-            Poster
-          </button>
-
-
-          <button
-            id="videoModeBtn"
-            class="mode-button"
-            type="button"
-            aria-pressed="false"
-          >
-            <span aria-hidden="true">
-              ▷
-            </span>
-
-            Video
-          </button>
-
-        </div>
-
-
-        <div
-          class="topbar-divider"
-          aria-hidden="true"
-        ></div>
-
-
-        <!-- HISTORY -->
-
-        <button
-          id="undoBtn"
-          class="top-icon"
-          type="button"
-          title="Undo"
-          aria-label="Undo"
-        >
-          ↶
-        </button>
-
-
-        <button
-          id="redoBtn"
-          class="top-icon"
-          type="button"
-          title="Redo"
-          aria-label="Redo"
-        >
-          ↷
-        </button>
-
-
-        <!-- RESET -->
-
-        <button
-          id="resetBtn"
-          class="top-secondary"
-          type="button"
-        >
-          Reset
-        </button>
-
-
-        <!-- EXPORT -->
-
-        <button
-          id="exportTopBtn"
-          class="top-export"
-          type="button"
-        >
-          Export
-
-          <span aria-hidden="true">
-            ↓
-          </span>
-        </button>
-
-      </div>
-
     </header>
 
 
-
-    <!-- ========================================================
-         POSTER EDITOR
-    ========================================================= -->
-
-    <main
-      id="posterWorkspace"
-      class="poster-workspace"
-      aria-label="Poster editor"
-    >
-
-
-      <!-- ======================================================
-           LEFT SIDEBAR
-      ======================================================= -->
-
-      <aside
-        id="posterLeftSidebar"
-        class="poster-left"
-      >
-
-
-        <!-- LEFT NAVIGATION -->
-
-        <nav
-          class="left-tabs"
-          aria-label="Poster tools"
-        >
-
-
-          <button
-            class="left-tab active"
-            data-poster-tab="templates"
-            type="button"
-          >
-            <span aria-hidden="true">
-              ▦
-            </span>
-
-            Templates
-          </button>
-
-
-          <button
-            class="left-tab"
-            data-poster-tab="media"
-            type="button"
-          >
-            <span aria-hidden="true">
-              ▧
-            </span>
-
-            Media
-          </button>
-
-
-          <button
-            class="left-tab"
-            data-poster-tab="brand"
-            type="button"
-          >
-            <span aria-hidden="true">
-              ◆
-            </span>
-
-            Brand
-          </button>
-
-        </nav>
-
-
-
-        <!-- LEFT PANEL SCROLL -->
-
-        <div class="left-panel-scroll">
-
-
-          <!-- ==================================================
-               TEMPLATES PANEL
-          =================================================== -->
-
-          <section
-            id="posterTemplatesPanel"
-            class="poster-left-panel active"
-            aria-label="Cricket templates"
-          >
-
-
-            <div class="panel-heading-row">
-
-
-              <div>
-
-                <div class="micro-label">
-                  FWCWL DESIGN LIBRARY
-                </div>
-
-
-                <h2>
-                  Cricket Templates
-                </h2>
-
-
-                <p>
-                  Match graphics, player features,
-                  results, textured designs and layered
-                  premium cricket artwork.
-                </p>
-
-              </div>
-
-
-              <div
-                id="posterTemplateCount"
-                class="count-badge"
-                title="Visible templates"
-              >
-                0
-              </div>
-
-            </div>
-
-
-
-            <!-- TEMPLATE SEARCH -->
-
-            <div class="search-control">
-
-              <span aria-hidden="true">
-                ⌕
-              </span>
-
-
-              <input
-                id="posterTemplateSearch"
-                type="search"
-                placeholder="Search match day, vintage, grunge..."
-                autocomplete="off"
-                spellcheck="false"
-                aria-label="Search templates"
-              >
-
-            </div>
-
-
-
-            <!-- TEMPLATE FILTERS -->
-
-            <div
-              id="posterTemplateFilters"
-              class="template-filters"
-              aria-label="Template categories"
-            >
-
-
-              <button
-                class="template-filter active"
-                data-filter="all"
-                type="button"
-              >
-                All
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="match"
-                type="button"
-              >
-                Match
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="team"
-                type="button"
-              >
-                Team
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="result"
-                type="button"
-              >
-                Results
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="event"
-                type="button"
-              >
-                Events
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="social"
-                type="button"
-              >
-                Social
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="rustic"
-                type="button"
-              >
-                Rustic
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="layered"
-                type="button"
-              >
-                Layered
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="vintage"
-                type="button"
-              >
-                Vintage
-              </button>
-
-
-              <button
-                class="template-filter"
-                data-filter="editorial"
-                type="button"
-              >
-                Editorial
-              </button>
-
-            </div>
-
-
-
-            <!--
-              IMPORTANT:
-              poster-editor.js generates every template card here.
-
-              Do not manually hard-code template cards.
-            -->
-
-            <div
-              id="posterTemplateGrid"
-              class="template-grid"
-              aria-live="polite"
-            ></div>
-
-
-
-            <!-- EMPTY SEARCH STATE -->
-
-            <div
-              id="posterTemplateEmpty"
-              class="empty-state hidden"
-            >
-
-              <strong>
-                No templates found
-              </strong>
-
-              <span>
-                Try another category or search.
-              </span>
-
-            </div>
-
-          </section>
-
-
-
-          <!-- ==================================================
-               MEDIA PANEL
-          =================================================== -->
-
-          <section
-            id="posterMediaPanel"
-            class="poster-left-panel"
-            aria-label="Media and elements"
-          >
-
-
-            <div class="panel-heading">
-
-              <div class="micro-label">
-                CREATIVE ASSETS
-              </div>
-
-
-              <h2>
-                Media &amp; Elements
-              </h2>
-
-
-              <p>
-                Add player photography, match imagery,
-                custom text and cricket graphics.
-              </p>
-
-            </div>
-
-
-
-            <!-- UPLOAD MEDIA -->
-
-            <button
-              id="posterUploadMediaBtn"
-              class="upload-card"
-              type="button"
-            >
-
-              <strong aria-hidden="true">
-                ＋
-              </strong>
-
-              <span>
-                Upload Photo
-              </span>
-
-              <small>
-                JPG · PNG · WEBP
-              </small>
-
-            </button>
-
-
-            <input
-              id="posterMediaInput"
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              multiple
-              hidden
-            >
-
-
-
-            <div class="panel-divider"></div>
-
-
-
-            <!-- QUICK ADD -->
-
-            <div class="micro-label">
-              QUICK ADD
-            </div>
-
-
-            <div class="quick-add-grid">
-
-
-              <button
-                data-add-poster-text="headline"
-                type="button"
-                title="Add headline"
-              >
-                <strong>
-                  T
-                </strong>
-
-                <span>
-                  Headline
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-text="sub"
-                type="button"
-                title="Add subtitle"
-              >
-                <strong>
-                  Tt
-                </strong>
-
-                <span>
-                  Subtitle
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-element="ball"
-                type="button"
-                title="Add cricket ball"
-              >
-                <strong>
-                  ●
-                </strong>
-
-                <span>
-                  Ball
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-element="wickets"
-                type="button"
-                title="Add wickets"
-              >
-                <strong>
-                  Ⅲ
-                </strong>
-
-                <span>
-                  Wickets
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-element="vs"
-                type="button"
-                title="Add VS badge"
-              >
-                <strong>
-                  VS
-                </strong>
-
-                <span>
-                  VS Badge
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-element="score"
-                type="button"
-                title="Add score graphic"
-              >
-                <strong>
-                  #
-                </strong>
-
-                <span>
-                  Score
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-element="trophy"
-                type="button"
-                title="Add trophy"
-              >
-                <strong>
-                  ◆
-                </strong>
-
-                <span>
-                  Trophy
-                </span>
-              </button>
-
-
-              <button
-                data-add-poster-element="frame"
-                type="button"
-                title="Add frame"
-              >
-                <strong>
-                  □
-                </strong>
-
-                <span>
-                  Frame
-                </span>
-              </button>
-
-            </div>
-
-
-
-            <div class="panel-divider"></div>
-
-
-
-            <!-- UPLOADED ASSETS -->
-
-            <div class="micro-label">
-              UPLOADED ASSETS
-            </div>
-
-
-            <div
-              id="posterAssetGrid"
-              class="asset-grid"
-            ></div>
-
-          </section>
-
-
-
-          <!-- ==================================================
-               BRAND PANEL
-          =================================================== -->
-
-          <section
-            id="posterBrandPanel"
-            class="poster-left-panel"
-            aria-label="Brand settings"
-          >
-
-
-            <div class="panel-heading">
-
-              <div class="micro-label">
-                FWCWL BRAND
-              </div>
-
-
-              <h2>
-                Brand System
-              </h2>
-
-
-              <p>
-                Keep every design consistent with
-                the official FWCWL identity.
-              </p>
-
-            </div>
-
-
-
-            <!-- OFFICIAL BRAND CARD -->
-
-            <div class="brand-card">
-
-              <img
-                src="assets/fwcwl-logo.jpeg"
-                alt="Official FWCWL logo"
-                width="48"
-                height="48"
-              >
-
-
-              <div>
-
-                <strong>
-                  Official FWCWL
-                </strong>
-
-                <span>
-                  Logo available on every poster
-                </span>
-
-              </div>
-
-            </div>
-
-
-
-            <!-- BRAND NAME -->
-
-            <label class="field">
-
-              <span>
-                Brand Name
-              </span>
-
-              <input
-                id="posterBrandName"
-                type="text"
-                value="FWCWL"
-                autocomplete="off"
-              >
-
-            </label>
-
-
-
-            <!-- ACCENT -->
-
-            <label class="field">
-
-              <span>
-                Accent Color
-              </span>
-
-
-              <div class="color-pair">
-
-                <input
-                  id="posterAccentColor"
-                  type="color"
-                  value="#f1c34d"
-                  aria-label="Accent color"
-                >
-
-
-                <input
-                  id="posterAccentText"
-                  type="text"
-                  value="#F1C34D"
-                  maxlength="7"
-                  spellcheck="false"
-                  aria-label="Accent color hex"
-                >
-
-              </div>
-
-            </label>
-
-
-
-            <!-- BACKGROUND -->
-
-            <label class="field">
-
-              <span>
-                Background
-              </span>
-
-
-              <div class="color-pair">
-
-                <input
-                  id="posterBackgroundColor"
-                  type="color"
-                  value="#12090d"
-                  aria-label="Background color"
-                >
-
-
-                <input
-                  id="posterBackgroundText"
-                  type="text"
-                  value="#12090D"
-                  maxlength="7"
-                  spellcheck="false"
-                  aria-label="Background color hex"
-                >
-
-              </div>
-
-            </label>
-
-
-
-            <!-- LOGO TOGGLE -->
-
-            <label class="switch-row">
-
-
-              <div>
-
-                <strong>
-                  Official Logo
-                </strong>
-
-                <span>
-                  Keep FWCWL branding visible
-                </span>
-
-              </div>
-
-
-              <input
-                id="posterLogoToggle"
-                type="checkbox"
-                checked
-              >
-
-
-              <i aria-hidden="true"></i>
-
-            </label>
-
-          </section>
-
-        </div>
-
-      </aside>
-
-
-
-      <!-- ======================================================
-           CENTER EDITOR
-      ======================================================= -->
-
-      <section
-        id="posterCenter"
-        class="poster-center"
-      >
-
-
-        <!-- POSTER TOOLBAR -->
-
-        <div class="poster-toolbar">
-
-
-          <div class="poster-toolbar-left">
-
-
-            <span class="micro-label">
-              FORMAT
-            </span>
-
-
-            <select
-              id="posterCanvasSize"
-              aria-label="Poster size"
-            >
-
-              <option value="portrait">
-                Instagram Portrait · 1080 × 1350
-              </option>
-
-
-              <option value="square">
-                Instagram Square · 1080 × 1080
-              </option>
-
-
-              <option value="story">
-                Story / Reel Cover · 1080 × 1920
-              </option>
-
-            </select>
-
-
-
-            <button
-              id="posterSafeZoneBtn"
-              class="toolbar-button"
-              type="button"
-              title="Toggle safe area"
-            >
-
-              <i aria-hidden="true"></i>
-
-              Safe Area
-            </button>
-
-
-
-            <button
-              id="posterSnapBtn"
-              class="toolbar-button active"
-              type="button"
-              title="Toggle snapping"
-            >
-
-              <i aria-hidden="true"></i>
-
-              Snap
-            </button>
-
-          </div>
-
-
-
-          <div class="poster-toolbar-right">
-
-
-            <button
-              id="posterFitBtn"
-              class="toolbar-button"
-              type="button"
-              title="Fit poster to workspace"
-            >
-              Fit
-            </button>
-
-
-
-            <div
-              class="zoom-control"
-              role="group"
-              aria-label="Canvas zoom"
-            >
-
-
-              <button
-                id="posterZoomOutBtn"
-                type="button"
-                aria-label="Zoom out"
-              >
-                −
-              </button>
-
-
-              <span id="posterZoomValue">
-                50%
-              </span>
-
-
-              <button
-                id="posterZoomInBtn"
-                type="button"
-                aria-label="Zoom in"
-              >
-                +
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- ==================================================
-             CANVAS STAGE
-        =================================================== -->
-
-        <div
-          id="posterStage"
-          class="poster-stage"
-        >
-
-
-          <div
-            id="posterCanvasFrame"
-            class="poster-canvas-frame"
-          >
-
-
-            <canvas
-              id="posterCanvas"
-              width="1080"
-              height="1350"
-              aria-label="Poster design canvas"
-            >
-              Your browser does not support HTML canvas.
-            </canvas>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- STATUS BAR -->
-
-        <div class="poster-status">
-
-
-          <span>
-
-            <i aria-hidden="true"></i>
-
-            FWCWL POSTER ENGINE
-          </span>
-
-
-          <span>
-            Drag selected objects directly on canvas
-          </span>
-
-
-          <strong id="posterDimensions">
-            1080 × 1350
-          </strong>
-
-        </div>
-
+    <main class="home-main">
+
+      <section class="hero">
+        <div class="eyebrow">MK97 CREATIVE STUDIO</div>
+
+        <h1>
+          Choose your creative workspace.
+        </h1>
+
+        <p>
+          Open the dedicated Poster or Video studio. Each workspace keeps
+          its existing tools, templates, controls and editing operations.
+        </p>
       </section>
 
 
+      <section class="studio-grid">
 
-      <!-- ======================================================
-           RIGHT PROPERTIES PANEL
-      ======================================================= -->
+        <a class="studio-card" href="poster.html">
+          <div class="card-icon">▧</div>
 
-      <aside
-        id="posterRightSidebar"
-        class="poster-right"
-      >
-
-
-        <!-- INSPECTOR HEADER -->
-
-        <div class="inspector-heading">
-
-
-          <div>
-
-            <div class="micro-label">
-              PROPERTIES
-            </div>
-
-
-            <strong id="posterInspectorTitle">
-              Edit Design
-            </strong>
-
+          <div class="card-content">
+            <small>DESIGN WORKSPACE</small>
+            <h2>Poster Editor</h2>
+            <p>
+              Create premium cricket posters, match graphics, player
+              features, results, event creatives and social artwork.
+            </p>
           </div>
 
-
-          <span
-            id="posterInspectorType"
-            class="type-badge"
-          >
-            CANVAS
-          </span>
-
-        </div>
+          <div class="card-action">
+            <strong>Open Poster Studio</strong>
+            <span>→</span>
+          </div>
+        </a>
 
 
+        <a class="studio-card" href="video.html">
+          <div class="card-icon">▷</div>
 
-        <!--
-          IMPORTANT:
-          poster-editor.js completely manages this section.
+          <div class="card-content">
+            <small>MOTION WORKSPACE</small>
+            <h2>Video Editor</h2>
+            <p>
+              Build animated cricket sequences with timeline editing,
+              media, motion, effects, audio and export controls.
+            </p>
+          </div>
 
-          Do not hard-code layer controls here.
-        -->
+          <div class="card-action">
+            <strong>Open Video Studio</strong>
+            <span>→</span>
+          </div>
+        </a>
 
-        <div
-          id="posterInspector"
-          class="poster-inspector"
-          aria-live="polite"
-        ></div>
-
-
-
-        <!-- EXPORT -->
-
-        <div class="poster-right-footer">
-
-          <button
-            id="downloadPosterBtn"
-            class="download-button"
-            type="button"
-          >
-
-
-            <span>
-
-              <strong>
-                Export Poster
-              </strong>
-
-              <small>
-                PNG · JPG · Full resolution
-              </small>
-
-            </span>
-
-
-            <b aria-hidden="true">
-              ↓
-            </b>
-
-          </button>
-
-        </div>
-
-      </aside>
+      </section>
 
     </main>
 
 
-    <!-- ========================================================
-         VIDEO EDITOR
-         --------------------------------------------------------
-         video-editor.js inserts the entire Video Studio directly
-         after #posterWorkspace.
-    ========================================================= -->
-
+    <footer class="home-footer">
+      MK97 CREATIVE STUDIO
+    </footer>
 
   </div>
-
-
-
-  <!-- ==========================================================
-       POSTER ENGINE
-       ----------------------------------------------------------
-       Keep this version synchronized with VERSION inside
-       poster-editor.js.
-  =========================================================== -->
-
-  <script
-    src="poster-editor.js?v=10.0.0"
-    defer
-  ></script>
-
-
-
-  <!-- ==========================================================
-       POSTER ENGINE WATCHDOG
-       ----------------------------------------------------------
-       This code intentionally lives in index.html.
-
-       Reason:
-       If poster-editor.js contains a future syntax error,
-       code inside poster-editor.js cannot report that failure.
-
-       The external watchdog therefore:
-       1. checks for the V10 ready signal;
-       2. attempts one cache-busted recovery;
-       3. shows a visible error if recovery fails.
-
-       The editor will never silently remain empty.
-  =========================================================== -->
-
-  <script>
-
-    (() => {
-
-      "use strict";
-
-
-      const EXPECTED_POSTER_VERSION =
-        "10.0.0";
-
-
-      let recoveryAttempted =
-        false;
-
-
-
-      /* ========================================================
-         VISIBLE FAILURE UI
-      ======================================================== */
-
-      function showPosterFailure(
-        message =
-          "The Poster engine did not reach its ready state."
-      ) {
-
-
-        document.documentElement
-          .dataset
-          .posterBoot =
-          "failed";
-
-
-        const counter =
-          document.getElementById(
-            "posterTemplateCount"
-          );
-
-
-        if (counter) {
-
-          counter.textContent =
-            "!";
-        }
-
-
-
-        const grid =
-          document.getElementById(
-            "posterTemplateGrid"
-          );
-
-
-        if (
-          grid &&
-          !grid.querySelector(
-            "[data-poster-watchdog-error]"
-          )
-        ) {
-
-          grid.innerHTML = `
-
-            <div
-              data-poster-watchdog-error
-              style="
-                grid-column:1/-1;
-                margin-top:4px;
-                padding:16px;
-                border:1px solid rgba(222,102,112,.30);
-                border-radius:10px;
-                background:
-                  linear-gradient(
-                    145deg,
-                    rgba(222,102,112,.07),
-                    rgba(222,102,112,.025)
-                  );
-                color:#dc868e;
-                font-size:8px;
-                line-height:1.6;
-              "
-            >
-
-              <strong
-                style="
-                  display:block;
-                  margin-bottom:6px;
-                  color:#ff9aa3;
-                  font-size:9px;
-                "
-              >
-                Poster engine failed to load
-              </strong>
-
-
-              ${message}
-
-
-              <br>
-
-
-              <span
-                style="
-                  color:#666c75;
-                "
-              >
-                Expected Poster Editor V${EXPECTED_POSTER_VERSION}
-              </span>
-
-            </div>
-          `;
-        }
-
-
-
-        const inspector =
-          document.getElementById(
-            "posterInspector"
-          );
-
-
-        if (
-          inspector &&
-          !inspector.querySelector(
-            "[data-poster-watchdog-inspector]"
-          )
-        ) {
-
-          inspector.innerHTML = `
-
-            <div
-              data-poster-watchdog-inspector
-              class="inspector-help"
-              style="
-                color:#d77b84;
-              "
-            >
-              Poster Editor could not initialize.
-
-              Confirm that
-              <strong>
-                poster-editor.js
-              </strong>
-              was uploaded completely and then reload the page.
-            </div>
-          `;
-        }
-
-      }
-
-
-
-      /* ========================================================
-         CHECK CURRENT POSTER ENGINE
-      ======================================================== */
-
-      function posterReady() {
-
-        const status =
-          window
-            .__FWCWL_POSTER_STATUS__;
-
-
-        return Boolean(
-
-          status &&
-
-          status.state ===
-            "ready" &&
-
-          status.version ===
-            EXPECTED_POSTER_VERSION &&
-
-          window
-            .FWCWLPosterEditor
-
-        );
-      }
-
-
-
-      /* ========================================================
-         CACHE-BUSTED RECOVERY
-      ======================================================== */
-
-      function attemptRecovery() {
-
-
-        if (
-          recoveryAttempted ||
-          posterReady()
-        ) {
-          return;
-        }
-
-
-        recoveryAttempted =
-          true;
-
-
-        console.warn(
-          "[FWCWL] Poster Editor did not report ready. Attempting recovery."
-        );
-
-
-        const recovery =
-          document.createElement(
-            "script"
-          );
-
-
-        recovery.src =
-          `poster-editor.js?recovery=${
-            Date.now()
-          }`;
-
-
-        recovery.async =
-          true;
-
-
-
-        recovery.onload =
-          () => {
-
-
-            setTimeout(
-              () => {
-
-
-                if (
-                  posterReady()
-                ) {
-
-                  console.info(
-                    "[FWCWL] Poster Editor recovered successfully."
-                  );
-
-
-                  return;
-                }
-
-
-                const status =
-                  window
-                    .__FWCWL_POSTER_STATUS__;
-
-
-                const detail =
-                  status &&
-                  status.detail
-                    ? status.detail
-                    : "Recovery script loaded but the editor still did not initialize.";
-
-
-                showPosterFailure(
-                  detail
-                );
-
-              },
-              650
-            );
-
-          };
-
-
-
-        recovery.onerror =
-          () => {
-
-            showPosterFailure(
-              "The browser could not load poster-editor.js."
-            );
-
-          };
-
-
-
-        document.head
-          .appendChild(
-            recovery
-          );
-
-      }
-
-
-
-      /* ========================================================
-         INITIAL WATCHDOG
-      ======================================================== */
-
-      window.addEventListener(
-        "DOMContentLoaded",
-        () => {
-
-
-          /*
-           * Give the deferred Poster script, fonts and first
-           * canvas render enough time to initialize.
-           */
-
-          setTimeout(
-            () => {
-
-
-              if (
-                posterReady()
-              ) {
-
-                console.info(
-                  `[FWCWL] Poster Editor V${EXPECTED_POSTER_VERSION} ready.`
-                );
-
-
-                return;
-              }
-
-
-              attemptRecovery();
-
-            },
-            1600
-          );
-
-        },
-        {
-          once: true
-        }
-      );
-
-
-
-      /* ========================================================
-         RUNTIME FAILURE LOGGING
-      ======================================================== */
-
-      window.addEventListener(
-        "error",
-        event => {
-
-
-          const source =
-            String(
-              event.filename ||
-              ""
-            );
-
-
-          if (
-            source.includes(
-              "poster-editor"
-            )
-          ) {
-
-            console.error(
-              "[FWCWL] Poster Editor runtime error:",
-              event.message,
-              event.error
-            );
-
-          }
-
-        }
-      );
-
-
-
-      window.addEventListener(
-        "unhandledrejection",
-        event => {
-
-          console.error(
-            "[FWCWL] Unhandled promise rejection:",
-            event.reason
-          );
-
-        }
-      );
-
-    })();
-
-  </script>
-
-
-
-  <!-- ==========================================================
-       VIDEO ENGINE
-       ----------------------------------------------------------
-       Video remains independent from Poster.
-       A Video failure cannot break the Poster editor.
-  =========================================================== -->
-
-  <script
-    src="video-editor.js?v=10.0.0"
-    defer
-  ></script>
-
-
-
-  <!-- ==========================================================
-       MODE ACCESSIBILITY / SMALL INTEGRATION SAFETY
-  =========================================================== -->
-
-  <script>
-
-    window.addEventListener(
-      "DOMContentLoaded",
-      () => {
-
-
-        const posterButton =
-          document.getElementById(
-            "posterModeBtn"
-          );
-
-
-        const videoButton =
-          document.getElementById(
-            "videoModeBtn"
-          );
-
-
-        if (
-          posterButton
-        ) {
-
-          posterButton.addEventListener(
-            "click",
-            () => {
-
-              posterButton.setAttribute(
-                "aria-pressed",
-                "true"
-              );
-
-
-              videoButton?.setAttribute(
-                "aria-pressed",
-                "false"
-              );
-
-            }
-          );
-
-        }
-
-
-        if (
-          videoButton
-        ) {
-
-          videoButton.addEventListener(
-            "click",
-            () => {
-
-              videoButton.setAttribute(
-                "aria-pressed",
-                "true"
-              );
-
-
-              posterButton?.setAttribute(
-                "aria-pressed",
-                "false"
-              );
-
-            }
-          );
-
-        }
-
-      }
-    );
-
-  </script>
-
-
 </body>
-
 </html>
