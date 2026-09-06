@@ -2,7 +2,7 @@
   'use strict';
 
   const WATCHDOG_VERSION = '10.0.0';
-  const BUILD_VERSION = '11.0.0-premium';
+  const BUILD_VERSION = '11.1.0-premium-visibility';
   const LOGO_PATH = 'assets/fwcwl-logo.jpeg';
   const REQUIRED_IDS = [
     'posterWorkspace','posterCanvas','posterTemplateGrid','posterTemplateCount',
@@ -181,6 +181,7 @@
       this.logo.onerror = () => { this.logoReady = false; this.safeRender(); };
       this.logo.src = LOGO_PATH;
 
+      this.injectPremiumVisibilityStyles();
       this.ensureRuntimeGeneratedUI();
       this.bindUI();
       this.applyTemplate('match-day', false);
@@ -766,6 +767,709 @@
       this.hideGuides();
       this.updateContextToolbar();
       this.commit();
+    }
+
+
+    /*
+     * UI VISIBILITY LAYER
+     * Presentation-only enhancement. Existing editor operations,
+     * state, rendering, history, export, templates and bindings
+     * are deliberately left unchanged.
+     */
+    injectPremiumVisibilityStyles() {
+      const STYLE_ID = 'fwcwlPosterPremiumVisibilityV111';
+      if (document.getElementById(STYLE_ID)) return;
+
+      const style = document.createElement('style');
+      style.id = STYLE_ID;
+      style.textContent = `
+        #posterWorkspace {
+          --poster-ui-gold: #f1c34d;
+          --poster-ui-panel: #0a0d11;
+          --poster-ui-line: rgba(255,255,255,.085);
+          --poster-ui-line-strong: rgba(255,255,255,.15);
+          --poster-ui-text: #f2f4f6;
+          --poster-ui-danger: #ef7b85;
+
+          grid-template-columns:
+            minmax(270px, 300px)
+            minmax(0, 1fr)
+            420px !important;
+        }
+
+        /* LEFT LIBRARY */
+        #posterWorkspace .poster-left {
+          min-width: 270px !important;
+          background: #090c10 !important;
+        }
+
+        #posterWorkspace .left-tabs {
+          min-height: 56px !important;
+          padding: 7px !important;
+          gap: 6px !important;
+        }
+
+        #posterWorkspace .left-tab {
+          min-height: 40px !important;
+          padding: 0 10px !important;
+          border-radius: 8px !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+          letter-spacing: .02em !important;
+        }
+
+        #posterWorkspace .left-tab span {
+          font-size: 11px !important;
+        }
+
+        #posterWorkspace .left-panel-scroll {
+          scroll-behavior: smooth;
+          scrollbar-width: thin;
+          scrollbar-color: #353b45 transparent;
+        }
+
+        #posterWorkspace .poster-left-panel {
+          padding: 15px 14px 20px !important;
+        }
+
+        #posterWorkspace .micro-label {
+          font-size: 7.5px !important;
+          font-weight: 900 !important;
+          letter-spacing: .11em !important;
+          line-height: 1.35 !important;
+        }
+
+        #posterWorkspace .panel-heading-row h2,
+        #posterWorkspace .panel-heading h2 {
+          margin-top: 5px !important;
+          font-size: 17px !important;
+          line-height: 1.15 !important;
+          letter-spacing: -.02em !important;
+        }
+
+        #posterWorkspace .panel-heading-row p,
+        #posterWorkspace .panel-heading p {
+          margin-top: 7px !important;
+          color: #727b86 !important;
+          font-size: 9px !important;
+          line-height: 1.5 !important;
+        }
+
+        #posterWorkspace .count-badge {
+          min-width: 34px !important;
+          height: 30px !important;
+          border-radius: 8px !important;
+          font-size: 9px !important;
+          font-weight: 850 !important;
+        }
+
+        #posterWorkspace .search-control {
+          min-height: 42px !important;
+          margin-top: 13px !important;
+          padding: 0 12px !important;
+          border-radius: 9px !important;
+        }
+
+        #posterWorkspace .search-control input {
+          font-size: 9.5px !important;
+        }
+
+        #posterWorkspace .template-filters {
+          gap: 6px !important;
+          margin-top: 11px !important;
+          padding-bottom: 4px !important;
+          overflow-x: auto !important;
+          scrollbar-width: none;
+        }
+
+        #posterWorkspace .template-filter {
+          min-height: 31px !important;
+          flex: 0 0 auto !important;
+          padding: 0 10px !important;
+          border-radius: 7px !important;
+          font-size: 7.5px !important;
+          font-weight: 800 !important;
+        }
+
+        #posterWorkspace .template-grid {
+          gap: 10px !important;
+          margin-top: 12px !important;
+        }
+
+        #posterWorkspace .template-card {
+          border-radius: 10px !important;
+          overflow: hidden;
+          transition:
+            transform .16s ease,
+            border-color .16s ease,
+            box-shadow .16s ease !important;
+        }
+
+        #posterWorkspace .template-card:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 10px 24px rgba(0,0,0,.22) !important;
+        }
+
+        #posterWorkspace .template-meta {
+          min-height: 44px !important;
+          padding: 8px 9px !important;
+        }
+
+        #posterWorkspace .template-meta strong {
+          font-size: 9px !important;
+          line-height: 1.25 !important;
+        }
+
+        #posterWorkspace .template-meta small {
+          margin-top: 3px !important;
+          font-size: 6.5px !important;
+        }
+
+        #posterWorkspace .upload-card {
+          min-height: 92px !important;
+          border-radius: 10px !important;
+        }
+
+        #posterWorkspace .quick-add-grid {
+          gap: 8px !important;
+        }
+
+        #posterWorkspace .quick-add-grid button {
+          min-height: 52px !important;
+          border-radius: 9px !important;
+        }
+
+        #posterWorkspace .quick-add-grid button span {
+          font-size: 8px !important;
+        }
+
+        /* CENTER TOOLBAR */
+        #posterWorkspace .poster-toolbar {
+          min-height: 58px !important;
+          padding: 0 14px !important;
+          gap: 10px !important;
+          background: linear-gradient(180deg,#0c0f13,#090c10) !important;
+        }
+
+        #posterWorkspace .poster-toolbar-left,
+        #posterWorkspace .poster-toolbar-right {
+          gap: 8px !important;
+        }
+
+        #posterWorkspace .poster-toolbar select {
+          min-width: 220px !important;
+          height: 38px !important;
+          padding: 0 34px 0 11px !important;
+          border-radius: 8px !important;
+          font-size: 9px !important;
+          font-weight: 650 !important;
+        }
+
+        #posterWorkspace .toolbar-button {
+          min-height: 38px !important;
+          padding: 0 12px !important;
+          border-radius: 8px !important;
+          font-size: 8.5px !important;
+          font-weight: 750 !important;
+        }
+
+        #posterWorkspace .zoom-control {
+          min-height: 38px !important;
+          border-radius: 8px !important;
+        }
+
+        #posterWorkspace .zoom-control button {
+          width: 38px !important;
+          min-width: 38px !important;
+          height: 38px !important;
+          font-size: 14px !important;
+        }
+
+        #posterWorkspace #posterZoomValue {
+          min-width: 58px !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+        }
+
+        #posterWorkspace .poster-status {
+          min-height: 36px !important;
+          padding: 0 14px !important;
+          font-size: 7.5px !important;
+        }
+
+        /* RIGHT PROPERTIES PANEL */
+        #posterWorkspace .poster-right {
+          width: 420px !important;
+          min-width: 420px !important;
+          max-width: 420px !important;
+          background: var(--poster-ui-panel) !important;
+          border-left-color: var(--poster-ui-line) !important;
+        }
+
+        #posterWorkspace .inspector-heading {
+          min-height: 72px !important;
+          padding: 0 16px !important;
+          background:
+            linear-gradient(180deg,rgba(13,17,22,.99),rgba(9,12,16,.99)) !important;
+          border-bottom: 1px solid var(--poster-ui-line) !important;
+        }
+
+        #posterWorkspace .inspector-heading strong {
+          margin-top: 5px !important;
+          color: var(--poster-ui-text) !important;
+          font-size: 13px !important;
+          font-weight: 850 !important;
+          line-height: 1.2 !important;
+        }
+
+        #posterWorkspace .type-badge {
+          min-width: 58px !important;
+          height: 30px !important;
+          padding: 0 10px !important;
+          border-radius: 8px !important;
+          font-size: 7.5px !important;
+          font-weight: 900 !important;
+        }
+
+        #posterWorkspace .poster-inspector {
+          overflow-y: auto !important;
+          overflow-x: hidden !important;
+          overscroll-behavior: contain !important;
+          scroll-behavior: smooth !important;
+          scrollbar-width: thin !important;
+          scrollbar-color: #3b424d transparent !important;
+          padding-bottom: 12px !important;
+        }
+
+        #posterWorkspace .poster-inspector::-webkit-scrollbar {
+          width: 9px !important;
+        }
+
+        #posterWorkspace .poster-inspector::-webkit-scrollbar-thumb {
+          background: #3b424d !important;
+          border: 2px solid #0a0d11 !important;
+          border-radius: 20px !important;
+        }
+
+        #posterWorkspace .inspector-quickbar {
+          position: sticky !important;
+          top: 0 !important;
+          z-index: 25 !important;
+          grid-template-columns: repeat(5,1fr) !important;
+          gap: 7px !important;
+          padding: 11px 13px !important;
+          background: rgba(9,12,16,.97) !important;
+          border-bottom: 1px solid var(--poster-ui-line) !important;
+          backdrop-filter: blur(15px);
+        }
+
+        #posterWorkspace .inspector-quickbar button {
+          height: 40px !important;
+          min-width: 0 !important;
+          border-radius: 8px !important;
+          border-color: var(--poster-ui-line) !important;
+          background: #0e1217 !important;
+          color: #9da4ae !important;
+          font-size: 10px !important;
+          font-weight: 850 !important;
+        }
+
+        #posterWorkspace .inspector-quickbar button:hover {
+          transform: translateY(-1px) !important;
+          color: #fff !important;
+          border-color: var(--poster-ui-line-strong) !important;
+          background: #141920 !important;
+        }
+
+        #posterWorkspace .inspector-quickbar button.accent {
+          color: var(--poster-ui-gold) !important;
+          border-color: rgba(241,195,77,.30) !important;
+          background: rgba(241,195,77,.07) !important;
+        }
+
+        #posterWorkspace .inspector-quickbar button.danger {
+          color: var(--poster-ui-danger) !important;
+        }
+
+        #posterWorkspace .inspector-section {
+          padding: 18px 15px 20px !important;
+          border-bottom: 1px solid rgba(255,255,255,.065) !important;
+        }
+
+        #posterWorkspace .inspector-section > .micro-label {
+          color: var(--poster-ui-gold) !important;
+          font-size: 8px !important;
+          font-weight: 950 !important;
+          letter-spacing: .12em !important;
+        }
+
+        #posterWorkspace .inspector-section h3 {
+          margin-top: 6px !important;
+          color: #edf0f3 !important;
+          font-size: 13px !important;
+          font-weight: 820 !important;
+          line-height: 1.25 !important;
+        }
+
+        #posterWorkspace .inspector-section-description {
+          margin-top: 6px !important;
+          color: #707985 !important;
+          font-size: 8.5px !important;
+          line-height: 1.5 !important;
+        }
+
+        #posterWorkspace .poster-inspector .field {
+          gap: 7px !important;
+          margin-top: 14px !important;
+        }
+
+        #posterWorkspace .poster-inspector .field > span,
+        #posterWorkspace .poster-inspector .range-field > div > span {
+          color: #a9b0ba !important;
+          font-size: 9.5px !important;
+          font-weight: 720 !important;
+          line-height: 1.25 !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="text"],
+        #posterWorkspace .poster-inspector input[type="number"],
+        #posterWorkspace .poster-inspector input[type="search"],
+        #posterWorkspace .poster-inspector select,
+        #posterWorkspace .poster-inspector textarea {
+          width: 100% !important;
+          min-height: 43px !important;
+          padding: 0 12px !important;
+          border: 1px solid var(--poster-ui-line) !important;
+          border-radius: 9px !important;
+          outline: none !important;
+          background: #0d1116 !important;
+          color: #f0f2f4 !important;
+          font-size: 10.5px !important;
+          font-weight: 600 !important;
+          line-height: 1.35 !important;
+        }
+
+        #posterWorkspace .poster-inspector textarea {
+          min-height: 98px !important;
+          padding: 11px 12px !important;
+          resize: vertical !important;
+          line-height: 1.5 !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="text"]:focus,
+        #posterWorkspace .poster-inspector input[type="number"]:focus,
+        #posterWorkspace .poster-inspector select:focus,
+        #posterWorkspace .poster-inspector textarea:focus {
+          border-color: rgba(241,195,77,.46) !important;
+          background: #11161c !important;
+          box-shadow: 0 0 0 3px rgba(241,195,77,.055) !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="color"] {
+          width: 100% !important;
+          height: 44px !important;
+          min-height: 44px !important;
+          padding: 5px !important;
+          border: 1px solid var(--poster-ui-line) !important;
+          border-radius: 9px !important;
+          background: #0d1116 !important;
+          cursor: pointer !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="color"]::-webkit-color-swatch-wrapper {
+          padding: 0 !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="color"]::-webkit-color-swatch {
+          border: 0 !important;
+          border-radius: 5px !important;
+        }
+
+        #posterWorkspace .grid-2 {
+          gap: 9px !important;
+        }
+
+        #posterWorkspace .range-field {
+          gap: 9px !important;
+          margin-top: 16px !important;
+        }
+
+        #posterWorkspace .range-field b {
+          min-width: 46px !important;
+          color: #e5e8eb !important;
+          font-size: 9.5px !important;
+          font-weight: 800 !important;
+          text-align: right !important;
+          font-variant-numeric: tabular-nums;
+        }
+
+        #posterWorkspace .poster-inspector input[type="range"] {
+          width: 100% !important;
+          height: 6px !important;
+          min-height: 6px !important;
+          border-radius: 20px !important;
+          background: #343b45 !important;
+          cursor: pointer !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="range"]::-webkit-slider-thumb {
+          width: 18px !important;
+          height: 18px !important;
+          border: 3px solid #090c10 !important;
+          border-radius: 50% !important;
+          background: var(--poster-ui-gold) !important;
+          box-shadow:
+            0 0 0 1px rgba(241,195,77,.58),
+            0 3px 10px rgba(0,0,0,.36) !important;
+        }
+
+        #posterWorkspace .poster-inspector input[type="range"]::-moz-range-thumb {
+          width: 14px !important;
+          height: 14px !important;
+          border: 3px solid #090c10 !important;
+          border-radius: 50% !important;
+          background: var(--poster-ui-gold) !important;
+        }
+
+        #posterWorkspace .poster-inspector .segmented {
+          gap: 7px !important;
+          margin-top: 13px !important;
+        }
+
+        #posterWorkspace .poster-inspector .segmented button {
+          min-height: 40px !important;
+          border-radius: 8px !important;
+          font-size: 9px !important;
+          font-weight: 800 !important;
+        }
+
+        #posterWorkspace .transform-number-grid {
+          gap: 9px !important;
+          margin-top: 14px !important;
+        }
+
+        #posterWorkspace .transform-number > span {
+          margin-bottom: 6px !important;
+          color: #9ca4ae !important;
+          font-size: 8.5px !important;
+        }
+
+        #posterWorkspace .transform-number input {
+          min-height: 42px !important;
+          font-size: 10px !important;
+        }
+
+        #posterWorkspace .transform-number em {
+          right: 11px !important;
+          bottom: 13px !important;
+          color: #68717c !important;
+          font-size: 8px !important;
+        }
+
+        #posterWorkspace .action-grid,
+        #posterWorkspace .align-grid,
+        #posterWorkspace .flip-grid {
+          gap: 8px !important;
+          margin-top: 12px !important;
+        }
+
+        #posterWorkspace .poster-inspector .action-grid button,
+        #posterWorkspace .poster-inspector .align-grid button,
+        #posterWorkspace .poster-inspector .flip-grid button {
+          min-height: 40px !important;
+          padding: 0 10px !important;
+          border-radius: 8px !important;
+          font-size: 8.5px !important;
+          font-weight: 780 !important;
+          line-height: 1.15 !important;
+        }
+
+        #posterWorkspace .poster-inspector .danger-button {
+          color: var(--poster-ui-danger) !important;
+        }
+
+        #posterWorkspace .poster-inspector .switch-row {
+          min-height: 58px !important;
+          margin-top: 14px !important;
+          padding: 10px 11px !important;
+          border-radius: 9px !important;
+        }
+
+        #posterWorkspace .poster-inspector .switch-row strong {
+          color: #e2e5e8 !important;
+          font-size: 9.5px !important;
+          font-weight: 800 !important;
+        }
+
+        #posterWorkspace .poster-inspector .switch-row span {
+          margin-top: 3px !important;
+          color: #6e7782 !important;
+          font-size: 7.5px !important;
+          line-height: 1.3 !important;
+        }
+
+        #posterWorkspace .layer-list {
+          gap: 8px !important;
+          margin-top: 13px !important;
+        }
+
+        #posterWorkspace .layer-row {
+          min-height: 58px !important;
+          grid-template-columns: 36px minmax(0,1fr) 36px !important;
+          border-radius: 9px !important;
+        }
+
+        #posterWorkspace .layer-row.active {
+          box-shadow:
+            inset 3px 0 0 var(--poster-ui-gold),
+            0 5px 15px rgba(0,0,0,.12) !important;
+        }
+
+        #posterWorkspace .layer-main {
+          gap: 10px !important;
+          padding: 7px 4px !important;
+        }
+
+        #posterWorkspace .layer-icon {
+          width: 32px !important;
+          height: 32px !important;
+          flex: 0 0 32px !important;
+          border-radius: 7px !important;
+          font-size: 10px !important;
+        }
+
+        #posterWorkspace .layer-main strong {
+          color: #e1e4e8 !important;
+          font-size: 9.5px !important;
+          font-weight: 800 !important;
+        }
+
+        #posterWorkspace .layer-main small {
+          margin-top: 3px !important;
+          color: #626b76 !important;
+          font-size: 6.5px !important;
+        }
+
+        #posterWorkspace .inspector-help {
+          margin: 14px !important;
+          padding: 14px 15px !important;
+          border-radius: 9px !important;
+          color: #7b8490 !important;
+          font-size: 8.5px !important;
+          line-height: 1.6 !important;
+        }
+
+        #posterWorkspace .poster-right-footer {
+          padding: 12px !important;
+        }
+
+        #posterWorkspace .download-button {
+          min-height: 56px !important;
+          border-radius: 9px !important;
+        }
+
+        #posterWorkspace .download-button strong {
+          font-size: 10px !important;
+        }
+
+        #posterWorkspace .download-button small {
+          font-size: 7px !important;
+        }
+
+        #posterWorkspace .poster-context-toolbar {
+          gap: 5px !important;
+          padding: 6px !important;
+          border-radius: 10px !important;
+          box-shadow: 0 15px 36px rgba(0,0,0,.38) !important;
+        }
+
+        #posterWorkspace .poster-context-toolbar button {
+          min-width: 36px !important;
+          height: 34px !important;
+          padding: 0 9px !important;
+          border-radius: 7px !important;
+          font-size: 9px !important;
+        }
+
+        #posterWorkspace button,
+        #posterWorkspace select,
+        #posterWorkspace input,
+        #posterWorkspace textarea {
+          transition:
+            color .14s ease,
+            background-color .14s ease,
+            border-color .14s ease,
+            box-shadow .14s ease,
+            transform .14s ease !important;
+        }
+
+        #posterWorkspace button:focus-visible,
+        #posterWorkspace select:focus-visible,
+        #posterWorkspace input:focus-visible,
+        #posterWorkspace textarea:focus-visible {
+          outline: 2px solid rgba(241,195,77,.75) !important;
+          outline-offset: 2px !important;
+        }
+
+        @media (max-width: 1450px) {
+          #posterWorkspace {
+            grid-template-columns:
+              minmax(240px, 260px)
+              minmax(0, 1fr)
+              380px !important;
+          }
+
+          #posterWorkspace .poster-left {
+            min-width: 240px !important;
+          }
+
+          #posterWorkspace .poster-right {
+            width: 380px !important;
+            min-width: 380px !important;
+            max-width: 380px !important;
+          }
+        }
+
+        @media (max-width: 1180px) {
+          #posterWorkspace {
+            grid-template-columns:
+              220px
+              minmax(0, 1fr)
+              340px !important;
+          }
+
+          #posterWorkspace .poster-left {
+            min-width: 220px !important;
+          }
+
+          #posterWorkspace .poster-right {
+            width: 340px !important;
+            min-width: 340px !important;
+            max-width: 340px !important;
+          }
+
+          #posterWorkspace .poster-toolbar select {
+            min-width: 175px !important;
+          }
+        }
+
+        @media (max-height: 760px) {
+          #posterWorkspace .inspector-heading {
+            min-height: 62px !important;
+          }
+
+          #posterWorkspace .inspector-section {
+            padding-top: 15px !important;
+            padding-bottom: 16px !important;
+          }
+
+          #posterWorkspace .poster-inspector textarea {
+            min-height: 82px !important;
+          }
+        }
+      `;
+
+      document.head.appendChild(style);
     }
 
     ensureRuntimeGeneratedUI() {
