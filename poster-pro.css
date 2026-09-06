@@ -1,0 +1,752 @@
+/* =========================================================
+   FWCWL PRO POSTER EDITOR
+   Advanced Picsart-style layer editor
+========================================================= */
+
+
+/* =========================================================
+   FABRIC WRAPPER
+========================================================= */
+
+#posterWorkspace {
+  position: relative;
+}
+
+.poster-stage-area .canvas-container {
+  box-shadow:
+    0 38px 95px rgba(0,0,0,.55),
+    0 0 0 1px rgba(255,255,255,.08);
+
+  transition:
+    width .18s ease,
+    height .18s ease;
+}
+
+.poster-stage-area .canvas-container canvas {
+  box-shadow: none !important;
+}
+
+
+/* =========================================================
+   PRO TOOL RAIL
+========================================================= */
+
+.poster-pro-rail {
+  width: 62px;
+
+  position: absolute;
+
+  z-index: 60;
+
+  left: 12px;
+  top: 61px;
+
+  padding: 7px 5px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  border:
+    1px solid rgba(255,255,255,.075);
+
+  border-radius: 12px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(17,19,23,.97),
+      rgba(8,10,12,.97)
+    );
+
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.32);
+
+  backdrop-filter: blur(18px);
+}
+
+
+.pro-tool {
+  height: 49px;
+
+  padding: 4px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  gap: 3px;
+
+  border-radius: 8px;
+
+  color: #666a73;
+  background: transparent;
+
+  transition:
+    background .16s ease,
+    color .16s ease,
+    transform .16s ease;
+}
+
+
+.pro-tool:hover {
+  color: #d2d4d8;
+
+  background:
+    rgba(255,255,255,.045);
+
+  transform:
+    translateY(-1px);
+}
+
+
+.pro-tool.active {
+  color: #15120b;
+
+  background:
+    linear-gradient(
+      180deg,
+      #f7d66e,
+      #f0c34c
+    );
+
+  box-shadow:
+    0 5px 15px rgba(240,195,76,.1);
+}
+
+
+.pro-tool > span {
+  font-size: 15px;
+  font-weight: 800;
+}
+
+
+.pro-tool small {
+  font-size: 5px;
+  font-weight: 800;
+  letter-spacing: .02em;
+}
+
+
+/* =========================================================
+   TOOL POPOVER
+========================================================= */
+
+.poster-tool-popover {
+  width: 205px;
+
+  position: absolute;
+
+  left: 70px;
+  top: 0;
+
+  padding: 13px;
+
+  border:
+    1px solid rgba(255,255,255,.09);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(19,21,25,.98),
+      rgba(10,12,15,.98)
+    );
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,.45);
+}
+
+
+.tool-popover-title {
+  margin-bottom: 11px;
+
+  color: #777b84;
+
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+
+.popover-shape-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 6px;
+}
+
+
+.popover-shape-grid button,
+.popover-sticker-grid button {
+  min-height: 46px;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid rgba(255,255,255,.07);
+
+  border-radius: 8px;
+
+  color: #d5d7db;
+  background: #121419;
+
+  font-size: 17px;
+}
+
+
+.popover-shape-grid button:hover,
+.popover-sticker-grid button:hover {
+  border-color:
+    rgba(240,195,76,.32);
+
+  background:
+    rgba(240,195,76,.045);
+}
+
+
+.popover-sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 5px;
+}
+
+
+.popover-sticker-grid button {
+  min-height: 40px;
+}
+
+
+/* =========================================================
+   PRO MEDIA
+========================================================= */
+
+.pro-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+
+.pro-upload-tile {
+  min-height: 94px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  border:
+    1px solid rgba(255,255,255,.075);
+
+  border-radius: 10px;
+
+  background:
+    linear-gradient(
+      145deg,
+      #12151a,
+      #0d0f12
+    );
+
+  cursor: pointer;
+
+  transition:
+    transform .16s ease,
+    border-color .16s ease;
+}
+
+
+.pro-upload-tile:hover {
+  transform: translateY(-2px);
+
+  border-color:
+    rgba(240,195,76,.3);
+}
+
+
+.pro-upload-tile strong {
+  color: #f0c34c;
+
+  font-size: 18px;
+}
+
+
+.pro-upload-tile span {
+  margin-top: 5px;
+
+  color: #b6b9bf;
+
+  font-size: 8px;
+  font-weight: 700;
+}
+
+
+.pro-upload-tile small {
+  margin-top: 3px;
+
+  color: #555962;
+
+  font-size: 6px;
+}
+
+
+.pro-section-label {
+  margin-bottom: 9px;
+
+  color: #6d7179;
+
+  font-size: 6px;
+  font-weight: 800;
+  letter-spacing: .14em;
+}
+
+
+.pro-sticker-grid {
+  display: grid;
+  grid-template-columns: repeat(6,1fr);
+  gap: 5px;
+}
+
+
+.pro-sticker-grid button {
+  aspect-ratio: 1;
+
+  display: grid;
+  place-items: center;
+
+  border:
+    1px solid rgba(255,255,255,.065);
+
+  border-radius: 7px;
+
+  background: #111318;
+
+  font-size: 16px;
+
+  transition:
+    transform .15s ease,
+    border-color .15s ease;
+}
+
+
+.pro-sticker-grid button:hover {
+  transform: scale(1.08);
+
+  border-color:
+    rgba(240,195,76,.28);
+}
+
+
+.pro-shape-grid {
+  display: grid;
+  grid-template-columns: repeat(5,1fr);
+  gap: 5px;
+}
+
+
+.pro-shape-grid button {
+  height: 39px;
+
+  border:
+    1px solid rgba(255,255,255,.07);
+
+  border-radius: 7px;
+
+  color: #b8bbc2;
+  background: #111318;
+
+  font-size: 15px;
+}
+
+
+.pro-shape-grid button:hover {
+  color: #f0c34c;
+
+  border-color:
+    rgba(240,195,76,.28);
+}
+
+
+/* =========================================================
+   INSPECTOR TABS
+========================================================= */
+
+.pro-inspector-tabs {
+  height: 41px;
+
+  padding: 5px;
+
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 4px;
+
+  position: sticky;
+
+  top: 0;
+
+  z-index: 20;
+
+  border-bottom:
+    1px solid rgba(255,255,255,.065);
+
+  background:
+    rgba(12,14,17,.96);
+
+  backdrop-filter: blur(14px);
+}
+
+
+.pro-inspector-tabs button {
+  border-radius: 7px;
+
+  color: #62666f;
+  background: transparent;
+
+  font-size: 7px;
+  font-weight: 800;
+}
+
+
+.pro-inspector-tabs button:hover {
+  color: #c1c3c8;
+}
+
+
+.pro-inspector-tabs button.active {
+  color: #f1f2f4;
+
+  background:
+    rgba(255,255,255,.055);
+}
+
+
+.pro-inspector-tab {
+  display: none;
+}
+
+
+.pro-inspector-tab.active {
+  display: block;
+}
+
+
+/* =========================================================
+   SELECTION
+========================================================= */
+
+.pro-no-selection {
+  padding: 24px 13px;
+
+  border:
+    1px dashed rgba(255,255,255,.08);
+
+  border-radius: 9px;
+
+  color: #555962;
+  background:
+    rgba(255,255,255,.012);
+
+  text-align: center;
+
+  font-size: 7px;
+  line-height: 1.55;
+}
+
+
+.inspector-gap {
+  margin-top: 17px !important;
+}
+
+
+.pro-helper-text {
+  margin: 0 0 13px;
+
+  color: #575b63;
+
+  font-size: 7px;
+  line-height: 1.55;
+}
+
+
+/* =========================================================
+   COMMAND BUTTONS
+========================================================= */
+
+.pro-command-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+
+  margin-top: 11px;
+}
+
+
+.pro-command-grid button {
+  height: 31px;
+
+  border:
+    1px solid rgba(255,255,255,.07);
+
+  border-radius: 7px;
+
+  color: #7d818a;
+  background:
+    linear-gradient(
+      180deg,
+      #14171b,
+      #101216
+    );
+
+  font-size: 7px;
+  font-weight: 700;
+}
+
+
+.pro-command-grid button:hover {
+  color: #e0e2e5;
+
+  border-color:
+    rgba(255,255,255,.14);
+}
+
+
+.pro-gold-button {
+  width: 100%;
+  height: 35px;
+
+  border-radius: 8px;
+
+  color: #17130b;
+  background:
+    linear-gradient(
+      180deg,
+      #f8d66e,
+      #f0c34c
+    );
+
+  font-size: 7px;
+  font-weight: 800;
+}
+
+
+.pro-danger-button {
+  width: 100%;
+  height: 34px;
+
+  margin-top: 7px;
+
+  border:
+    1px solid rgba(255,104,113,.16);
+
+  border-radius: 7px;
+
+  color: #ff7c84;
+  background:
+    rgba(255,104,113,.035);
+
+  font-size: 7px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   BACKGROUND PRESETS
+========================================================= */
+
+.pro-background-presets {
+  display: grid;
+  grid-template-columns: repeat(6,1fr);
+  gap: 5px;
+}
+
+
+.pro-background-presets button {
+  aspect-ratio: 1;
+
+  border:
+    1px solid rgba(255,255,255,.1);
+
+  border-radius: 7px;
+
+  background:
+    linear-gradient(
+      135deg,
+      var(--a),
+      var(--b)
+    );
+
+  transition:
+    transform .15s ease;
+}
+
+
+.pro-background-presets button:hover {
+  transform: scale(1.08);
+}
+
+
+/* =========================================================
+   LAYERS
+========================================================= */
+
+.pro-layer-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+
+.pro-layer-row {
+  min-height: 46px;
+
+  display: grid;
+  grid-template-columns:
+    28px
+    minmax(0,1fr)
+    30px;
+
+  align-items: center;
+
+  border:
+    1px solid rgba(255,255,255,.06);
+
+  border-radius: 8px;
+
+  background:
+    linear-gradient(
+      180deg,
+      #121419,
+      #0e1013
+    );
+
+  transition:
+    border-color .15s ease,
+    background .15s ease;
+}
+
+
+.pro-layer-row.active {
+  border-color:
+    rgba(240,195,76,.4);
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(240,195,76,.07),
+      rgba(240,195,76,.025)
+    );
+}
+
+
+.layer-visible-btn,
+.layer-lock-btn {
+  width: 28px;
+  height: 100%;
+
+  color: #656972;
+  background: transparent;
+
+  font-size: 8px;
+}
+
+
+.layer-main-btn {
+  min-width: 0;
+  height: 44px;
+
+  padding: 0 5px;
+
+  display: grid;
+  grid-template-columns: 27px minmax(0,1fr);
+  align-items: center;
+  gap: 6px;
+
+  text-align: left;
+
+  background: transparent;
+}
+
+
+.layer-type-icon {
+  width: 27px;
+  height: 27px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 6px;
+
+  color: #f0c34c;
+  background:
+    rgba(240,195,76,.055);
+
+  font-size: 8px;
+  font-weight: 800;
+}
+
+
+.layer-main-btn > span:last-child {
+  min-width: 0;
+}
+
+
+.layer-main-btn strong {
+  display: block;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+
+  color: #b8bbc1;
+
+  font-size: 7px;
+}
+
+
+.layer-main-btn small {
+  display: block;
+
+  margin-top: 2px;
+
+  color: #4f535b;
+
+  font-size: 5px;
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   MOBILE
+========================================================= */
+
+@media (max-width: 980px) {
+
+  .poster-pro-rail {
+    position: fixed;
+
+    top: auto;
+    left: 50%;
+    bottom: 14px;
+
+    width: auto;
+
+    flex-direction: row;
+
+    transform: translateX(-50%);
+  }
+
+
+  .pro-tool {
+    width: 49px;
+  }
+
+
+  .poster-tool-popover {
+    left: 0;
+    top: auto;
+    bottom: 58px;
+  }
+
+}
