@@ -1,1287 +1,9838 @@
-import { POSTER_TEMPLATES } from "./cricket-templates.js";
+/* =========================================================
+   FWCWL PRO POSTER EDITOR
+   Fabric.js powered layer-based editor
+========================================================= */
 
-const SIZES = {
-  portrait: { width: 1080, height: 1350 },
-  square: { width: 1080, height: 1080 },
-  story: { width: 1080, height: 1920 }
+import {
+  Canvas,
+  Rect,
+  Circle,
+  Triangle,
+  Line,
+  Textbox,
+  FabricImage,
+  Gradient,
+  Shadow,
+  PencilBrush,
+  filters
+} from "https://cdn.jsdelivr.net/npm/fabric@6.6.5/+esm";
+
+import {
+  POSTER_TEMPLATES
+} from "./cricket-templates.js";
+
+
+/* =========================================================
+   CANVAS FORMATS
+========================================================= */
+
+const POSTER_SIZES = {
+
+  portrait: {
+    width: 1080,
+    height: 1350
+  },
+
+  square: {
+    width: 1080,
+    height: 1080
+  },
+
+  story: {
+    width: 1080,
+    height: 1920
+  }
+
 };
+
+
+const FONT_OPTIONS = [
+  "Montserrat",
+  "Bebas Neue",
+  "Poppins",
+  "DM Sans",
+  "Playfair Display"
+];
+
+
+const BLEND_MODES = [
+  "source-over",
+  "multiply",
+  "screen",
+  "overlay",
+  "darken",
+  "lighten",
+  "color-dodge",
+  "color-burn",
+  "hard-light",
+  "soft-light",
+  "difference"
+];
+
+
+const CRICKET_STICKERS = [
+  "🏏",
+  "🏆",
+  "🥇",
+  "⭐",
+  "🔥",
+  "⚡",
+  "💥",
+  "🎯",
+  "👑",
+  "🎉",
+  "💪",
+  "🚀"
+];
+
+
+/* =========================================================
+   EDITOR
+========================================================= */
 
 export class PosterEditor {
 
   constructor() {
 
-    this.canvas = document.getElementById("posterCanvas");
-    this.ctx = this.canvas.getContext("2d");
+    this.canvasElement =
+      document.getElementById(
+        "posterCanvas"
+      );
 
-    this.logo = null;
-    this.backgroundImage = null;
-    this.sponsorLogo = null;
 
-    this.activeFilter = "all";
+    this.canvas =
+      new Canvas(
+        this.canvasElement,
+        {
+          preserveObjectStacking: true,
+
+          selection: true,
+
+          uniformScaling: false,
+
+          fireRightClick: true,
+
+          stopContextMenu: true
+        }
+      );
+
 
     this.state = {
-      template: "matchday",
 
-      canvasSize: "portrait",
+      canvasSize:
+        "portrait",
 
-      kicker: "",
-      headline: "",
-      subheadline: "",
-      cta: "",
-      footer: "",
+      template:
+        "matchday",
 
-      brandName: "FWCWL",
+      zoom:
+        55,
 
-      accent: "#F0C34C",
-      textColor: "#FFFFFF",
-      background: "#210B0E",
-      bg2: "#0B0D10",
+      safeZone:
+        false,
 
-      headlineFont: "Montserrat",
-      headlineSize: 112,
+      snap:
+        true,
 
-      contentY: 56,
-      align: "left",
+      backgroundColor:
+        "#210B0E",
 
-      overlay: 37,
-      brightness: 100,
-      saturation: 100,
+      backgroundColor2:
+        "#080A0D",
 
-      accentGlow: true,
+      backgroundAngle:
+        135,
 
-      imageScale: 100,
-      imageX: 50,
-      imageY: 50,
+      brandName:
+        "FWCWL",
 
-      safeZone: false,
+      accent:
+        "#F0C34C",
 
-      zoom: 55
+      textColor:
+        "#FFFFFF",
+
+      brushColor:
+        "#F0C34C",
+
+      brushWidth:
+        16,
+
+      brushMode:
+        "brush"
+
     };
 
-    this.loadLogo();
-    this.bind();
+
+    this.activeFilter =
+      "all";
+
+
+    this.history =
+      [];
+
+
+    this.historyIndex =
+      -1;
+
+
+    this.restoring =
+      false;
+
+
+    this.buildCssLink();
+
+    this.buildProUi();
+
+    this.bindCoreEvents();
+
+    this.bindExistingUi();
+
+    this.bindProUi();
+
+    this.initialize();
+  }
+
+
+
+  /* =====================================================
+     INITIALIZATION
+  ====================================================== */
+
+  async initialize() {
+
+    this.setLogicalCanvasSize();
+
     this.renderTemplates();
-    this.applyTemplate("matchday");
+
+    await this.applyTemplate(
+      "matchday",
+      false
+    );
+
+    this.applyZoom();
+
+    this.pushHistory();
+
+    this.renderLayers();
+
+    this.updateSelectionInspector();
   }
 
 
-  async loadLogo() {
-    this.logo = await this.loadImage("assets/fwcwl-logo.jpeg");
-    this.render();
+
+  buildCssLink() {
+
+    if (
+      document.querySelector(
+        'link[href="poster-pro.css"]'
+      )
+    ) {
+      return;
+    }
+
+
+    const link =
+      document.createElement(
+        "link"
+      );
+
+
+    link.rel =
+      "stylesheet";
+
+
+    link.href =
+      "poster-pro.css";
+
+
+    document.head.appendChild(
+      link
+    );
   }
 
 
-  loadImage(src) {
-    return new Promise((resolve, reject) => {
-      const img = new Image();
 
-      img.onload = () => resolve(img);
-      img.onerror = reject;
+  /* =====================================================
+     BUILD PRO UI
+  ====================================================== */
 
-      img.src = src;
-    });
+  buildProUi() {
+
+    this.buildToolRail();
+
+    this.buildAdvancedMediaPanel();
+
+    this.buildAdvancedBrandPanel();
+
+    this.buildInspector();
   }
 
 
-  bind() {
 
-    document.querySelectorAll("[data-poster-tab]").forEach(button => {
+  buildToolRail() {
 
-      button.addEventListener("click", () => {
+    const workspace =
+      document.getElementById(
+        "posterWorkspace"
+      );
 
-        document
-          .querySelectorAll("[data-poster-tab]")
-          .forEach(item => item.classList.remove("active"));
 
-        document
-          .querySelectorAll("#posterLeftPanel .left-tab-panel")
-          .forEach(panel => panel.classList.remove("active"));
+    const rail =
+      document.createElement(
+        "div"
+      );
 
-        button.classList.add("active");
+
+    rail.id =
+      "posterProRail";
+
+
+    rail.className =
+      "poster-pro-rail";
+
+
+    rail.innerHTML = `
+
+      <button
+        type="button"
+        class="pro-tool active"
+        data-pro-tool="select"
+        title="Select"
+      >
+        <span>↖</span>
+        <small>Select</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="text"
+        title="Add text"
+      >
+        <span>T</span>
+        <small>Text</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="photo"
+        title="Add photo"
+      >
+        <span>▧</span>
+        <small>Photo</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="shape"
+        title="Shapes"
+      >
+        <span>○</span>
+        <small>Shape</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="draw"
+        title="Draw"
+      >
+        <span>✎</span>
+        <small>Draw</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="sticker"
+        title="Stickers"
+      >
+        <span>★</span>
+        <small>Sticker</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="layers"
+        title="Layers"
+      >
+        <span>▤</span>
+        <small>Layers</small>
+      </button>
+
+
+      <button
+        type="button"
+        class="pro-tool"
+        data-pro-tool="background"
+        title="Background"
+      >
+        <span>◫</span>
+        <small>BG</small>
+      </button>
+
+
+      <input
+        id="proQuickPhotoInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        hidden
+      />
+
+
+      <div
+        id="posterToolPopover"
+        class="poster-tool-popover hidden"
+      ></div>
+    `;
+
+
+    workspace.appendChild(
+      rail
+    );
+  }
+
+
+
+  buildAdvancedMediaPanel() {
+
+    const panel =
+      document.getElementById(
+        "posterMediaPanel"
+      );
+
+
+    panel.innerHTML = `
+
+      <div class="panel-title-row">
+
+        <div>
+
+          <div class="panel-eyebrow">
+            CREATIVE ASSETS
+          </div>
+
+          <h2>
+            Photos & Elements
+          </h2>
+
+          <p>
+            Add images as editable layers or use them as the background.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="pro-upload-grid">
+
+        <label class="pro-upload-tile">
+
+          <input
+            id="proAddPhotoInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+          />
+
+          <strong>＋</strong>
+          <span>Add Photo</span>
+          <small>New editable layer</small>
+
+        </label>
+
+
+        <label class="pro-upload-tile">
+
+          <input
+            id="proBackgroundPhotoInput"
+            type="file"
+            accept="image/png,image/jpeg,image/webp"
+            hidden
+          />
+
+          <strong>▧</strong>
+          <span>Background</span>
+          <small>Fill entire canvas</small>
+
+        </label>
+
+      </div>
+
+
+      <div class="section-divider"></div>
+
+
+      <div class="pro-section-label">
+        TEAM / SPONSOR
+      </div>
+
+
+      <label class="upload-card compact">
+
+        <input
+          id="posterSponsorLogoInput"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/svg+xml"
+          hidden
+        />
+
+        <div class="upload-icon-small">
+          ＋
+        </div>
+
+        <strong>
+          Add Sponsor Logo
+        </strong>
+
+        <span>
+          Editable layer
+        </span>
+
+      </label>
+
+
+      <div class="section-divider"></div>
+
+
+      <div class="pro-section-label">
+        QUICK STICKERS
+      </div>
+
+
+      <div
+        id="proStickerGrid"
+        class="pro-sticker-grid"
+      >
+        ${CRICKET_STICKERS
+          .map(
+            sticker => `
+              <button
+                type="button"
+                data-sticker="${sticker}"
+              >
+                ${sticker}
+              </button>
+            `
+          )
+          .join("")}
+      </div>
+
+
+      <div class="section-divider"></div>
+
+
+      <div class="pro-section-label">
+        QUICK SHAPES
+      </div>
+
+
+      <div class="pro-shape-grid">
+
+        <button
+          type="button"
+          data-add-shape="rect"
+        >
+          ▰
+        </button>
+
+        <button
+          type="button"
+          data-add-shape="circle"
+        >
+          ●
+        </button>
+
+        <button
+          type="button"
+          data-add-shape="triangle"
+        >
+          ▲
+        </button>
+
+        <button
+          type="button"
+          data-add-shape="line"
+        >
+          ╱
+        </button>
+
+        <button
+          type="button"
+          data-add-shape="badge"
+        >
+          ★
+        </button>
+
+      </div>
+    `;
+  }
+
+
+
+  buildAdvancedBrandPanel() {
+
+    const panel =
+      document.getElementById(
+        "posterBrandPanel"
+      );
+
+
+    panel.innerHTML = `
+
+      <div class="panel-title-row">
+
+        <div>
+
+          <div class="panel-eyebrow">
+            BRAND STUDIO
+          </div>
+
+          <h2>
+            FWCWL Identity
+          </h2>
+
+          <p>
+            Control league branding and the base canvas.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="official-brand-card">
+
+        <div class="brand-preview-logo">
+
+          <img
+            src="assets/fwcwl-logo.jpeg"
+            alt="FWCWL"
+          />
+
+        </div>
+
+        <div>
+
+          <strong>
+            Official FWCWL Logo
+          </strong>
+
+          <p>
+            Permanently pinned to the top-left of exports.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label>
+          Brand / Team Name
+        </label>
+
+        <input
+          id="posterBrandName"
+          type="text"
+          value="FWCWL"
+        />
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label>
+          Primary Accent
+        </label>
+
+        <div class="color-row">
+
+          <input
+            id="posterAccentColor"
+            type="color"
+            value="#F0C34C"
+          />
+
+          <input
+            id="posterAccentColorText"
+            type="text"
+            value="#F0C34C"
+          />
+
+        </div>
+
+      </div>
+
+
+      <div class="form-field">
+
+        <label>
+          Primary Text
+        </label>
+
+        <div class="color-row">
+
+          <input
+            id="posterTextColor"
+            type="color"
+            value="#FFFFFF"
+          />
+
+          <input
+            id="posterTextColorText"
+            type="text"
+            value="#FFFFFF"
+          />
+
+        </div>
+
+      </div>
+
+
+      <div class="section-divider"></div>
+
+
+      <div class="pro-section-label">
+        BACKGROUND GRADIENT
+      </div>
+
+
+      <div class="form-grid-2">
+
+        <div class="form-field">
+
+          <label>
+            Color A
+          </label>
+
+          <input
+            id="proBackgroundColor1"
+            type="color"
+            value="#210B0E"
+          />
+
+        </div>
+
+
+        <div class="form-field">
+
+          <label>
+            Color B
+          </label>
+
+          <input
+            id="proBackgroundColor2"
+            type="color"
+            value="#080A0D"
+          />
+
+        </div>
+
+      </div>
+
+
+      <div class="field-block">
+
+        <div class="range-head">
+
+          <label>
+            Gradient Angle
+          </label>
+
+          <span id="proBackgroundAngleValue">
+            135°
+          </span>
+
+        </div>
+
+        <input
+          id="proBackgroundAngle"
+          type="range"
+          min="0"
+          max="360"
+          value="135"
+        />
+
+      </div>
+    `;
+  }
+
+
+
+  buildInspector() {
+
+    const panel =
+      document.getElementById(
+        "posterRightPanel"
+      );
+
+
+    const scroll =
+      panel.querySelector(
+        ".right-scroll"
+      );
+
+
+    scroll.innerHTML = `
+
+      <div class="pro-inspector-tabs">
+
+        <button
+          type="button"
+          class="active"
+          data-inspector-tab="edit"
+        >
+          Edit
+        </button>
+
+        <button
+          type="button"
+          data-inspector-tab="effects"
+        >
+          Effects
+        </button>
+
+        <button
+          type="button"
+          data-inspector-tab="layers"
+        >
+          Layers
+        </button>
+
+      </div>
+
+
+      <!-- =================================================
+           EDIT TAB
+      ================================================== -->
+      <div
+        id="proInspectorEdit"
+        class="pro-inspector-tab active"
+      >
+
+        <section class="inspector-section">
+
+          <div class="inspector-title-row">
+
+            <div class="inspector-title">
+              SELECTED LAYER
+            </div>
+
+            <span
+              id="proSelectedType"
+              class="selected-badge"
+            >
+              None
+            </span>
+
+          </div>
+
+
+          <div
+            id="proNoSelection"
+            class="pro-no-selection"
+          >
+            Select an object on the canvas to edit it.
+          </div>
+
+
+          <div
+            id="proSelectionControls"
+            class="hidden"
+          >
+
+            <div class="form-field">
+
+              <label>
+                Layer Name
+              </label>
+
+              <input
+                id="proObjectName"
+                type="text"
+              />
+
+            </div>
+
+
+            <div class="form-grid-2">
+
+              <div class="form-field">
+
+                <label>
+                  X
+                </label>
+
+                <input
+                  id="proObjectX"
+                  type="number"
+                  step="1"
+                />
+
+              </div>
+
+
+              <div class="form-field">
+
+                <label>
+                  Y
+                </label>
+
+                <input
+                  id="proObjectY"
+                  type="number"
+                  step="1"
+                />
+
+              </div>
+
+            </div>
+
+
+            <div class="field-block">
+
+              <div class="range-head">
+
+                <label>
+                  Scale
+                </label>
+
+                <span id="proObjectScaleValue">
+                  100%
+                </span>
+
+              </div>
+
+              <input
+                id="proObjectScale"
+                type="range"
+                min="10"
+                max="300"
+                value="100"
+              />
+
+            </div>
+
+
+            <div class="field-block">
+
+              <div class="range-head">
+
+                <label>
+                  Rotation
+                </label>
+
+                <span id="proObjectAngleValue">
+                  0°
+                </span>
+
+              </div>
+
+              <input
+                id="proObjectAngle"
+                type="range"
+                min="-180"
+                max="180"
+                value="0"
+              />
+
+            </div>
+
+
+            <div class="field-block">
+
+              <div class="range-head">
+
+                <label>
+                  Opacity
+                </label>
+
+                <span id="proObjectOpacityValue">
+                  100%
+                </span>
+
+              </div>
+
+              <input
+                id="proObjectOpacity"
+                type="range"
+                min="0"
+                max="100"
+                value="100"
+              />
+
+            </div>
+
+
+            <div class="pro-command-grid">
+
+              <button
+                type="button"
+                id="proFlipX"
+              >
+                Flip H
+              </button>
+
+              <button
+                type="button"
+                id="proFlipY"
+              >
+                Flip V
+              </button>
+
+              <button
+                type="button"
+                id="proCenterX"
+              >
+                Center H
+              </button>
+
+              <button
+                type="button"
+                id="proCenterY"
+              >
+                Center V
+              </button>
+
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- TEXT -->
+        <section
+          id="proTextSection"
+          class="inspector-section hidden"
+        >
+
+          <div class="inspector-title">
+            TYPOGRAPHY
+          </div>
+
+
+          <div class="form-field">
+
+            <label>
+              Text
+            </label>
+
+            <textarea
+              id="proTextValue"
+              rows="3"
+            ></textarea>
+
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+
+              <label>
+                Font
+              </label>
+
+              <select id="proTextFont">
+                ${FONT_OPTIONS
+                  .map(
+                    font => `
+                      <option value="${font}">
+                        ${font}
+                      </option>
+                    `
+                  )
+                  .join("")}
+              </select>
+
+            </div>
+
+
+            <div class="form-field">
+
+              <label>
+                Weight
+              </label>
+
+              <select id="proTextWeight">
+
+                <option value="400">
+                  Regular
+                </option>
+
+                <option value="500">
+                  Medium
+                </option>
+
+                <option value="600">
+                  Semi Bold
+                </option>
+
+                <option value="700">
+                  Bold
+                </option>
+
+                <option value="800">
+                  Extra Bold
+                </option>
+
+                <option value="900">
+                  Black
+                </option>
+
+              </select>
+
+            </div>
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Font Size
+              </label>
+
+              <span id="proTextSizeValue">
+                80
+              </span>
+
+            </div>
+
+            <input
+              id="proTextSize"
+              type="range"
+              min="10"
+              max="280"
+              value="80"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Letter Spacing
+              </label>
+
+              <span id="proTextSpacingValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proTextSpacing"
+              type="range"
+              min="-100"
+              max="600"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Line Height
+              </label>
+
+              <span id="proTextLineHeightValue">
+                1.0
+              </span>
+
+            </div>
+
+            <input
+              id="proTextLineHeight"
+              type="range"
+              min="70"
+              max="200"
+              value="100"
+            />
+
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+
+              <label>
+                Fill
+              </label>
+
+              <input
+                id="proTextFill"
+                type="color"
+                value="#FFFFFF"
+              />
+
+            </div>
+
+
+            <div class="form-field">
+
+              <label>
+                Stroke
+              </label>
+
+              <input
+                id="proTextStroke"
+                type="color"
+                value="#000000"
+              />
+
+            </div>
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Stroke Width
+              </label>
+
+              <span id="proTextStrokeWidthValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proTextStrokeWidth"
+              type="range"
+              min="0"
+              max="15"
+              value="0"
+            />
+
+          </div>
+
+
+          <div
+            id="proTextAlign"
+            class="segmented-control"
+          >
+
+            <button
+              type="button"
+              data-align="left"
+            >
+              Left
+            </button>
+
+            <button
+              type="button"
+              data-align="center"
+            >
+              Center
+            </button>
+
+            <button
+              type="button"
+              data-align="right"
+            >
+              Right
+            </button>
+
+          </div>
+
+
+          <div class="pro-command-grid">
+
+            <button
+              type="button"
+              id="proTextItalic"
+            >
+              Italic
+            </button>
+
+            <button
+              type="button"
+              id="proTextUnderline"
+            >
+              Underline
+            </button>
+
+            <button
+              type="button"
+              id="proTextUppercase"
+            >
+              UPPERCASE
+            </button>
+
+            <button
+              type="button"
+              id="proGradientText"
+            >
+              Gold Gradient
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- IMAGE -->
+        <section
+          id="proImageSection"
+          class="inspector-section hidden"
+        >
+
+          <div class="inspector-title">
+            IMAGE
+          </div>
+
+
+          <div class="pro-command-grid">
+
+            <button
+              type="button"
+              id="proImageFit"
+            >
+              Fit Canvas
+            </button>
+
+            <button
+              type="button"
+              id="proImageFill"
+            >
+              Fill Canvas
+            </button>
+
+            <button
+              type="button"
+              id="proImageReset"
+            >
+              Reset
+            </button>
+
+            <button
+              type="button"
+              id="proImageCenter"
+            >
+              Center
+            </button>
+
+          </div>
+
+
+          <div class="pro-section-label inspector-gap">
+            MASK
+          </div>
+
+
+          <div class="pro-command-grid">
+
+            <button
+              type="button"
+              data-mask="none"
+            >
+              None
+            </button>
+
+            <button
+              type="button"
+              data-mask="circle"
+            >
+              Circle
+            </button>
+
+            <button
+              type="button"
+              data-mask="rounded"
+            >
+              Rounded
+            </button>
+
+          </div>
+
+        </section>
+
+
+        <!-- SHAPE -->
+        <section
+          id="proShapeSection"
+          class="inspector-section hidden"
+        >
+
+          <div class="inspector-title">
+            SHAPE
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+
+              <label>
+                Fill
+              </label>
+
+              <input
+                id="proShapeFill"
+                type="color"
+                value="#F0C34C"
+              />
+
+            </div>
+
+
+            <div class="form-field">
+
+              <label>
+                Stroke
+              </label>
+
+              <input
+                id="proShapeStroke"
+                type="color"
+                value="#FFFFFF"
+              />
+
+            </div>
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Stroke Width
+              </label>
+
+              <span id="proShapeStrokeWidthValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proShapeStrokeWidth"
+              type="range"
+              min="0"
+              max="20"
+              value="0"
+            />
+
+          </div>
+
+        </section>
+
+
+        <section
+          id="proObjectActionsSection"
+          class="inspector-section hidden"
+        >
+
+          <div class="inspector-title">
+            ACTIONS
+          </div>
+
+
+          <div class="pro-command-grid">
+
+            <button
+              type="button"
+              id="proDuplicateObject"
+            >
+              Duplicate
+            </button>
+
+            <button
+              type="button"
+              id="proLockObject"
+            >
+              Lock
+            </button>
+
+            <button
+              type="button"
+              id="proBringForward"
+            >
+              Forward
+            </button>
+
+            <button
+              type="button"
+              id="proSendBackward"
+            >
+              Backward
+            </button>
+
+          </div>
+
+
+          <button
+            type="button"
+            id="proDeleteObject"
+            class="pro-danger-button"
+          >
+            Delete Selected Layer
+          </button>
+
+        </section>
+
+      </div>
+
+
+      <!-- =================================================
+           EFFECTS TAB
+      ================================================== -->
+      <div
+        id="proInspectorEffects"
+        class="pro-inspector-tab"
+      >
+
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            BLEND & SHADOW
+          </div>
+
+
+          <div class="form-field">
+
+            <label>
+              Blend Mode
+            </label>
+
+            <select id="proBlendMode">
+              ${BLEND_MODES
+                .map(
+                  mode => `
+                    <option value="${mode}">
+                      ${mode}
+                    </option>
+                  `
+                )
+                .join("")}
+            </select>
+
+          </div>
+
+
+          <label class="switch-row">
+
+            <div>
+
+              <strong>
+                Shadow
+              </strong>
+
+              <span>
+                Add depth to the selected object
+              </span>
+
+            </div>
+
+            <input
+              id="proShadowEnabled"
+              type="checkbox"
+            />
+
+            <span class="switch-ui"></span>
+
+          </label>
+
+
+          <div class="form-field inspector-gap">
+
+            <label>
+              Shadow Color
+            </label>
+
+            <input
+              id="proShadowColor"
+              type="color"
+              value="#000000"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Shadow Blur
+              </label>
+
+              <span id="proShadowBlurValue">
+                25
+              </span>
+
+            </div>
+
+            <input
+              id="proShadowBlur"
+              type="range"
+              min="0"
+              max="100"
+              value="25"
+            />
+
+          </div>
+
+        </section>
+
+
+        <section
+          id="proImageEffectsSection"
+          class="inspector-section hidden"
+        >
+
+          <div class="inspector-title">
+            PHOTO ADJUST
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Brightness
+              </label>
+
+              <span id="proImageBrightnessValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proImageBrightness"
+              type="range"
+              min="-100"
+              max="100"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Contrast
+              </label>
+
+              <span id="proImageContrastValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proImageContrast"
+              type="range"
+              min="-100"
+              max="100"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Saturation
+              </label>
+
+              <span id="proImageSaturationValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proImageSaturation"
+              type="range"
+              min="-100"
+              max="100"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Blur
+              </label>
+
+              <span id="proImageBlurValue">
+                0
+              </span>
+
+            </div>
+
+            <input
+              id="proImageBlur"
+              type="range"
+              min="0"
+              max="100"
+              value="0"
+            />
+
+          </div>
+
+
+          <div class="pro-command-grid">
+
+            <button
+              type="button"
+              id="proGrayscale"
+            >
+              B&W
+            </button>
+
+            <button
+              type="button"
+              id="proSepia"
+            >
+              Sepia
+            </button>
+
+            <button
+              type="button"
+              id="proResetFilters"
+            >
+              Reset Filters
+            </button>
+
+          </div>
+
+
+          <div class="section-divider"></div>
+
+
+          <div class="pro-section-label">
+            COLOR CUTOUT
+          </div>
+
+
+          <p class="pro-helper-text">
+            Removes a selected solid color such as white or green backgrounds.
+          </p>
+
+
+          <div class="form-field">
+
+            <label>
+              Remove Color
+            </label>
+
+            <input
+              id="proRemoveColor"
+              type="color"
+              value="#FFFFFF"
+            />
+
+          </div>
+
+
+          <div class="field-block">
+
+            <div class="range-head">
+
+              <label>
+                Tolerance
+              </label>
+
+              <span id="proRemoveColorDistanceValue">
+                20
+              </span>
+
+            </div>
+
+            <input
+              id="proRemoveColorDistance"
+              type="range"
+              min="1"
+              max="100"
+              value="20"
+            />
+
+          </div>
+
+
+          <button
+            type="button"
+            id="proApplyRemoveColor"
+            class="pro-gold-button"
+          >
+            Remove Selected Color
+          </button>
+
+        </section>
+
+
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            CANVAS BACKGROUND
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+
+              <label>
+                Color A
+              </label>
+
+              <input
+                id="proFxBackground1"
+                type="color"
+                value="#210B0E"
+              />
+
+            </div>
+
+
+            <div class="form-field">
+
+              <label>
+                Color B
+              </label>
+
+              <input
+                id="proFxBackground2"
+                type="color"
+                value="#080A0D"
+              />
+
+            </div>
+
+          </div>
+
+
+          <div class="pro-background-presets">
+
+            <button
+              type="button"
+              data-bg-preset="#210B0E,#080A0D"
+              style="--a:#210B0E;--b:#080A0D"
+            ></button>
+
+            <button
+              type="button"
+              data-bg-preset="#071C29,#66151D"
+              style="--a:#071C29;--b:#66151D"
+            ></button>
+
+            <button
+              type="button"
+              data-bg-preset="#06141A,#087886"
+              style="--a:#06141A;--b:#087886"
+            ></button>
+
+            <button
+              type="button"
+              data-bg-preset="#0A0A0C,#333333"
+              style="--a:#0A0A0C;--b:#333333"
+            ></button>
+
+            <button
+              type="button"
+              data-bg-preset="#5A0E17,#E29E26"
+              style="--a:#5A0E17;--b:#E29E26"
+            ></button>
+
+            <button
+              type="button"
+              data-bg-preset="#0A1830,#264A8A"
+              style="--a:#0A1830;--b:#264A8A"
+            ></button>
+
+          </div>
+
+        </section>
+
+      </div>
+
+
+      <!-- =================================================
+           LAYERS TAB
+      ================================================== -->
+      <div
+        id="proInspectorLayers"
+        class="pro-inspector-tab"
+      >
+
+        <section class="inspector-section">
+
+          <div class="inspector-title-row">
+
+            <div class="inspector-title">
+              LAYERS
+            </div>
+
+            <span
+              id="proLayerCount"
+              class="selected-badge"
+            >
+              0
+            </span>
+
+          </div>
+
+
+          <div
+            id="proLayerList"
+            class="pro-layer-list"
+          ></div>
+
+        </section>
+
+      </div>
+    `;
+
+
+    const footer =
+      panel.querySelector(
+        ".right-footer"
+      );
+
+
+    footer.innerHTML = `
+
+      <button
+        id="posterDownloadPngBtn"
+        class="export-main-btn"
+        type="button"
+      >
+
+        <span>
+
+          <strong>
+            Export PNG
+          </strong>
+
+          <small>
+            1080px • maximum quality
+          </small>
+
+        </span>
+
+        <span>
+          ↓
+        </span>
+
+      </button>
+
+
+      <button
+        id="posterDownloadJpgBtn"
+        class="export-alt-btn"
+        type="button"
+      >
+        Export JPG
+      </button>
+    `;
+  }
+
+
+
+  /* =====================================================
+     CORE FABRIC EVENTS
+  ====================================================== */
+
+  bindCoreEvents() {
+
+    this.canvas.on(
+      "selection:created",
+      () => {
+
+        this.setDrawingMode(
+          false
+        );
+
+        this.updateSelectionInspector();
+
+        this.renderLayers();
+      }
+    );
+
+
+    this.canvas.on(
+      "selection:updated",
+      () => {
+
+        this.updateSelectionInspector();
+
+        this.renderLayers();
+      }
+    );
+
+
+    this.canvas.on(
+      "selection:cleared",
+      () => {
+
+        this.updateSelectionInspector();
+
+        this.renderLayers();
+      }
+    );
+
+
+    this.canvas.on(
+      "object:modified",
+      () => {
+
+        this.snapObjectToGuides();
+
+        this.updateSelectionInspector();
+
+        this.renderLayers();
+
+        this.commit();
+      }
+    );
+
+
+    this.canvas.on(
+      "object:moving",
+      event => {
+
+        this.applyLiveSnap(
+          event.target
+        );
+
+        this.updateTransformControls();
+      }
+    );
+
+
+    this.canvas.on(
+      "object:scaling",
+      () => {
+
+        this.updateTransformControls();
+      }
+    );
+
+
+    this.canvas.on(
+      "object:rotating",
+      () => {
+
+        this.updateTransformControls();
+      }
+    );
+
+
+    this.canvas.on(
+      "path:created",
+      event => {
+
+        const path =
+          event.path;
+
+
+        this.assignObjectMeta(
+          path,
+          "Drawing",
+          "drawing"
+        );
+
+
+        if (
+          this.state.brushMode ===
+          "eraser"
+        ) {
+
+          path.globalCompositeOperation =
+            "destination-out";
+        }
+
+
+        if (
+          this.state.brushMode ===
+          "highlighter"
+        ) {
+
+          path.opacity =
+            .35;
+        }
+
+
+        this.commit();
+
+        this.renderLayers();
+      }
+    );
+  }
+
+
+
+  /* =====================================================
+     EXISTING PAGE UI
+  ====================================================== */
+
+  bindExistingUi() {
+
+    document
+      .querySelectorAll(
+        "[data-poster-tab]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              document
+                .querySelectorAll(
+                  "[data-poster-tab]"
+                )
+                .forEach(
+                  item =>
+                    item.classList.remove(
+                      "active"
+                    )
+                );
+
+
+              document
+                .querySelectorAll(
+                  "#posterLeftPanel .left-tab-panel"
+                )
+                .forEach(
+                  panel =>
+                    panel.classList.remove(
+                      "active"
+                    )
+                );
+
+
+              button.classList.add(
+                "active"
+              );
+
+
+              const map = {
+
+                templates:
+                  "posterTemplatesPanel",
+
+                media:
+                  "posterMediaPanel",
+
+                brand:
+                  "posterBrandPanel"
+
+              };
+
+
+              document
+                .getElementById(
+                  map[
+                    button.dataset
+                      .posterTab
+                  ]
+                )
+                .classList.add(
+                  "active"
+                );
+            }
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterTemplateSearch"
+      )
+      .addEventListener(
+        "input",
+        () =>
+          this.renderTemplates()
+      );
+
+
+    document
+      .querySelectorAll(
+        "#posterTemplateFilters .filter-chip"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              document
+                .querySelectorAll(
+                  "#posterTemplateFilters .filter-chip"
+                )
+                .forEach(
+                  item =>
+                    item.classList.remove(
+                      "active"
+                    )
+                );
+
+
+              button.classList.add(
+                "active"
+              );
+
+
+              this.activeFilter =
+                button.dataset
+                  .filter;
+
+
+              this.renderTemplates();
+            }
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterCanvasSize"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          this.resizeCanvas(
+            event.target.value
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterSafeZoneBtn"
+      )
+      .addEventListener(
+        "click",
+        event => {
+
+          this.state.safeZone =
+            !this.state
+              .safeZone;
+
+
+          event.currentTarget
+            .classList.toggle(
+              "active",
+              this.state
+                .safeZone
+            );
+
+
+          this.updateSafeZone();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterZoomOutBtn"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          this.state.zoom =
+            Math.max(
+              25,
+              this.state.zoom -
+              5
+            );
+
+
+          this.applyZoom();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterZoomInBtn"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          this.state.zoom =
+            Math.min(
+              100,
+              this.state.zoom +
+              5
+            );
+
+
+          this.applyZoom();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterResetBtn"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          if (
+            !confirm(
+              "Reset the poster to the Match Day template?"
+            )
+          ) {
+            return;
+          }
+
+
+          this.applyTemplate(
+            "matchday"
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterExportTopBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.exportPoster(
+            "png"
+          )
+      );
+  }
+
+
+
+  /* =====================================================
+     PRO UI BINDINGS
+  ====================================================== */
+
+  bindProUi() {
+
+    this.bindToolRail();
+
+    this.bindMediaPanel();
+
+    this.bindBrandPanel();
+
+    this.bindInspectorTabs();
+
+    this.bindTransformInspector();
+
+    this.bindTextInspector();
+
+    this.bindImageInspector();
+
+    this.bindShapeInspector();
+
+    this.bindEffectsInspector();
+
+    this.bindExportButtons();
+  }
+
+
+
+  bindToolRail() {
+
+    document
+      .querySelectorAll(
+        "[data-pro-tool]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const tool =
+                button.dataset
+                  .proTool;
+
+
+              document
+                .querySelectorAll(
+                  "[data-pro-tool]"
+                )
+                .forEach(
+                  item =>
+                    item.classList.remove(
+                      "active"
+                    )
+                );
+
+
+              button.classList.add(
+                "active"
+              );
+
+
+              this.handleTool(
+                tool
+              );
+            }
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proQuickPhotoInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const file =
+            event.target.files[0];
+
+
+          if (file) {
+
+            this.addPhotoFile(
+              file
+            );
+          }
+
+
+          event.target.value =
+            "";
+        }
+      );
+  }
+
+
+
+  handleTool(
+    tool
+  ) {
+
+    this.hideToolPopover();
+
+
+    if (
+      tool ===
+      "select"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "text"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      this.addTextLayer();
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "photo"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      document
+        .getElementById(
+          "proQuickPhotoInput"
+        )
+        .click();
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "shape"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      this.showShapePopover();
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "sticker"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      this.showStickerPopover();
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "draw"
+    ) {
+
+      this.showDrawPopover();
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "layers"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      this.switchInspectorTab(
+        "layers"
+      );
+
+      return;
+    }
+
+
+    if (
+      tool ===
+      "background"
+    ) {
+
+      this.setDrawingMode(
+        false
+      );
+
+      this.switchInspectorTab(
+        "effects"
+      );
+    }
+  }
+
+
+
+  showShapePopover() {
+
+    const popover =
+      document.getElementById(
+        "posterToolPopover"
+      );
+
+
+    popover.innerHTML = `
+
+      <div class="tool-popover-title">
+        SHAPES
+      </div>
+
+      <div class="popover-shape-grid">
+
+        <button
+          type="button"
+          data-pop-shape="rect"
+        >
+          ▰
+        </button>
+
+        <button
+          type="button"
+          data-pop-shape="circle"
+        >
+          ●
+        </button>
+
+        <button
+          type="button"
+          data-pop-shape="triangle"
+        >
+          ▲
+        </button>
+
+        <button
+          type="button"
+          data-pop-shape="line"
+        >
+          ╱
+        </button>
+
+        <button
+          type="button"
+          data-pop-shape="badge"
+        >
+          ★
+        </button>
+
+      </div>
+    `;
+
+
+    popover.classList.remove(
+      "hidden"
+    );
+
+
+    popover
+      .querySelectorAll(
+        "[data-pop-shape]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.addShape(
+                button.dataset
+                  .popShape
+              );
+
+
+              this.hideToolPopover();
+            }
+          );
+        }
+      );
+  }
+
+
+
+  showStickerPopover() {
+
+    const popover =
+      document.getElementById(
+        "posterToolPopover"
+      );
+
+
+    popover.innerHTML = `
+
+      <div class="tool-popover-title">
+        CRICKET STICKERS
+      </div>
+
+      <div class="popover-sticker-grid">
+
+        ${CRICKET_STICKERS
+          .map(
+            sticker => `
+              <button
+                type="button"
+                data-pop-sticker="${sticker}"
+              >
+                ${sticker}
+              </button>
+            `
+          )
+          .join("")}
+
+      </div>
+    `;
+
+
+    popover.classList.remove(
+      "hidden"
+    );
+
+
+    popover
+      .querySelectorAll(
+        "[data-pop-sticker]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.addSticker(
+                button.dataset
+                  .popSticker
+              );
+
+
+              this.hideToolPopover();
+            }
+          );
+        }
+      );
+  }
+
+
+
+  showDrawPopover() {
+
+    const popover =
+      document.getElementById(
+        "posterToolPopover"
+      );
+
+
+    popover.innerHTML = `
+
+      <div class="tool-popover-title">
+        DRAW
+      </div>
+
+
+      <div class="form-field">
+
+        <label>
+          Brush Color
+        </label>
+
+        <input
+          id="proBrushColor"
+          type="color"
+          value="${this.state.brushColor}"
+        />
+
+      </div>
+
+
+      <div class="field-block">
+
+        <div class="range-head">
+
+          <label>
+            Brush Size
+          </label>
+
+          <span id="proBrushWidthValue">
+            ${this.state.brushWidth}
+          </span>
+
+        </div>
+
+        <input
+          id="proBrushWidth"
+          type="range"
+          min="2"
+          max="80"
+          value="${this.state.brushWidth}"
+        />
+
+      </div>
+
+
+      <div class="pro-command-grid">
+
+        <button
+          type="button"
+          data-brush-mode="brush"
+        >
+          Brush
+        </button>
+
+        <button
+          type="button"
+          data-brush-mode="highlighter"
+        >
+          Highlight
+        </button>
+
+        <button
+          type="button"
+          data-brush-mode="eraser"
+        >
+          Eraser
+        </button>
+
+      </div>
+    `;
+
+
+    popover.classList.remove(
+      "hidden"
+    );
+
+
+    this.setDrawingMode(
+      true
+    );
+
+
+    const color =
+      popover.querySelector(
+        "#proBrushColor"
+      );
+
+
+    color.addEventListener(
+      "input",
+      () => {
+
+        this.state.brushColor =
+          color.value;
+
+
+        this.configureBrush();
+      }
+    );
+
+
+    const width =
+      popover.querySelector(
+        "#proBrushWidth"
+      );
+
+
+    width.addEventListener(
+      "input",
+      () => {
+
+        this.state.brushWidth =
+          Number(
+            width.value
+          );
+
+
+        popover
+          .querySelector(
+            "#proBrushWidthValue"
+          )
+          .textContent =
+          this.state
+            .brushWidth;
+
+
+        this.configureBrush();
+      }
+    );
+
+
+    popover
+      .querySelectorAll(
+        "[data-brush-mode]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.state.brushMode =
+                button.dataset
+                  .brushMode;
+
+
+              this.configureBrush();
+            }
+          );
+        }
+      );
+  }
+
+
+
+  hideToolPopover() {
+
+    document
+      .getElementById(
+        "posterToolPopover"
+      )
+      .classList.add(
+        "hidden"
+      );
+  }
+
+
+
+  setDrawingMode(
+    enabled
+  ) {
+
+    this.canvas.isDrawingMode =
+      enabled;
+
+
+    if (enabled) {
+
+      this.configureBrush();
+    }
+  }
+
+
+
+  configureBrush() {
+
+    const brush =
+      new PencilBrush(
+        this.canvas
+      );
+
+
+    brush.width =
+      this.state
+        .brushWidth;
+
+
+    if (
+      this.state
+        .brushMode ===
+      "eraser"
+    ) {
+
+      brush.color =
+        "#000000";
+
+    } else {
+
+      brush.color =
+        this.state
+          .brushColor;
+    }
+
+
+    this.canvas.freeDrawingBrush =
+      brush;
+  }
+
+
+
+  /* =====================================================
+     MEDIA PANEL
+  ====================================================== */
+
+  bindMediaPanel() {
+
+    document
+      .getElementById(
+        "proAddPhotoInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const file =
+            event.target.files[0];
+
+
+          if (file) {
+
+            this.addPhotoFile(
+              file
+            );
+          }
+
+
+          event.target.value =
+            "";
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proBackgroundPhotoInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const file =
+            event.target.files[0];
+
+
+          if (file) {
+
+            this.addBackgroundPhoto(
+              file
+            );
+          }
+
+
+          event.target.value =
+            "";
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterSponsorLogoInput"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const file =
+            event.target.files[0];
+
+
+          if (file) {
+
+            this.addSponsorLogo(
+              file
+            );
+          }
+
+
+          event.target.value =
+            "";
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        "#proStickerGrid [data-sticker]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.addSticker(
+                button.dataset
+                  .sticker
+              );
+            }
+          );
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        "[data-add-shape]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.addShape(
+                button.dataset
+                  .addShape
+              );
+            }
+          );
+        }
+      );
+  }
+
+
+
+  /* =====================================================
+     BRAND PANEL
+  ====================================================== */
+
+  bindBrandPanel() {
+
+    document
+      .getElementById(
+        "posterBrandName"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          this.state.brandName =
+            event.target.value;
+
+
+          this.updateBrandText();
+        }
+      );
+
+
+    this.bindColorPair(
+
+      "posterAccentColor",
+
+      "posterAccentColorText",
+
+      value => {
+
+        this.state.accent =
+          value;
+      }
+
+    );
+
+
+    this.bindColorPair(
+
+      "posterTextColor",
+
+      "posterTextColorText",
+
+      value => {
+
+        this.state.textColor =
+          value;
+      }
+
+    );
+
+
+    const bg1 =
+      document.getElementById(
+        "proBackgroundColor1"
+      );
+
+
+    const bg2 =
+      document.getElementById(
+        "proBackgroundColor2"
+      );
+
+
+    bg1.addEventListener(
+      "input",
+      () => {
+
+        this.state.backgroundColor =
+          bg1.value;
+
+
+        this.syncBackgroundInputs();
+
+        this.updateBackground();
+      }
+    );
+
+
+    bg2.addEventListener(
+      "input",
+      () => {
+
+        this.state.backgroundColor2 =
+          bg2.value;
+
+
+        this.syncBackgroundInputs();
+
+        this.updateBackground();
+      }
+    );
+
+
+    document
+      .getElementById(
+        "proBackgroundAngle"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          this.state.backgroundAngle =
+            Number(
+              event.target.value
+            );
+
+
+          document
+            .getElementById(
+              "proBackgroundAngleValue"
+            )
+            .textContent =
+            `${this.state.backgroundAngle}°`;
+
+
+          this.updateBackground();
+        }
+      );
+  }
+
+
+
+  bindColorPair(
+    pickerId,
+    textId,
+    callback
+  ) {
+
+    const picker =
+      document.getElementById(
+        pickerId
+      );
+
+
+    const text =
+      document.getElementById(
+        textId
+      );
+
+
+    picker.addEventListener(
+      "input",
+      () => {
+
+        const value =
+          picker.value
+            .toUpperCase();
+
+
+        text.value =
+          value;
+
+
+        callback(
+          value
+        );
+      }
+    );
+
+
+    text.addEventListener(
+      "change",
+      () => {
+
+        const value =
+          this.normalizeColor(
+            text.value
+          );
+
+
+        if (!value) {
+
+          text.value =
+            picker.value
+              .toUpperCase();
+
+          return;
+        }
+
+
+        picker.value =
+          value;
+
+
+        text.value =
+          value;
+
+
+        callback(
+          value
+        );
+      }
+    );
+  }
+
+
+
+  /* =====================================================
+     INSPECTOR TABS
+  ====================================================== */
+
+  bindInspectorTabs() {
+
+    document
+      .querySelectorAll(
+        "[data-inspector-tab]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.switchInspectorTab(
+                button.dataset
+                  .inspectorTab
+              );
+            }
+          );
+        }
+      );
+  }
+
+
+
+  switchInspectorTab(
+    name
+  ) {
+
+    document
+      .querySelectorAll(
+        "[data-inspector-tab]"
+      )
+      .forEach(
+        button => {
+
+          button.classList.toggle(
+            "active",
+
+            button.dataset
+              .inspectorTab ===
+              name
+          );
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        ".pro-inspector-tab"
+      )
+      .forEach(
+        tab => {
+
+          tab.classList.remove(
+            "active"
+          );
+        }
+      );
+
+
+    const map = {
+
+      edit:
+        "proInspectorEdit",
+
+      effects:
+        "proInspectorEffects",
+
+      layers:
+        "proInspectorLayers"
+
+    };
+
+
+    document
+      .getElementById(
+        map[name]
+      )
+      .classList.add(
+        "active"
+      );
+
+
+    if (
+      name ===
+      "layers"
+    ) {
+
+      this.renderLayers();
+    }
+  }
+
+
+
+  /* =====================================================
+     COMMON TRANSFORM INSPECTOR
+  ====================================================== */
+
+  bindTransformInspector() {
+
+    document
+      .getElementById(
+        "proObjectName"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.name =
+            event.target.value;
+
+
+          this.renderLayers();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proObjectX"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.left =
+            Number(
+              event.target.value
+            );
+
+
+          object.setCoords();
+
+          this.canvas.requestRenderAll();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proObjectY"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.top =
+            Number(
+              event.target.value
+            );
+
+
+          object.setCoords();
+
+          this.canvas.requestRenderAll();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proObjectScale"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          const scale =
+            Number(
+              event.target.value
+            ) /
+            100;
+
+
+          object.scaleX =
+            scale;
+
+
+          object.scaleY =
+            scale;
+
+
+          object.setCoords();
+
+
+          document
+            .getElementById(
+              "proObjectScaleValue"
+            )
+            .textContent =
+            `${Math.round(
+              scale *
+              100
+            )}%`;
+
+
+          this.canvas.requestRenderAll();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proObjectScale"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    document
+      .getElementById(
+        "proObjectAngle"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.angle =
+            Number(
+              event.target.value
+            );
+
+
+          object.setCoords();
+
+
+          document
+            .getElementById(
+              "proObjectAngleValue"
+            )
+            .textContent =
+            `${Math.round(
+              object.angle
+            )}°`;
+
+
+          this.canvas.requestRenderAll();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proObjectAngle"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    document
+      .getElementById(
+        "proObjectOpacity"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.opacity =
+            Number(
+              event.target.value
+            ) /
+            100;
+
+
+          document
+            .getElementById(
+              "proObjectOpacityValue"
+            )
+            .textContent =
+            `${Math.round(
+              object.opacity *
+              100
+            )}%`;
+
+
+          this.canvas.requestRenderAll();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proObjectOpacity"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    document
+      .getElementById(
+        "proFlipX"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.flipX =
+            !object.flipX;
+
+
+          this.canvas.requestRenderAll();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proFlipY"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.flipY =
+            !object.flipY;
+
+
+          this.canvas.requestRenderAll();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proCenterX"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.set({
+            left:
+              this.canvas.width /
+              2,
+
+            originX:
+              "center"
+          });
+
+
+          object.setCoords();
+
+          this.canvas.requestRenderAll();
+
+          this.updateTransformControls();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proCenterY"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (!object) return;
+
+
+          object.set({
+            top:
+              this.canvas.height /
+              2,
+
+            originY:
+              "center"
+          });
+
+
+          object.setCoords();
+
+          this.canvas.requestRenderAll();
+
+          this.updateTransformControls();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proDuplicateObject"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.duplicateSelected()
+      );
+
+
+    document
+      .getElementById(
+        "proDeleteObject"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.deleteSelected()
+      );
+
+
+    document
+      .getElementById(
+        "proLockObject"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.toggleLockSelected()
+      );
+
+
+    document
+      .getElementById(
+        "proBringForward"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.moveSelectedLayer(
+            1
+          )
+      );
+
+
+    document
+      .getElementById(
+        "proSendBackward"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.moveSelectedLayer(
+            -1
+          )
+      );
+  }
+
+
+
+  /* =====================================================
+     TEXT INSPECTOR
+  ====================================================== */
+
+  bindTextInspector() {
+
+    const withText =
+      callback => {
+
+        const object =
+          this.getEditableSelection();
+
+
+        if (
+          !this.isTextObject(
+            object
+          )
+        ) {
+          return;
+        }
+
+
+        callback(
+          object
+        );
+
+
+        object.setCoords();
+
+        this.canvas.requestRenderAll();
+      };
+
+
+    document
+      .getElementById(
+        "proTextValue"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          withText(
+            object => {
+
+              object.text =
+                event.target.value;
+            }
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proTextValue"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    document
+      .getElementById(
+        "proTextFont"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          withText(
+            object => {
+
+              object.fontFamily =
+                event.target.value;
+            }
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proTextWeight"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          withText(
+            object => {
+
+              object.fontWeight =
+                event.target.value;
+            }
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    this.bindTextRange(
+
+      "proTextSize",
+
+      "proTextSizeValue",
+
+      object =>
+        object.fontSize,
+
+      (
+        object,
+        value
+      ) => {
+
+        object.fontSize =
+          value;
+      },
+
+      value =>
+        Math.round(
+          value
+        )
+
+    );
+
+
+    this.bindTextRange(
+
+      "proTextSpacing",
+
+      "proTextSpacingValue",
+
+      object =>
+        object.charSpacing ||
+        0,
+
+      (
+        object,
+        value
+      ) => {
+
+        object.charSpacing =
+          value;
+      },
+
+      value =>
+        Math.round(
+          value
+        )
+
+    );
+
+
+    this.bindTextRange(
+
+      "proTextLineHeight",
+
+      "proTextLineHeightValue",
+
+      object =>
+        (
+          object.lineHeight ||
+          1
+        ) *
+        100,
+
+      (
+        object,
+        value
+      ) => {
+
+        object.lineHeight =
+          value /
+          100;
+      },
+
+      value =>
+        (
+          value /
+          100
+        )
+          .toFixed(
+            2
+          )
+
+    );
+
+
+    document
+      .getElementById(
+        "proTextFill"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          withText(
+            object => {
+
+              object.fill =
+                event.target.value;
+            }
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proTextFill"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    document
+      .getElementById(
+        "proTextStroke"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          withText(
+            object => {
+
+              object.stroke =
+                event.target.value;
+            }
+          );
+        }
+      );
+
+
+    this.bindTextRange(
+
+      "proTextStrokeWidth",
+
+      "proTextStrokeWidthValue",
+
+      object =>
+        object.strokeWidth ||
+        0,
+
+      (
+        object,
+        value
+      ) => {
+
+        object.strokeWidth =
+          value;
+      },
+
+      value =>
+        Math.round(
+          value
+        )
+
+    );
+
+
+    document
+      .querySelectorAll(
+        "#proTextAlign [data-align]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              withText(
+                object => {
+
+                  object.textAlign =
+                    button.dataset
+                      .align;
+                }
+              );
+
+
+              this.updateSelectionInspector();
+
+              this.commit();
+            }
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proTextItalic"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          withText(
+            object => {
+
+              object.fontStyle =
+                object.fontStyle ===
+                "italic"
+                  ? "normal"
+                  : "italic";
+            }
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proTextUnderline"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          withText(
+            object => {
+
+              object.underline =
+                !object.underline;
+            }
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proTextUppercase"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          withText(
+            object => {
+
+              object.text =
+                String(
+                  object.text
+                )
+                  .toUpperCase();
+            }
+          );
+
+
+          this.updateSelectionInspector();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proGradientText"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          withText(
+            object => {
+
+              object.fill =
+                new Gradient({
+
+                  type:
+                    "linear",
+
+                  coords: {
+                    x1: 0,
+                    y1: 0,
+                    x2:
+                      Math.max(
+                        object.width ||
+                        400,
+                        400
+                      ),
+                    y2: 0
+                  },
+
+                  colorStops: [
+
+                    {
+                      offset: 0,
+                      color:
+                        "#FFF2B0"
+                    },
+
+                    {
+                      offset: .45,
+                      color:
+                        "#F0C34C"
+                    },
+
+                    {
+                      offset: 1,
+                      color:
+                        "#B98317"
+                    }
+
+                  ]
+
+                });
+            }
+          );
+
+
+          this.commit();
+        }
+      );
+  }
+
+
+
+  bindTextRange(
+    inputId,
+    valueId,
+    getter,
+    setter,
+    formatter
+  ) {
+
+    const input =
+      document.getElementById(
+        inputId
+      );
+
+
+    input.addEventListener(
+      "input",
+      () => {
+
+        const object =
+          this.getEditableSelection();
+
+
+        if (
+          !this.isTextObject(
+            object
+          )
+        ) {
+          return;
+        }
+
+
+        const value =
+          Number(
+            input.value
+          );
+
+
+        setter(
+          object,
+          value
+        );
+
 
         document
           .getElementById(
-            `poster${
-              button.dataset.posterTab.charAt(0).toUpperCase() +
-              button.dataset.posterTab.slice(1)
-            }Panel`
+            valueId
           )
-          ?.classList.add("active");
-      });
+          .textContent =
+          formatter(
+            value
+          );
+
+
+        object.setCoords();
+
+        this.canvas.requestRenderAll();
+      }
+    );
+
+
+    input.addEventListener(
+      "change",
+      () =>
+        this.commit()
+    );
+  }
+
+
+
+  /* =====================================================
+     IMAGE INSPECTOR
+  ====================================================== */
+
+  bindImageInspector() {
+
+    document
+      .getElementById(
+        "proImageFit"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.fitSelectedImage(
+            false
+          )
+      );
+
+
+    document
+      .getElementById(
+        "proImageFill"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.fitSelectedImage(
+            true
+          )
+      );
+
+
+    document
+      .getElementById(
+        "proImageReset"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const image =
+            this.getSelectedImage();
+
+
+          if (!image) return;
+
+
+          image.scaleX =
+            1;
+
+          image.scaleY =
+            1;
+
+          image.angle =
+            0;
+
+          image.flipX =
+            false;
+
+          image.flipY =
+            false;
+
+          image.opacity =
+            1;
+
+          image.filters =
+            [];
+
+          image.clipPath =
+            null;
+
+
+          image.setCoords();
+
+          image.applyFilters();
+
+          this.canvas.requestRenderAll();
+
+          this.updateSelectionInspector();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proImageCenter"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const image =
+            this.getSelectedImage();
+
+
+          if (!image) return;
+
+
+          image.set({
+
+            left:
+              this.canvas.width /
+              2,
+
+            top:
+              this.canvas.height /
+              2,
+
+            originX:
+              "center",
+
+            originY:
+              "center"
+
+          });
+
+
+          image.setCoords();
+
+          this.canvas.requestRenderAll();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .querySelectorAll(
+        "[data-mask]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.applyImageMask(
+                button.dataset
+                  .mask
+              );
+            }
+          );
+        }
+      );
+  }
+
+
+
+  applyImageMask(
+    type
+  ) {
+
+    const image =
+      this.getSelectedImage();
+
+
+    if (!image) return;
+
+
+    if (
+      type ===
+      "none"
+    ) {
+
+      image.clipPath =
+        null;
+    }
+
+
+    if (
+      type ===
+      "circle"
+    ) {
+
+      const radius =
+        Math.min(
+          image.width,
+          image.height
+        ) /
+        2;
+
+
+      image.clipPath =
+        new Circle({
+
+          radius,
+
+          originX:
+            "center",
+
+          originY:
+            "center",
+
+          left: 0,
+
+          top: 0
+
+        });
+    }
+
+
+    if (
+      type ===
+      "rounded"
+    ) {
+
+      image.clipPath =
+        new Rect({
+
+          width:
+            image.width,
+
+          height:
+            image.height,
+
+          rx:
+            80,
+
+          ry:
+            80,
+
+          originX:
+            "center",
+
+          originY:
+            "center",
+
+          left: 0,
+
+          top: 0
+
+        });
+    }
+
+
+    image.setCoords();
+
+    this.canvas.requestRenderAll();
+
+    this.commit();
+  }
+
+
+
+  fitSelectedImage(
+    fill
+  ) {
+
+    const image =
+      this.getSelectedImage();
+
+
+    if (!image) return;
+
+
+    const w =
+      this.canvas.width;
+
+
+    const h =
+      this.canvas.height;
+
+
+    const sx =
+      w /
+      image.width;
+
+
+    const sy =
+      h /
+      image.height;
+
+
+    const scale =
+      fill
+        ? Math.max(
+            sx,
+            sy
+          )
+        : Math.min(
+            sx,
+            sy
+          );
+
+
+    image.set({
+
+      scaleX:
+        scale,
+
+      scaleY:
+        scale,
+
+      left:
+        w /
+        2,
+
+      top:
+        h /
+        2,
+
+      originX:
+        "center",
+
+      originY:
+        "center",
+
+      angle:
+        0
+
     });
 
 
+    image.setCoords();
+
+    this.canvas.requestRenderAll();
+
+    this.updateSelectionInspector();
+
+    this.commit();
+  }
+
+
+
+  /* =====================================================
+     SHAPE INSPECTOR
+  ====================================================== */
+
+  bindShapeInspector() {
+
     document
-      .getElementById("posterTemplateSearch")
-      .addEventListener("input", () => this.renderTemplates());
+      .getElementById(
+        "proShapeFill"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (
+            !this.isShapeObject(
+              object
+            )
+          ) {
+            return;
+          }
+
+
+          object.fill =
+            event.target.value;
+
+
+          this.canvas.requestRenderAll();
+        }
+      );
 
 
     document
-      .querySelectorAll("#posterTemplateFilters .filter-chip")
-      .forEach(button => {
+      .getElementById(
+        "proShapeFill"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
 
-        button.addEventListener("click", () => {
+
+    document
+      .getElementById(
+        "proShapeStroke"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (
+            !this.isShapeObject(
+              object
+            )
+          ) {
+            return;
+          }
+
+
+          object.stroke =
+            event.target.value;
+
+
+          this.canvas.requestRenderAll();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proShapeStrokeWidth"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          const object =
+            this.getEditableSelection();
+
+
+          if (
+            !this.isShapeObject(
+              object
+            )
+          ) {
+            return;
+          }
+
+
+          object.strokeWidth =
+            Number(
+              event.target.value
+            );
+
 
           document
-            .querySelectorAll("#posterTemplateFilters .filter-chip")
-            .forEach(item => item.classList.remove("active"));
-
-          button.classList.add("active");
-
-          this.activeFilter = button.dataset.filter;
-
-          this.renderTemplates();
-        });
-      });
+            .getElementById(
+              "proShapeStrokeWidthValue"
+            )
+            .textContent =
+            object.strokeWidth;
 
 
-    document
-      .getElementById("posterCanvasSize")
-      .addEventListener("change", event => {
-
-        this.state.canvasSize = event.target.value;
-
-        this.resizeCanvas();
-        this.render();
-      });
-
-
-    this.bindText("posterKicker", "kicker");
-    this.bindText("posterHeadline", "headline");
-    this.bindText("posterSubheadline", "subheadline");
-    this.bindText("posterCta", "cta");
-    this.bindText("posterFooter", "footer");
-    this.bindText("posterBrandName", "brandName");
+          this.canvas.requestRenderAll();
+        }
+      );
 
 
     document
-      .getElementById("posterHeadlineFont")
-      .addEventListener("change", event => {
-
-        this.state.headlineFont = event.target.value;
-        this.render();
-      });
-
-
-    this.bindRange(
-      "posterHeadlineSize",
-      "headlineSize",
-      "posterHeadlineSizeValue",
-      value => value
-    );
-
-    this.bindRange(
-      "posterContentY",
-      "contentY",
-      "posterContentYValue",
-      value => `${value}%`
-    );
-
-    this.bindRange(
-      "posterOverlay",
-      "overlay",
-      "posterOverlayValue",
-      value => `${value}%`
-    );
-
-    this.bindRange(
-      "posterBrightness",
-      "brightness",
-      "posterBrightnessValue",
-      value => `${value}%`
-    );
-
-    this.bindRange(
-      "posterSaturation",
-      "saturation",
-      "posterSaturationValue",
-      value => `${value}%`
-    );
-
-    this.bindRange(
-      "posterImageScale",
-      "imageScale",
-      "posterImageScaleValue",
-      value => `${value}%`
-    );
-
-    this.bindRange(
-      "posterImageX",
-      "imageX",
-      "posterImageXValue",
-      value => `${value}%`
-    );
-
-    this.bindRange(
-      "posterImageY",
-      "imageY",
-      "posterImageYValue",
-      value => `${value}%`
-    );
-
-
-    document
-      .getElementById("posterAlignmentButtons")
-      .addEventListener("click", event => {
-
-        const button = event.target.closest("[data-align]");
-
-        if (!button) return;
-
-        this.state.align = button.dataset.align;
-
-        document
-          .querySelectorAll("#posterAlignmentButtons button")
-          .forEach(item => item.classList.remove("active"));
-
-        button.classList.add("active");
-
-        this.render();
-      });
-
-
-    document
-      .getElementById("posterAccentGlow")
-      .addEventListener("change", event => {
-
-        this.state.accentGlow = event.target.checked;
-        this.render();
-      });
-
-
-    this.bindColor(
-      "posterAccentColor",
-      "posterAccentColorText",
-      "accent"
-    );
-
-    this.bindColor(
-      "posterTextColor",
-      "posterTextColorText",
-      "textColor"
-    );
-
-    this.bindColor(
-      "posterBackgroundColor",
-      "posterBackgroundColorText",
-      "background"
-    );
-
-
-    document
-      .getElementById("posterBackgroundInput")
-      .addEventListener("change", async event => {
-
-        const file = event.target.files[0];
-
-        if (!file) return;
-
-        const url = URL.createObjectURL(file);
-
-        this.backgroundImage = await this.loadImage(url);
-
-        document.getElementById("posterBackgroundPreview").src = url;
-
-        document
-          .getElementById("posterBackgroundPreviewWrap")
-          .classList.remove("hidden");
-
-        this.render();
-      });
-
-
-    document
-      .getElementById("posterRemoveBackgroundBtn")
-      .addEventListener("click", () => {
-
-        this.backgroundImage = null;
-
-        document
-          .getElementById("posterBackgroundPreviewWrap")
-          .classList.add("hidden");
-
-        this.render();
-      });
-
-
-    document
-      .getElementById("posterSponsorLogoInput")
-      .addEventListener("change", async event => {
-
-        const file = event.target.files[0];
-
-        if (!file) return;
-
-        const url = URL.createObjectURL(file);
-
-        this.sponsorLogo = await this.loadImage(url);
-
-        document.getElementById("posterSponsorPreview").src = url;
-
-        document
-          .getElementById("posterSponsorPreviewWrap")
-          .classList.remove("hidden");
-
-        this.render();
-      });
-
-
-    document
-      .getElementById("posterRemoveSponsorBtn")
-      .addEventListener("click", () => {
-
-        this.sponsorLogo = null;
-
-        document
-          .getElementById("posterSponsorPreviewWrap")
-          .classList.add("hidden");
-
-        this.render();
-      });
-
-
-    document
-      .getElementById("posterSafeZoneBtn")
-      .addEventListener("click", event => {
-
-        this.state.safeZone = !this.state.safeZone;
-
-        event.currentTarget.classList.toggle(
-          "active",
-          this.state.safeZone
-        );
-
-        this.render();
-      });
-
-
-    document
-      .getElementById("posterZoomOutBtn")
-      .addEventListener("click", () => {
-
-        this.state.zoom = Math.max(25, this.state.zoom - 5);
-        this.applyZoom();
-      });
-
-
-    document
-      .getElementById("posterZoomInBtn")
-      .addEventListener("click", () => {
-
-        this.state.zoom = Math.min(100, this.state.zoom + 5);
-        this.applyZoom();
-      });
-
-
-    document
-      .getElementById("posterDownloadPngBtn")
-      .addEventListener("click", () => this.export("png"));
-
-
-    document
-      .getElementById("posterDownloadJpgBtn")
-      .addEventListener("click", () => this.export("jpg"));
-
-
-    document
-      .getElementById("posterExportTopBtn")
-      .addEventListener("click", () => this.export("png"));
-
-
-    document
-      .getElementById("posterResetBtn")
-      .addEventListener("click", () => this.applyTemplate("matchday"));
+      .getElementById(
+        "proShapeStrokeWidth"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
   }
 
 
-  bindText(id, key) {
-    document.getElementById(id).addEventListener("input", event => {
-      this.state[key] = event.target.value;
-      this.render();
-    });
-  }
+
+  /* =====================================================
+     EFFECTS
+  ====================================================== */
+
+  bindEffectsInspector() {
+
+    document
+      .getElementById(
+        "proBlendMode"
+      )
+      .addEventListener(
+        "change",
+        event => {
+
+          const object =
+            this.getEditableSelection();
 
 
-  bindRange(id, key, labelId, formatter) {
-
-    document.getElementById(id).addEventListener("input", event => {
-
-      const value = Number(event.target.value);
-
-      this.state[key] = value;
-
-      document.getElementById(labelId).textContent = formatter(value);
-
-      this.render();
-    });
-  }
+          if (!object) return;
 
 
-  bindColor(colorId, textId, key) {
-
-    const picker = document.getElementById(colorId);
-    const text = document.getElementById(textId);
-
-    picker.addEventListener("input", () => {
-
-      const value = picker.value.toUpperCase();
-
-      text.value = value;
-
-      this.state[key] = value;
-
-      this.render();
-    });
+          object.globalCompositeOperation =
+            event.target.value;
 
 
-    text.addEventListener("change", () => {
+          this.canvas.requestRenderAll();
 
-      const value = this.normalizeColor(text.value);
+          this.commit();
+        }
+      );
 
-      if (!value) {
-        text.value = this.state[key];
-        return;
+
+    document
+      .getElementById(
+        "proShadowEnabled"
+      )
+      .addEventListener(
+        "change",
+        () => {
+
+          this.updateSelectedShadow();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proShadowColor"
+      )
+      .addEventListener(
+        "input",
+        () => {
+
+          this.updateSelectedShadow();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proShadowBlur"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          document
+            .getElementById(
+              "proShadowBlurValue"
+            )
+            .textContent =
+            event.target.value;
+
+
+          this.updateSelectedShadow();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proShadowBlur"
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
+
+
+    this.bindImageFilterSlider(
+      "proImageBrightness",
+      "proImageBrightnessValue",
+      "filterBrightness"
+    );
+
+
+    this.bindImageFilterSlider(
+      "proImageContrast",
+      "proImageContrastValue",
+      "filterContrast"
+    );
+
+
+    this.bindImageFilterSlider(
+      "proImageSaturation",
+      "proImageSaturationValue",
+      "filterSaturation"
+    );
+
+
+    this.bindImageFilterSlider(
+      "proImageBlur",
+      "proImageBlurValue",
+      "filterBlur"
+    );
+
+
+    document
+      .getElementById(
+        "proGrayscale"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const image =
+            this.getSelectedImage();
+
+
+          if (!image) return;
+
+
+          image.filterGrayscale =
+            !image.filterGrayscale;
+
+
+          this.applyImageFilters(
+            image
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proSepia"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const image =
+            this.getSelectedImage();
+
+
+          if (!image) return;
+
+
+          image.filterSepia =
+            !image.filterSepia;
+
+
+          this.applyImageFilters(
+            image
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proResetFilters"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const image =
+            this.getSelectedImage();
+
+
+          if (!image) return;
+
+
+          image.filterBrightness =
+            0;
+
+          image.filterContrast =
+            0;
+
+          image.filterSaturation =
+            0;
+
+          image.filterBlur =
+            0;
+
+          image.filterGrayscale =
+            false;
+
+          image.filterSepia =
+            false;
+
+          image.removeColorEnabled =
+            false;
+
+
+          this.applyImageFilters(
+            image
+          );
+
+
+          this.updateSelectionInspector();
+
+          this.commit();
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proRemoveColorDistance"
+      )
+      .addEventListener(
+        "input",
+        event => {
+
+          document
+            .getElementById(
+              "proRemoveColorDistanceValue"
+            )
+            .textContent =
+            event.target.value;
+        }
+      );
+
+
+    document
+      .getElementById(
+        "proApplyRemoveColor"
+      )
+      .addEventListener(
+        "click",
+        () => {
+
+          const image =
+            this.getSelectedImage();
+
+
+          if (!image) return;
+
+
+          image.removeColorEnabled =
+            true;
+
+
+          image.removeColor =
+            document
+              .getElementById(
+                "proRemoveColor"
+              )
+              .value;
+
+
+          image.removeColorDistance =
+            Number(
+              document
+                .getElementById(
+                  "proRemoveColorDistance"
+                )
+                .value
+            ) /
+            100;
+
+
+          this.applyImageFilters(
+            image
+          );
+
+
+          this.commit();
+        }
+      );
+
+
+    const fxBg1 =
+      document.getElementById(
+        "proFxBackground1"
+      );
+
+
+    const fxBg2 =
+      document.getElementById(
+        "proFxBackground2"
+      );
+
+
+    fxBg1.addEventListener(
+      "input",
+      () => {
+
+        this.state.backgroundColor =
+          fxBg1.value;
+
+
+        this.syncBackgroundInputs();
+
+        this.updateBackground();
       }
+    );
 
-      this.state[key] = value;
 
-      picker.value = value;
+    fxBg2.addEventListener(
+      "input",
+      () => {
 
-      text.value = value;
+        this.state.backgroundColor2 =
+          fxBg2.value;
 
-      this.render();
-    });
+
+        this.syncBackgroundInputs();
+
+        this.updateBackground();
+      }
+    );
+
+
+    document
+      .querySelectorAll(
+        "[data-bg-preset]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const [
+                a,
+                b
+              ] =
+                button.dataset
+                  .bgPreset
+                  .split(",");
+
+
+              this.state.backgroundColor =
+                a;
+
+
+              this.state.backgroundColor2 =
+                b;
+
+
+              this.syncBackgroundInputs();
+
+              this.updateBackground();
+
+              this.commit();
+            }
+          );
+        }
+      );
   }
 
 
-  normalizeColor(value) {
 
-    let color = value.trim();
+  bindImageFilterSlider(
+    inputId,
+    valueId,
+    property
+  ) {
 
-    if (!color.startsWith("#")) {
-      color = `#${color}`;
-    }
+    document
+      .getElementById(
+        inputId
+      )
+      .addEventListener(
+        "input",
+        event => {
 
-    if (!/^#[0-9A-Fa-f]{6}$/.test(color)) {
-      return null;
-    }
+          const image =
+            this.getSelectedImage();
 
-    return color.toUpperCase();
+
+          if (!image) return;
+
+
+          image[property] =
+            Number(
+              event.target.value
+            );
+
+
+          document
+            .getElementById(
+              valueId
+            )
+            .textContent =
+            event.target.value;
+
+
+          this.applyImageFilters(
+            image
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        inputId
+      )
+      .addEventListener(
+        "change",
+        () =>
+          this.commit()
+      );
   }
 
+
+
+  applyImageFilters(
+    image
+  ) {
+
+    const list =
+      [];
+
+
+    const brightness =
+      Number(
+        image.filterBrightness ||
+        0
+      );
+
+
+    if (
+      brightness !==
+      0
+    ) {
+
+      list.push(
+
+        new filters.Brightness({
+
+          brightness:
+            brightness /
+            100
+
+        })
+
+      );
+    }
+
+
+    const contrast =
+      Number(
+        image.filterContrast ||
+        0
+      );
+
+
+    if (
+      contrast !==
+      0
+    ) {
+
+      list.push(
+
+        new filters.Contrast({
+
+          contrast:
+            contrast /
+            100
+
+        })
+
+      );
+    }
+
+
+    const saturation =
+      Number(
+        image.filterSaturation ||
+        0
+      );
+
+
+    if (
+      saturation !==
+      0
+    ) {
+
+      list.push(
+
+        new filters.Saturation({
+
+          saturation:
+            saturation /
+            100
+
+        })
+
+      );
+    }
+
+
+    const blur =
+      Number(
+        image.filterBlur ||
+        0
+      );
+
+
+    if (
+      blur >
+      0
+    ) {
+
+      list.push(
+
+        new filters.Blur({
+
+          blur:
+            blur /
+            100
+
+        })
+
+      );
+    }
+
+
+    if (
+      image.filterGrayscale
+    ) {
+
+      list.push(
+        new filters.Grayscale()
+      );
+    }
+
+
+    if (
+      image.filterSepia
+    ) {
+
+      list.push(
+        new filters.Sepia()
+      );
+    }
+
+
+    if (
+      image.removeColorEnabled
+    ) {
+
+      list.push(
+
+        new filters.RemoveColor({
+
+          color:
+            image.removeColor ||
+            "#FFFFFF",
+
+          distance:
+            image.removeColorDistance ||
+            .2
+
+        })
+
+      );
+    }
+
+
+    image.filters =
+      list;
+
+
+    image.applyFilters();
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  updateSelectedShadow() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    const enabled =
+      document
+        .getElementById(
+          "proShadowEnabled"
+        )
+        .checked;
+
+
+    if (!enabled) {
+
+      object.shadow =
+        null;
+
+      this.canvas.requestRenderAll();
+
+      return;
+    }
+
+
+    object.shadow =
+      new Shadow({
+
+        color:
+          document
+            .getElementById(
+              "proShadowColor"
+            )
+            .value,
+
+        blur:
+          Number(
+            document
+              .getElementById(
+                "proShadowBlur"
+              )
+              .value
+          ),
+
+        offsetX:
+          8,
+
+        offsetY:
+          12
+
+      });
+
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  /* =====================================================
+     EXPORT
+  ====================================================== */
+
+  bindExportButtons() {
+
+    document
+      .getElementById(
+        "posterDownloadPngBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.exportPoster(
+            "png"
+          )
+      );
+
+
+    document
+      .getElementById(
+        "posterDownloadJpgBtn"
+      )
+      .addEventListener(
+        "click",
+        () =>
+          this.exportPoster(
+            "jpg"
+          )
+      );
+  }
+
+
+
+  exportPoster(
+    format
+  ) {
+
+    const safeZone =
+      this.getSafeZoneObject();
+
+
+    const safeVisible =
+      safeZone
+        ? safeZone.visible
+        : false;
+
+
+    if (safeZone) {
+
+      safeZone.visible =
+        false;
+    }
+
+
+    this.canvas.discardActiveObject();
+
+    this.canvas.requestRenderAll();
+
+
+    const data =
+      this.canvas.toDataURL({
+
+        format:
+          format ===
+          "jpg"
+            ? "jpeg"
+            : "png",
+
+        quality:
+          format ===
+          "jpg"
+            ? .95
+            : 1,
+
+        multiplier:
+          1
+
+      });
+
+
+    const projectName =
+      document
+        .getElementById(
+          "projectName"
+        )
+        ?.value
+        ?.trim()
+        ?.replace(
+          /[^a-z0-9-_]+/gi,
+          "-"
+        )
+        ?.replace(
+          /-+/g,
+          "-"
+        )
+        ?.replace(
+          /^-|-$|_/g,
+          ""
+        )
+        ?.toLowerCase() ||
+      "fwcwl-poster";
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href =
+      data;
+
+
+    link.download =
+      `${projectName}.${format}`;
+
+
+    link.click();
+
+
+    if (safeZone) {
+
+      safeZone.visible =
+        safeVisible;
+    }
+
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  /* =====================================================
+     TEMPLATE LIBRARY
+  ====================================================== */
 
   renderTemplates() {
 
-    const grid = document.getElementById("posterTemplateGrid");
+    const grid =
+      document.getElementById(
+        "posterTemplateGrid"
+      );
+
 
     const search =
       document
-        .getElementById("posterTemplateSearch")
+        .getElementById(
+          "posterTemplateSearch"
+        )
         .value
         .trim()
         .toLowerCase();
 
-    const templates = POSTER_TEMPLATES.filter(template => {
 
-      const categoryMatch =
-        this.activeFilter === "all" ||
-        template.category === this.activeFilter;
+    const templates =
+      POSTER_TEMPLATES.filter(
+        template => {
 
-      const searchMatch =
-        !search ||
-        template.name.toLowerCase().includes(search) ||
-        template.headline.toLowerCase().includes(search) ||
-        template.category.toLowerCase().includes(search);
-
-      return categoryMatch && searchMatch;
-    });
+          const filterOk =
+            this.activeFilter ===
+              "all" ||
+            template.category ===
+              this.activeFilter;
 
 
-    grid.innerHTML = templates.map(template => {
-
-      const active =
-        this.state.template === template.id
-          ? "active"
-          : "";
-
-      return `
-        <button
-          class="poster-template-card ${active}"
-          data-template-id="${template.id}"
-          type="button"
-        >
-          <div
-            class="poster-template-art"
-            style="
-              --preview-bg-1:${template.background};
-              --preview-bg-2:${template.bg2};
-              --preview-accent:${template.accent};
-            "
-          >
-            <img
-              src="assets/fwcwl-logo.jpeg"
-              alt=""
-            />
-
-            <span>${template.kicker}</span>
-
-            <strong>
-              ${template.headline.replace(/\n/g, "<br>")}
-            </strong>
-
-            <small>${template.footer}</small>
-          </div>
-
-          <div class="poster-template-name">
-            ${template.name}
-          </div>
-        </button>
-      `;
-    }).join("");
+          const searchOk =
+            !search ||
+            template.name
+              .toLowerCase()
+              .includes(
+                search
+              ) ||
+            template.headline
+              .toLowerCase()
+              .includes(
+                search
+              );
 
 
-    document.getElementById("posterTemplateCount").textContent =
+          return (
+            filterOk &&
+            searchOk
+          );
+        }
+      );
+
+
+    document
+      .getElementById(
+        "posterTemplateCount"
+      )
+      .textContent =
       templates.length;
 
 
-    grid.querySelectorAll("[data-template-id]").forEach(card => {
+    grid.innerHTML =
+      templates
+        .map(
+          template => {
 
-      card.addEventListener("click", () => {
-        this.applyTemplate(card.dataset.templateId);
+            const active =
+              this.state.template ===
+              template.id
+                ? "active"
+                : "";
+
+
+            return `
+
+              <button
+                class="poster-template-card ${active}"
+                data-template-id="${template.id}"
+                type="button"
+              >
+
+                <div
+                  class="poster-template-art"
+                  style="
+                    --preview-bg-1:${template.background};
+                    --preview-bg-2:${template.bg2};
+                    --preview-accent:${template.accent};
+                  "
+                >
+
+                  <img
+                    src="assets/fwcwl-logo.jpeg"
+                    alt=""
+                  />
+
+                  <span>
+                    ${template.kicker}
+                  </span>
+
+                  <strong>
+                    ${template.headline
+                      .replace(
+                        /\n/g,
+                        "<br>"
+                      )}
+                  </strong>
+
+                  <small>
+                    ${template.footer}
+                  </small>
+
+                </div>
+
+                <div class="poster-template-name">
+                  ${template.name}
+                </div>
+
+              </button>
+            `;
+          }
+        )
+        .join("");
+
+
+    grid
+      .querySelectorAll(
+        "[data-template-id]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              this.applyTemplate(
+                button.dataset
+                  .templateId
+              );
+            }
+          );
+        }
+      );
+  }
+
+
+
+  async applyTemplate(
+    templateId,
+    save = true
+  ) {
+
+    const template =
+      POSTER_TEMPLATES.find(
+        item =>
+          item.id ===
+          templateId
+      );
+
+
+    if (!template) return;
+
+
+    this.restoring =
+      true;
+
+
+    this.canvas.clear();
+
+
+    this.state.template =
+      template.id;
+
+
+    this.state.accent =
+      template.accent;
+
+
+    this.state.textColor =
+      template.text;
+
+
+    this.state.backgroundColor =
+      template.background;
+
+
+    this.state.backgroundColor2 =
+      template.bg2;
+
+
+    this.syncBrandInputs();
+
+
+    this.createBackgroundLayer();
+
+
+    this.addTemplateText(
+
+      template.kicker,
+
+      {
+        name:
+          "Eyebrow",
+
+        fontSize:
+          25,
+
+        fontFamily:
+          "DM Sans",
+
+        fontWeight:
+          800,
+
+        fill:
+          template.accent,
+
+        top:
+          this.canvas.height *
+          (
+            template.contentY /
+            100
+          ),
+
+        width:
+          this.canvas.width -
+          164
+      }
+
+    );
+
+
+    const headline =
+      this.addTemplateText(
+
+        template.headline,
+
+        {
+          name:
+            "Headline",
+
+          fontSize:
+            template.headlineSize,
+
+          fontFamily:
+            template.font,
+
+          fontWeight:
+            template.font ===
+              "Bebas Neue"
+                ? 400
+                : 900,
+
+          fill:
+            template.text,
+
+          top:
+            this.canvas.height *
+            (
+              template.contentY /
+              100
+            ) +
+            62,
+
+          width:
+            this.canvas.width -
+            164,
+
+          lineHeight:
+            .92
+        }
+
+      );
+
+
+    const headlineHeight =
+      headline.getScaledHeight();
+
+
+    const accentLine =
+      new Rect({
+
+        left:
+          82,
+
+        top:
+          headline.top +
+          headlineHeight +
+          34,
+
+        width:
+          68,
+
+        height:
+          7,
+
+        fill:
+          template.accent,
+
+        rx:
+          3,
+
+        ry:
+          3
+
       });
+
+
+    this.assignObjectMeta(
+      accentLine,
+      "Accent Line",
+      "shape"
+    );
+
+
+    this.canvas.add(
+      accentLine
+    );
+
+
+    this.addTemplateText(
+
+      template.subheadline,
+
+      {
+        name:
+          "Details",
+
+        fontSize:
+          27,
+
+        fontFamily:
+          "DM Sans",
+
+        fontWeight:
+          500,
+
+        fill:
+          this.hexToRgba(
+            template.text,
+            .82
+          ),
+
+        top:
+          accentLine.top +
+          44,
+
+        width:
+          Math.min(
+            720,
+            this.canvas.width -
+            164
+          ),
+
+        lineHeight:
+          1.35
+      }
+
+    );
+
+
+    this.addCta(
+      template.cta,
+      template.accent
+    );
+
+
+    this.addTemplateText(
+
+      template.footer,
+
+      {
+        name:
+          "Footer",
+
+        fontSize:
+          20,
+
+        fontFamily:
+          "DM Sans",
+
+        fontWeight:
+          700,
+
+        fill:
+          this.hexToRgba(
+            template.text,
+            .7
+          ),
+
+        top:
+          this.canvas.height -
+          105,
+
+        width:
+          this.canvas.width -
+          164
+      }
+
+    );
+
+
+    this.addTemplateText(
+
+      this.state.brandName,
+
+      {
+        name:
+          "Brand Name",
+
+        role:
+          "brandText",
+
+        fontSize:
+          20,
+
+        fontFamily:
+          "DM Sans",
+
+        fontWeight:
+          800,
+
+        fill:
+          this.hexToRgba(
+            template.text,
+            .7
+          ),
+
+        top:
+          this.canvas.height -
+          105,
+
+        left:
+          this.canvas.width -
+          280,
+
+        width:
+          200,
+
+        textAlign:
+          "right"
+      }
+
+    );
+
+
+    await this.addOfficialLogo();
+
+
+    this.ensureSafeZone();
+
+
+    this.canvas.discardActiveObject();
+
+    this.canvas.requestRenderAll();
+
+
+    this.restoring =
+      false;
+
+
+    this.renderTemplates();
+
+    this.renderLayers();
+
+    this.updateSelectionInspector();
+
+
+    if (save) {
+
+      this.commit();
+    }
+  }
+
+
+
+  addTemplateText(
+    text,
+    options
+  ) {
+
+    const object =
+      new Textbox(
+
+        text,
+
+        {
+
+          left:
+            options.left ??
+            82,
+
+          top:
+            options.top ??
+            200,
+
+          width:
+            options.width ??
+            800,
+
+          fontFamily:
+            options.fontFamily ??
+            "Montserrat",
+
+          fontSize:
+            options.fontSize ??
+            80,
+
+          fontWeight:
+            options.fontWeight ??
+            700,
+
+          fill:
+            options.fill ??
+            "#FFFFFF",
+
+          lineHeight:
+            options.lineHeight ??
+            1,
+
+          textAlign:
+            options.textAlign ??
+            "left",
+
+          originX:
+            "left",
+
+          originY:
+            "top",
+
+          cornerColor:
+            "#F0C34C",
+
+          cornerStrokeColor:
+            "#0A0B0D",
+
+          borderColor:
+            "#F0C34C",
+
+          transparentCorners:
+            false,
+
+          cornerSize:
+            16
+
+        }
+
+      );
+
+
+    this.assignObjectMeta(
+
+      object,
+
+      options.name ||
+      "Text",
+
+      "text"
+
+    );
+
+
+    if (
+      options.role
+    ) {
+
+      object.role =
+        options.role;
+    }
+
+
+    this.canvas.add(
+      object
+    );
+
+
+    return object;
+  }
+
+
+
+  addCta(
+    text,
+    accent
+  ) {
+
+    if (
+      !text
+    ) {
+      return;
+    }
+
+
+    const rect =
+      new Rect({
+
+        left:
+          82,
+
+        top:
+          this.canvas.height *
+          .78,
+
+        width:
+          230,
+
+        height:
+          60,
+
+        fill:
+          accent,
+
+        rx:
+          10,
+
+        ry:
+          10
+
+      });
+
+
+    this.assignObjectMeta(
+      rect,
+      "CTA Background",
+      "shape"
+    );
+
+
+    const label =
+      new Textbox(
+
+        text.toUpperCase(),
+
+        {
+
+          left:
+            98,
+
+          top:
+            rect.top +
+            17,
+
+          width:
+            200,
+
+          fontFamily:
+            "DM Sans",
+
+          fontSize:
+            20,
+
+          fontWeight:
+            800,
+
+          fill:
+            "#111111",
+
+          textAlign:
+            "center"
+
+        }
+
+      );
+
+
+    this.assignObjectMeta(
+      label,
+      "CTA Text",
+      "text"
+    );
+
+
+    this.canvas.add(
+      rect,
+      label
+    );
+  }
+
+
+
+  /* =====================================================
+     ADD OBJECTS
+  ====================================================== */
+
+  addTextLayer() {
+
+    const text =
+      new Textbox(
+
+        "YOUR TEXT",
+
+        {
+
+          left:
+            this.canvas.width /
+            2,
+
+          top:
+            this.canvas.height /
+            2,
+
+          width:
+            600,
+
+          originX:
+            "center",
+
+          originY:
+            "center",
+
+          fontFamily:
+            "Montserrat",
+
+          fontSize:
+            88,
+
+          fontWeight:
+            900,
+
+          fill:
+            "#FFFFFF",
+
+          textAlign:
+            "center",
+
+          cornerColor:
+            "#F0C34C",
+
+          borderColor:
+            "#F0C34C",
+
+          transparentCorners:
+            false
+
+        }
+
+      );
+
+
+    this.assignObjectMeta(
+      text,
+      "Custom Text",
+      "text"
+    );
+
+
+    this.canvas.add(
+      text
+    );
+
+
+    this.canvas.setActiveObject(
+      text
+    );
+
+
+    this.canvas.requestRenderAll();
+
+    this.switchInspectorTab(
+      "edit"
+    );
+
+    this.updateSelectionInspector();
+
+    this.commit();
+  }
+
+
+
+  async addPhotoFile(
+    file
+  ) {
+
+    const data =
+      await this.fileToDataUrl(
+        file
+      );
+
+
+    const image =
+      await FabricImage.fromURL(
+        data
+      );
+
+
+    this.initializeImageObject(
+      image,
+      file.name
+    );
+
+
+    const maxWidth =
+      this.canvas.width *
+      .62;
+
+
+    const maxHeight =
+      this.canvas.height *
+      .62;
+
+
+    const scale =
+      Math.min(
+
+        maxWidth /
+        image.width,
+
+        maxHeight /
+        image.height
+
+      );
+
+
+    image.set({
+
+      left:
+        this.canvas.width /
+        2,
+
+      top:
+        this.canvas.height /
+        2,
+
+      originX:
+        "center",
+
+      originY:
+        "center",
+
+      scaleX:
+        scale,
+
+      scaleY:
+        scale
+
+    });
+
+
+    this.canvas.add(
+      image
+    );
+
+
+    this.canvas.setActiveObject(
+      image
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.updateSelectionInspector();
+
+    this.renderLayers();
+
+    this.commit();
+  }
+
+
+
+  async addBackgroundPhoto(
+    file
+  ) {
+
+    const existing =
+      this.canvas
+        .getObjects()
+        .find(
+          object =>
+            object.role ===
+            "backgroundPhoto"
+        );
+
+
+    if (existing) {
+
+      this.canvas.remove(
+        existing
+      );
+    }
+
+
+    const data =
+      await this.fileToDataUrl(
+        file
+      );
+
+
+    const image =
+      await FabricImage.fromURL(
+        data
+      );
+
+
+    this.initializeImageObject(
+      image,
+      "Background Photo"
+    );
+
+
+    image.role =
+      "backgroundPhoto";
+
+
+    const scale =
+      Math.max(
+
+        this.canvas.width /
+        image.width,
+
+        this.canvas.height /
+        image.height
+
+      );
+
+
+    image.set({
+
+      left:
+        this.canvas.width /
+        2,
+
+      top:
+        this.canvas.height /
+        2,
+
+      originX:
+        "center",
+
+      originY:
+        "center",
+
+      scaleX:
+        scale,
+
+      scaleY:
+        scale
+
+    });
+
+
+    this.canvas.add(
+      image
+    );
+
+
+    this.moveObjectToIndex(
+      image,
+      1
+    );
+
+
+    this.canvas.setActiveObject(
+      image
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.updateSelectionInspector();
+
+    this.renderLayers();
+
+    this.commit();
+  }
+
+
+
+  async addSponsorLogo(
+    file
+  ) {
+
+    const data =
+      await this.fileToDataUrl(
+        file
+      );
+
+
+    const image =
+      await FabricImage.fromURL(
+        data
+      );
+
+
+    this.initializeImageObject(
+      image,
+      "Sponsor Logo"
+    );
+
+
+    const scale =
+      Math.min(
+
+        190 /
+        image.width,
+
+        100 /
+        image.height
+
+      );
+
+
+    image.set({
+
+      left:
+        this.canvas.width -
+        72,
+
+      top:
+        68,
+
+      originX:
+        "right",
+
+      originY:
+        "top",
+
+      scaleX:
+        scale,
+
+      scaleY:
+        scale
+
+    });
+
+
+    this.canvas.add(
+      image
+    );
+
+
+    this.canvas.setActiveObject(
+      image
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.updateSelectionInspector();
+
+    this.renderLayers();
+
+    this.commit();
+  }
+
+
+
+  initializeImageObject(
+    image,
+    name
+  ) {
+
+    this.assignObjectMeta(
+      image,
+      name,
+      "image"
+    );
+
+
+    image.set({
+
+      cornerColor:
+        "#F0C34C",
+
+      borderColor:
+        "#F0C34C",
+
+      transparentCorners:
+        false,
+
+      cornerSize:
+        16
+
+    });
+
+
+    image.filterBrightness =
+      0;
+
+    image.filterContrast =
+      0;
+
+    image.filterSaturation =
+      0;
+
+    image.filterBlur =
+      0;
+
+    image.filterGrayscale =
+      false;
+
+    image.filterSepia =
+      false;
+
+    image.removeColorEnabled =
+      false;
+  }
+
+
+
+  addSticker(
+    sticker
+  ) {
+
+    const object =
+      new Textbox(
+
+        sticker,
+
+        {
+
+          left:
+            this.canvas.width /
+            2,
+
+          top:
+            this.canvas.height /
+            2,
+
+          originX:
+            "center",
+
+          originY:
+            "center",
+
+          width:
+            220,
+
+          fontSize:
+            150,
+
+          textAlign:
+            "center",
+
+          fill:
+            "#FFFFFF"
+
+        }
+
+      );
+
+
+    this.assignObjectMeta(
+      object,
+      `Sticker ${sticker}`,
+      "sticker"
+    );
+
+
+    this.canvas.add(
+      object
+    );
+
+
+    this.canvas.setActiveObject(
+      object
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.renderLayers();
+
+    this.commit();
+  }
+
+
+
+  addShape(
+    type
+  ) {
+
+    let object;
+
+
+    if (
+      type ===
+      "rect"
+    ) {
+
+      object =
+        new Rect({
+
+          width:
+            360,
+
+          height:
+            220,
+
+          rx:
+            28,
+
+          ry:
+            28,
+
+          fill:
+            this.state
+              .accent
+
+        });
+    }
+
+
+    if (
+      type ===
+      "circle"
+    ) {
+
+      object =
+        new Circle({
+
+          radius:
+            150,
+
+          fill:
+            this.state
+              .accent
+
+        });
+    }
+
+
+    if (
+      type ===
+      "triangle"
+    ) {
+
+      object =
+        new Triangle({
+
+          width:
+            300,
+
+          height:
+            280,
+
+          fill:
+            this.state
+              .accent
+
+        });
+    }
+
+
+    if (
+      type ===
+      "line"
+    ) {
+
+      object =
+        new Line(
+
+          [
+            0,
+            0,
+            380,
+            0
+          ],
+
+          {
+
+            stroke:
+              this.state
+                .accent,
+
+            strokeWidth:
+              14
+
+          }
+
+        );
+    }
+
+
+    if (
+      type ===
+      "badge"
+    ) {
+
+      object =
+        new Circle({
+
+          radius:
+            145,
+
+          fill:
+            this.state
+              .accent,
+
+          stroke:
+            "#FFFFFF",
+
+          strokeWidth:
+            6
+
+        });
+    }
+
+
+    if (!object) return;
+
+
+    object.set({
+
+      left:
+        this.canvas.width /
+        2,
+
+      top:
+        this.canvas.height /
+        2,
+
+      originX:
+        "center",
+
+      originY:
+        "center",
+
+      cornerColor:
+        "#F0C34C",
+
+      borderColor:
+        "#F0C34C",
+
+      transparentCorners:
+        false
+
+    });
+
+
+    this.assignObjectMeta(
+      object,
+      "Shape",
+      "shape"
+    );
+
+
+    this.canvas.add(
+      object
+    );
+
+
+    this.canvas.setActiveObject(
+      object
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.updateSelectionInspector();
+
+    this.renderLayers();
+
+    this.commit();
+  }
+
+
+
+  /* =====================================================
+     BACKGROUND
+  ====================================================== */
+
+  createBackgroundLayer() {
+
+    const object =
+      new Rect({
+
+        left:
+          0,
+
+        top:
+          0,
+
+        width:
+          this.canvas.width,
+
+        height:
+          this.canvas.height,
+
+        originX:
+          "left",
+
+        originY:
+          "top",
+
+        selectable:
+          false,
+
+        evented:
+          false,
+
+        fill:
+          this.createBackgroundGradient()
+
+      });
+
+
+    object.id =
+      "poster-background";
+
+
+    object.name =
+      "Canvas Background";
+
+
+    object.typeLabel =
+      "background";
+
+
+    object.isBackground =
+      true;
+
+
+    this.canvas.add(
+      object
+    );
+
+
+    this.moveObjectToIndex(
+      object,
+      0
+    );
+  }
+
+
+
+  updateBackground() {
+
+    let background =
+      this.canvas
+        .getObjects()
+        .find(
+          object =>
+            object.isBackground
+        );
+
+
+    if (!background) {
+
+      this.createBackgroundLayer();
+
+      background =
+        this.canvas
+          .getObjects()
+          .find(
+            object =>
+              object.isBackground
+          );
+    }
+
+
+    background.set({
+
+      width:
+        this.canvas.width,
+
+      height:
+        this.canvas.height,
+
+      fill:
+        this.createBackgroundGradient()
+
+    });
+
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  createBackgroundGradient() {
+
+    const angle =
+      this.state
+        .backgroundAngle *
+      Math.PI /
+      180;
+
+
+    const w =
+      this.canvas.width;
+
+
+    const h =
+      this.canvas.height;
+
+
+    const cx =
+      w /
+      2;
+
+
+    const cy =
+      h /
+      2;
+
+
+    const length =
+      Math.sqrt(
+        w * w +
+        h * h
+      );
+
+
+    const dx =
+      Math.cos(
+        angle
+      ) *
+      length /
+      2;
+
+
+    const dy =
+      Math.sin(
+        angle
+      ) *
+      length /
+      2;
+
+
+    return new Gradient({
+
+      type:
+        "linear",
+
+      coords: {
+
+        x1:
+          cx -
+          dx,
+
+        y1:
+          cy -
+          dy,
+
+        x2:
+          cx +
+          dx,
+
+        y2:
+          cy +
+          dy
+
+      },
+
+      colorStops: [
+
+        {
+          offset:
+            0,
+
+          color:
+            this.state
+              .backgroundColor
+        },
+
+        {
+          offset:
+            1,
+
+          color:
+            this.state
+              .backgroundColor2
+        }
+
+      ]
+
     });
   }
 
 
-  applyTemplate(id) {
 
-    const template =
-      POSTER_TEMPLATES.find(item => item.id === id);
+  syncBackgroundInputs() {
 
-    if (!template) return;
+    const ids = [
 
-    this.state.template = template.id;
+      "proBackgroundColor1",
 
-    this.state.kicker = template.kicker;
-    this.state.headline = template.headline;
-    this.state.subheadline = template.subheadline;
-    this.state.cta = template.cta;
-    this.state.footer = template.footer;
+      "proFxBackground1"
 
-    this.state.accent = template.accent;
-    this.state.textColor = template.text;
-    this.state.background = template.background;
-    this.state.bg2 = template.bg2;
+    ];
 
-    this.state.headlineFont = template.font;
-    this.state.headlineSize = template.headlineSize;
-    this.state.contentY = template.contentY;
-    this.state.align = template.align;
 
-    this.state.overlay = template.overlay;
+    ids.forEach(
+      id => {
 
-    this.syncControls();
+        const input =
+          document.getElementById(
+            id
+          );
 
-    this.renderTemplates();
-    this.render();
+
+        if (input) {
+
+          input.value =
+            this.state
+              .backgroundColor;
+        }
+      }
+    );
+
+
+    [
+
+      "proBackgroundColor2",
+
+      "proFxBackground2"
+
+    ].forEach(
+      id => {
+
+        const input =
+          document.getElementById(
+            id
+          );
+
+
+        if (input) {
+
+          input.value =
+            this.state
+              .backgroundColor2;
+        }
+      }
+    );
   }
 
 
-  syncControls() {
 
-    document.getElementById("posterKicker").value = this.state.kicker;
-    document.getElementById("posterHeadline").value = this.state.headline;
-    document.getElementById("posterSubheadline").value = this.state.subheadline;
-    document.getElementById("posterCta").value = this.state.cta;
-    document.getElementById("posterFooter").value = this.state.footer;
+  /* =====================================================
+     OFFICIAL BRAND LOGO
+  ====================================================== */
 
-    document.getElementById("posterBrandName").value = this.state.brandName;
+  async addOfficialLogo() {
 
-    document.getElementById("posterAccentColor").value = this.state.accent;
-    document.getElementById("posterAccentColorText").value = this.state.accent;
+    const existing =
+      this.canvas
+        .getObjects()
+        .find(
+          object =>
+            object.role ===
+            "officialLogo"
+        );
 
-    document.getElementById("posterTextColor").value = this.state.textColor;
-    document.getElementById("posterTextColorText").value = this.state.textColor;
 
-    document.getElementById("posterBackgroundColor").value = this.state.background;
-    document.getElementById("posterBackgroundColorText").value = this.state.background;
+    if (existing) {
 
-    document.getElementById("posterHeadlineFont").value =
-      this.state.headlineFont;
+      this.canvas.remove(
+        existing
+      );
+    }
 
-    document.getElementById("posterHeadlineSize").value =
-      this.state.headlineSize;
 
-    document.getElementById("posterHeadlineSizeValue").textContent =
-      this.state.headlineSize;
+    const image =
+      await FabricImage.fromURL(
+        "assets/fwcwl-logo.jpeg"
+      );
 
-    document.getElementById("posterContentY").value =
-      this.state.contentY;
 
-    document.getElementById("posterContentYValue").textContent =
-      `${this.state.contentY}%`;
+    const maxHeight =
+      125;
 
-    document.getElementById("posterOverlay").value =
-      this.state.overlay;
 
-    document.getElementById("posterOverlayValue").textContent =
-      `${this.state.overlay}%`;
+    const maxWidth =
+      185;
+
+
+    const scale =
+      Math.min(
+
+        maxWidth /
+        image.width,
+
+        maxHeight /
+        image.height
+
+      );
+
+
+    image.set({
+
+      left:
+        58,
+
+      top:
+        58,
+
+      scaleX:
+        scale,
+
+      scaleY:
+        scale,
+
+      originX:
+        "left",
+
+      originY:
+        "top",
+
+      selectable:
+        false,
+
+      evented:
+        false,
+
+      hasControls:
+        false,
+
+      hasBorders:
+        false,
+
+      shadow:
+        new Shadow({
+
+          color:
+            "rgba(0,0,0,.45)",
+
+          blur:
+            24,
+
+          offsetX:
+            0,
+
+          offsetY:
+            8
+
+        })
+
+    });
+
+
+    image.id =
+      "official-fwcwl-logo";
+
+
+    image.name =
+      "Official FWCWL Logo";
+
+
+    image.typeLabel =
+      "brand";
+
+
+    image.isBrand =
+      true;
+
+
+    image.role =
+      "officialLogo";
+
+
+    this.canvas.add(
+      image
+    );
+
+
+    this.ensureBrandTop();
+  }
+
+
+
+  ensureBrandTop() {
+
+    const logo =
+      this.canvas
+        .getObjects()
+        .find(
+          object =>
+            object.role ===
+            "officialLogo"
+        );
+
+
+    const safe =
+      this.getSafeZoneObject();
+
+
+    if (logo) {
+
+      this.moveObjectToIndex(
+
+        logo,
+
+        this.canvas
+          .getObjects()
+          .length -
+        1
+
+      );
+    }
+
+
+    if (safe) {
+
+      this.moveObjectToIndex(
+
+        safe,
+
+        this.canvas
+          .getObjects()
+          .length -
+        1
+
+      );
+    }
+  }
+
+
+
+  updateBrandText() {
+
+    this.canvas
+      .getObjects()
+      .filter(
+        object =>
+          object.role ===
+          "brandText"
+      )
+      .forEach(
+        object => {
+
+          object.text =
+            this.state
+              .brandName;
+        }
+      );
+
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  /* =====================================================
+     SAFE ZONE
+  ====================================================== */
+
+  ensureSafeZone() {
+
+    if (
+      this.getSafeZoneObject()
+    ) {
+      return;
+    }
+
+
+    const vertical =
+      this.state.canvasSize ===
+      "story"
+        ? 240
+        : 72;
+
+
+    const safe =
+      new Rect({
+
+        left:
+          72,
+
+        top:
+          vertical,
+
+        width:
+          this.canvas.width -
+          144,
+
+        height:
+          this.canvas.height -
+          vertical *
+          2,
+
+        fill:
+          "rgba(0,0,0,0)",
+
+        stroke:
+          "#F0C34C",
+
+        strokeWidth:
+          2,
+
+        strokeDashArray:
+          [
+            14,
+            12
+          ],
+
+        selectable:
+          false,
+
+        evented:
+          false,
+
+        visible:
+          this.state
+            .safeZone,
+
+        excludeFromExport:
+          true
+
+      });
+
+
+    safe.id =
+      "safe-zone";
+
+
+    safe.isUi =
+      true;
+
+
+    safe.name =
+      "Safe Area";
+
+
+    this.canvas.add(
+      safe
+    );
+
+
+    this.ensureBrandTop();
+  }
+
+
+
+  getSafeZoneObject() {
+
+    return this.canvas
+      .getObjects()
+      .find(
+        object =>
+          object.id ===
+          "safe-zone"
+      );
+  }
+
+
+
+  updateSafeZone() {
+
+    this.ensureSafeZone();
+
+
+    const safe =
+      this.getSafeZoneObject();
+
+
+    const vertical =
+      this.state.canvasSize ===
+      "story"
+        ? 240
+        : 72;
+
+
+    safe.set({
+
+      left:
+        72,
+
+      top:
+        vertical,
+
+      width:
+        this.canvas.width -
+        144,
+
+      height:
+        this.canvas.height -
+        vertical *
+        2,
+
+      visible:
+        this.state
+          .safeZone
+
+    });
+
+
+    safe.setCoords();
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  /* =====================================================
+     FORMAT / ZOOM
+  ====================================================== */
+
+  setLogicalCanvasSize() {
+
+    const size =
+      POSTER_SIZES[
+        this.state
+          .canvasSize
+      ];
+
+
+    this.canvas.setDimensions({
+
+      width:
+        size.width,
+
+      height:
+        size.height
+
+    });
+
 
     document
-      .querySelectorAll("#posterAlignmentButtons button")
-      .forEach(button => {
+      .getElementById(
+        "posterCanvasSize"
+      )
+      .value =
+      this.state
+        .canvasSize;
 
-        button.classList.toggle(
-          "active",
-          button.dataset.align === this.state.align
-        );
-      });
+
+    document
+      .getElementById(
+        "posterDimensions"
+      )
+      .textContent =
+      `${size.width} × ${size.height}`;
   }
 
 
-  resizeCanvas() {
 
-    const size = SIZES[this.state.canvasSize];
+  resizeCanvas(
+    type
+  ) {
 
-    this.canvas.width = size.width;
-    this.canvas.height = size.height;
+    const oldWidth =
+      this.canvas.width;
 
-    document.getElementById("posterDimensions").textContent =
-      `${size.width} × ${size.height}`;
+
+    const oldHeight =
+      this.canvas.height;
+
+
+    const size =
+      POSTER_SIZES[
+        type
+      ];
+
+
+    const sx =
+      size.width /
+      oldWidth;
+
+
+    const sy =
+      size.height /
+      oldHeight;
+
+
+    const objectScale =
+      Math.min(
+        sx,
+        sy
+      );
+
+
+    this.state.canvasSize =
+      type;
+
+
+    this.canvas.setDimensions({
+
+      width:
+        size.width,
+
+      height:
+        size.height
+
+    });
+
+
+    this.canvas
+      .getObjects()
+      .forEach(
+        object => {
+
+          if (
+            object.isUi
+          ) {
+            return;
+          }
+
+
+          if (
+            object.isBackground
+          ) {
+
+            object.set({
+
+              width:
+                size.width,
+
+              height:
+                size.height
+
+            });
+
+            return;
+          }
+
+
+          if (
+            object.role ===
+            "officialLogo"
+          ) {
+
+            object.set({
+
+              left:
+                58,
+
+              top:
+                58
+
+            });
+
+            return;
+          }
+
+
+          object.left *=
+            sx;
+
+
+          object.top *=
+            sy;
+
+
+          object.scaleX *=
+            objectScale;
+
+
+          object.scaleY *=
+            objectScale;
+
+
+          object.setCoords();
+        }
+      );
+
+
+    this.updateBackground();
+
+    this.updateSafeZone();
 
     this.applyZoom();
+
+
+    document
+      .getElementById(
+        "posterDimensions"
+      )
+      .textContent =
+      `${size.width} × ${size.height}`;
+
+
+    this.canvas.requestRenderAll();
+
+    this.commit();
   }
+
 
 
   applyZoom() {
 
-    const ratio = this.state.zoom / 100;
+    const ratio =
+      this.state.zoom /
+      100;
 
-    this.canvas.style.width =
-      `${this.canvas.width * ratio}px`;
 
-    this.canvas.style.height =
-      `${this.canvas.height * ratio}px`;
+    this.canvas.setDimensions(
 
-    document.getElementById("posterZoomValue").textContent =
+      {
+        width:
+          this.canvas.width *
+          ratio,
+
+        height:
+          this.canvas.height *
+          ratio
+      },
+
+      {
+        cssOnly:
+          true
+      }
+
+    );
+
+
+    document
+      .getElementById(
+        "posterZoomValue"
+      )
+      .textContent =
       `${this.state.zoom}%`;
   }
 
 
-  drawCoverImage(image) {
 
-    const w = this.canvas.width;
-    const h = this.canvas.height;
+  /* =====================================================
+     SELECTION / INSPECTOR
+  ====================================================== */
 
-    const base = Math.max(
-      w / image.width,
-      h / image.height
-    );
+  getEditableSelection() {
 
-    const scale =
-      base * (this.state.imageScale / 100);
-
-    const dw = image.width * scale;
-    const dh = image.height * scale;
-
-    const overflowX = Math.max(0, dw - w);
-    const overflowY = Math.max(0, dh - h);
-
-    const x =
-      -(overflowX * (this.state.imageX / 100));
-
-    const y =
-      -(overflowY * (this.state.imageY / 100));
-
-    this.ctx.save();
-
-    this.ctx.filter =
-      `brightness(${this.state.brightness}%)
-       saturate(${this.state.saturation}%)`;
-
-    this.ctx.drawImage(
-      image,
-      x,
-      y,
-      dw,
-      dh
-    );
-
-    this.ctx.restore();
-  }
-
-
-  render() {
-
-    const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-
-    ctx.clearRect(0, 0, w, h);
-
-
-    const backgroundGradient =
-      ctx.createLinearGradient(0, 0, w, h);
-
-    backgroundGradient.addColorStop(0, this.state.background);
-    backgroundGradient.addColorStop(1, this.state.bg2);
-
-    ctx.fillStyle = backgroundGradient;
-    ctx.fillRect(0, 0, w, h);
-
-
-    if (this.backgroundImage) {
-      this.drawCoverImage(this.backgroundImage);
-    }
-
-
-    if (this.state.overlay > 0) {
-      ctx.fillStyle =
-        `rgba(0,0,0,${this.state.overlay / 100})`;
-
-      ctx.fillRect(0, 0, w, h);
-    }
-
-
-    if (this.state.accentGlow) {
-
-      const glow =
-        ctx.createRadialGradient(
-          w * 0.82,
-          h * 0.20,
-          0,
-          w * 0.82,
-          h * 0.20,
-          w * 0.65
-        );
-
-      glow.addColorStop(
-        0,
-        this.hexToRgba(this.state.accent, 0.24)
-      );
-
-      glow.addColorStop(
-        1,
-        this.hexToRgba(this.state.accent, 0)
-      );
-
-      ctx.fillStyle = glow;
-      ctx.fillRect(0, 0, w, h);
-    }
-
-
-    this.drawLeagueLogo();
-    this.drawSponsorLogo();
-    this.drawContent();
-
-
-    if (this.state.safeZone) {
-      this.drawSafeZone();
-    }
-  }
-
-
-  drawLeagueLogo() {
-
-    if (!this.logo) return;
-
-    const margin =
-      this.state.canvasSize === "story"
-        ? 70
-        : 58;
-
-    const top =
-      this.state.canvasSize === "story"
-        ? 90
-        : 58;
-
-    const maxHeight =
-      this.state.canvasSize === "story"
-        ? 150
-        : 125;
-
-    const ratio =
-      Math.min(
-        maxHeight / this.logo.height,
-        190 / this.logo.width
-      );
-
-    const width = this.logo.width * ratio;
-    const height = this.logo.height * ratio;
-
-    this.ctx.save();
-
-    this.ctx.shadowColor = "rgba(0,0,0,.45)";
-    this.ctx.shadowBlur = 28;
-
-    this.ctx.drawImage(
-      this.logo,
-      margin,
-      top,
-      width,
-      height
-    );
-
-    this.ctx.restore();
-  }
-
-
-  drawSponsorLogo() {
-
-    if (!this.sponsorLogo) return;
-
-    const w = this.canvas.width;
-
-    const margin =
-      this.state.canvasSize === "story"
-        ? 70
-        : 58;
-
-    const top =
-      this.state.canvasSize === "story"
-        ? 95
-        : 64;
-
-    const maxW = 180;
-    const maxH = 90;
-
-    const ratio =
-      Math.min(
-        maxW / this.sponsorLogo.width,
-        maxH / this.sponsorLogo.height
-      );
-
-    const width = this.sponsorLogo.width * ratio;
-    const height = this.sponsorLogo.height * ratio;
-
-    this.ctx.drawImage(
-      this.sponsorLogo,
-      w - margin - width,
-      top,
-      width,
-      height
-    );
-  }
-
-
-  drawContent() {
-
-    const ctx = this.ctx;
-    const w = this.canvas.width;
-    const h = this.canvas.height;
-
-    const margin =
-      this.state.canvasSize === "story"
-        ? 90
-        : 82;
-
-    const maxWidth =
-      w - margin * 2;
-
-    const anchorX =
-      this.state.align === "center"
-        ? w / 2
-        : this.state.align === "right"
-          ? w - margin
-          : margin;
-
-    let y =
-      h * (this.state.contentY / 100);
-
-
-    ctx.textAlign = this.state.align;
-    ctx.textBaseline = "top";
-
-    ctx.fillStyle = this.state.accent;
-
-    ctx.font =
-      `800 25px "DM Sans"`;
-
-    ctx.fillText(
-      this.state.kicker.toUpperCase(),
-      anchorX,
-      y
-    );
-
-    y += 58;
-
-
-    ctx.fillStyle = this.state.textColor;
-
-    const headlineSize =
-      this.state.canvasSize === "story"
-        ? this.state.headlineSize * 1.08
-        : this.state.headlineSize;
-
-    const weight =
-      this.state.headlineFont === "Bebas Neue"
-        ? 400
-        : 800;
-
-    ctx.font =
-      `${weight} ${headlineSize}px "${this.state.headlineFont}"`;
-
-    const headlineHeight =
-      this.drawWrappedHeadline(
-        this.state.headline,
-        anchorX,
-        y,
-        maxWidth,
-        headlineSize * 0.93
-      );
-
-    y += headlineHeight + 35;
+    const object =
+      this.canvas
+        .getActiveObject();
 
 
     if (
-      this.state.align !== "center"
+      !object ||
+      object.isBrand ||
+      object.isBackground ||
+      object.isUi
     ) {
 
-      const lineWidth = 65;
-
-      const lineX =
-        this.state.align === "right"
-          ? w - margin - lineWidth
-          : margin;
-
-      ctx.fillStyle = this.state.accent;
-
-      ctx.fillRect(
-        lineX,
-        y,
-        lineWidth,
-        7
-      );
-
-      y += 36;
+      return null;
     }
 
 
-    ctx.fillStyle =
-      this.hexToRgba(
-        this.state.textColor,
-        0.82
-      );
-
-    ctx.font =
-      `500 26px "DM Sans"`;
-
-    const subHeight =
-      this.drawWrappedText(
-        this.state.subheadline,
-        anchorX,
-        y,
-        Math.min(maxWidth, 760),
-        39
-      );
-
-    y += subHeight + 44;
+    return object;
+  }
 
 
-    if (this.state.cta.trim()) {
-      this.drawCta(anchorX, y);
+
+  getSelectedImage() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (
+      object &&
+      object.type ===
+      "image"
+    ) {
+
+      return object;
     }
 
 
-    const bottom =
-      this.state.canvasSize === "story"
-        ? 120
-        : 82;
+    return null;
+  }
 
-    ctx.font =
-      `700 20px "DM Sans"`;
 
-    ctx.fillStyle =
-      this.hexToRgba(
-        this.state.textColor,
-        0.72
+
+  updateSelectionInspector() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    const noSelection =
+      document.getElementById(
+        "proNoSelection"
       );
 
-    ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
 
-    ctx.fillText(
-      this.state.footer,
-      margin,
-      h - bottom
+    const controls =
+      document.getElementById(
+        "proSelectionControls"
+      );
+
+
+    const textSection =
+      document.getElementById(
+        "proTextSection"
+      );
+
+
+    const imageSection =
+      document.getElementById(
+        "proImageSection"
+      );
+
+
+    const shapeSection =
+      document.getElementById(
+        "proShapeSection"
+      );
+
+
+    const actions =
+      document.getElementById(
+        "proObjectActionsSection"
+      );
+
+
+    const imageEffects =
+      document.getElementById(
+        "proImageEffectsSection"
+      );
+
+
+    if (!object) {
+
+      noSelection.classList.remove(
+        "hidden"
+      );
+
+
+      controls.classList.add(
+        "hidden"
+      );
+
+
+      textSection.classList.add(
+        "hidden"
+      );
+
+
+      imageSection.classList.add(
+        "hidden"
+      );
+
+
+      shapeSection.classList.add(
+        "hidden"
+      );
+
+
+      actions.classList.add(
+        "hidden"
+      );
+
+
+      imageEffects.classList.add(
+        "hidden"
+      );
+
+
+      document
+        .getElementById(
+          "proSelectedType"
+        )
+        .textContent =
+        "None";
+
+
+      return;
+    }
+
+
+    noSelection.classList.add(
+      "hidden"
     );
 
-    ctx.textAlign = "right";
 
-    ctx.fillText(
-      this.state.brandName.toUpperCase(),
-      w - margin,
-      h - bottom
+    controls.classList.remove(
+      "hidden"
+    );
+
+
+    actions.classList.remove(
+      "hidden"
+    );
+
+
+    const isText =
+      this.isTextObject(
+        object
+      );
+
+
+    const isImage =
+      object.type ===
+      "image";
+
+
+    const isShape =
+      this.isShapeObject(
+        object
+      );
+
+
+    textSection.classList.toggle(
+      "hidden",
+      !isText
+    );
+
+
+    imageSection.classList.toggle(
+      "hidden",
+      !isImage
+    );
+
+
+    shapeSection.classList.toggle(
+      "hidden",
+      !isShape
+    );
+
+
+    imageEffects.classList.toggle(
+      "hidden",
+      !isImage
+    );
+
+
+    document
+      .getElementById(
+        "proSelectedType"
+      )
+      .textContent =
+      object.typeLabel ||
+      object.type ||
+      "Layer";
+
+
+    this.updateTransformControls();
+
+    this.syncCommonEffects(
+      object
+    );
+
+
+    if (isText) {
+
+      this.syncTextInspector(
+        object
+      );
+    }
+
+
+    if (isImage) {
+
+      this.syncImageInspector(
+        object
+      );
+    }
+
+
+    if (isShape) {
+
+      this.syncShapeInspector(
+        object
+      );
+    }
+  }
+
+
+
+  updateTransformControls() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    document
+      .getElementById(
+        "proObjectName"
+      )
+      .value =
+      object.name ||
+      "Layer";
+
+
+    document
+      .getElementById(
+        "proObjectX"
+      )
+      .value =
+      Math.round(
+        object.left
+      );
+
+
+    document
+      .getElementById(
+        "proObjectY"
+      )
+      .value =
+      Math.round(
+        object.top
+      );
+
+
+    const scale =
+      (
+        (
+          Math.abs(
+            object.scaleX
+          ) +
+          Math.abs(
+            object.scaleY
+          )
+        ) /
+        2
+      ) *
+      100;
+
+
+    document
+      .getElementById(
+        "proObjectScale"
+      )
+      .value =
+      Math.min(
+        300,
+        Math.max(
+          10,
+          scale
+        )
+      );
+
+
+    document
+      .getElementById(
+        "proObjectScaleValue"
+      )
+      .textContent =
+      `${Math.round(
+        scale
+      )}%`;
+
+
+    document
+      .getElementById(
+        "proObjectAngle"
+      )
+      .value =
+      object.angle ||
+      0;
+
+
+    document
+      .getElementById(
+        "proObjectAngleValue"
+      )
+      .textContent =
+      `${Math.round(
+        object.angle ||
+        0
+      )}°`;
+
+
+    document
+      .getElementById(
+        "proObjectOpacity"
+      )
+      .value =
+      Math.round(
+        (
+          object.opacity ??
+          1
+        ) *
+        100
+      );
+
+
+    document
+      .getElementById(
+        "proObjectOpacityValue"
+      )
+      .textContent =
+      `${Math.round(
+        (
+          object.opacity ??
+          1
+        ) *
+        100
+      )}%`;
+  }
+
+
+
+  syncTextInspector(
+    object
+  ) {
+
+    document
+      .getElementById(
+        "proTextValue"
+      )
+      .value =
+      object.text ||
+      "";
+
+
+    document
+      .getElementById(
+        "proTextFont"
+      )
+      .value =
+      object.fontFamily ||
+      "Montserrat";
+
+
+    document
+      .getElementById(
+        "proTextWeight"
+      )
+      .value =
+      String(
+        object.fontWeight ||
+        400
+      );
+
+
+    document
+      .getElementById(
+        "proTextSize"
+      )
+      .value =
+      object.fontSize ||
+      80;
+
+
+    document
+      .getElementById(
+        "proTextSizeValue"
+      )
+      .textContent =
+      Math.round(
+        object.fontSize ||
+        80
+      );
+
+
+    document
+      .getElementById(
+        "proTextSpacing"
+      )
+      .value =
+      object.charSpacing ||
+      0;
+
+
+    document
+      .getElementById(
+        "proTextSpacingValue"
+      )
+      .textContent =
+      object.charSpacing ||
+      0;
+
+
+    document
+      .getElementById(
+        "proTextLineHeight"
+      )
+      .value =
+      (
+        object.lineHeight ||
+        1
+      ) *
+      100;
+
+
+    document
+      .getElementById(
+        "proTextLineHeightValue"
+      )
+      .textContent =
+      (
+        object.lineHeight ||
+        1
+      )
+        .toFixed(
+          2
+        );
+
+
+    if (
+      typeof object.fill ===
+      "string"
+    ) {
+
+      document
+        .getElementById(
+          "proTextFill"
+        )
+        .value =
+        this.safeHex(
+          object.fill,
+          "#FFFFFF"
+        );
+    }
+
+
+    document
+      .getElementById(
+        "proTextStroke"
+      )
+      .value =
+      this.safeHex(
+        object.stroke,
+        "#000000"
+      );
+
+
+    document
+      .getElementById(
+        "proTextStrokeWidth"
+      )
+      .value =
+      object.strokeWidth ||
+      0;
+
+
+    document
+      .getElementById(
+        "proTextStrokeWidthValue"
+      )
+      .textContent =
+      object.strokeWidth ||
+      0;
+
+
+    document
+      .querySelectorAll(
+        "#proTextAlign [data-align]"
+      )
+      .forEach(
+        button => {
+
+          button.classList.toggle(
+
+            "active",
+
+            button.dataset
+              .align ===
+              (
+                object.textAlign ||
+                "left"
+              )
+
+          );
+        }
+      );
+  }
+
+
+
+  syncImageInspector(
+    image
+  ) {
+
+    const values = {
+
+      proImageBrightness:
+        image.filterBrightness ||
+        0,
+
+      proImageContrast:
+        image.filterContrast ||
+        0,
+
+      proImageSaturation:
+        image.filterSaturation ||
+        0,
+
+      proImageBlur:
+        image.filterBlur ||
+        0
+
+    };
+
+
+    Object.entries(
+      values
+    )
+      .forEach(
+        ([id,value]) => {
+
+          document
+            .getElementById(id)
+            .value =
+            value;
+
+
+          document
+            .getElementById(
+              `${id}Value`
+            )
+            .textContent =
+            value;
+        }
+      );
+  }
+
+
+
+  syncShapeInspector(
+    object
+  ) {
+
+    document
+      .getElementById(
+        "proShapeFill"
+      )
+      .value =
+      this.safeHex(
+        object.fill,
+        "#F0C34C"
+      );
+
+
+    document
+      .getElementById(
+        "proShapeStroke"
+      )
+      .value =
+      this.safeHex(
+        object.stroke,
+        "#FFFFFF"
+      );
+
+
+    document
+      .getElementById(
+        "proShapeStrokeWidth"
+      )
+      .value =
+      object.strokeWidth ||
+      0;
+
+
+    document
+      .getElementById(
+        "proShapeStrokeWidthValue"
+      )
+      .textContent =
+      object.strokeWidth ||
+      0;
+  }
+
+
+
+  syncCommonEffects(
+    object
+  ) {
+
+    document
+      .getElementById(
+        "proBlendMode"
+      )
+      .value =
+      object.globalCompositeOperation ||
+      "source-over";
+
+
+    const hasShadow =
+      Boolean(
+        object.shadow
+      );
+
+
+    document
+      .getElementById(
+        "proShadowEnabled"
+      )
+      .checked =
+      hasShadow;
+
+
+    if (hasShadow) {
+
+      document
+        .getElementById(
+          "proShadowBlur"
+        )
+        .value =
+        object.shadow.blur ||
+        25;
+
+
+      document
+        .getElementById(
+          "proShadowBlurValue"
+        )
+        .textContent =
+        object.shadow.blur ||
+        25;
+    }
+  }
+
+
+
+  /* =====================================================
+     LAYERS
+  ====================================================== */
+
+  renderLayers() {
+
+    const list =
+      document.getElementById(
+        "proLayerList"
+      );
+
+
+    const objects =
+      this.canvas
+        .getObjects()
+        .filter(
+          object =>
+            !object.isUi &&
+            !object.isBackground
+        )
+        .slice()
+        .reverse();
+
+
+    document
+      .getElementById(
+        "proLayerCount"
+      )
+      .textContent =
+      objects.length;
+
+
+    if (
+      !objects.length
+    ) {
+
+      list.innerHTML =
+        `
+          <div class="pro-no-selection">
+            No editable layers.
+          </div>
+        `;
+
+      return;
+    }
+
+
+    const active =
+      this.canvas
+        .getActiveObject();
+
+
+    list.innerHTML =
+      objects
+        .map(
+          object => {
+
+            const selected =
+              active ===
+              object
+                ? "active"
+                : "";
+
+
+            const icon =
+              object.isBrand
+                ? "◆"
+                : object.type ===
+                    "image"
+                  ? "▧"
+                  : this.isTextObject(
+                      object
+                    )
+                    ? "T"
+                    : object.typeLabel ===
+                        "drawing"
+                      ? "✎"
+                      : "●";
+
+
+            return `
+
+              <div
+                class="pro-layer-row ${selected}"
+                data-layer-id="${object.id}"
+              >
+
+                <button
+                  type="button"
+                  class="layer-visible-btn"
+                  data-layer-visibility="${object.id}"
+                  title="Show / hide"
+                >
+                  ${
+                    object.visible ===
+                    false
+                      ? "○"
+                      : "◉"
+                  }
+                </button>
+
+
+                <button
+                  type="button"
+                  class="layer-main-btn"
+                  data-layer-select="${object.id}"
+                >
+
+                  <span class="layer-type-icon">
+                    ${icon}
+                  </span>
+
+                  <span>
+
+                    <strong>
+                      ${this.escapeHtml(
+                        object.name ||
+                        "Layer"
+                      )}
+                    </strong>
+
+                    <small>
+                      ${
+                        object.typeLabel ||
+                        object.type
+                      }
+                    </small>
+
+                  </span>
+
+                </button>
+
+
+                <button
+                  type="button"
+                  class="layer-lock-btn"
+                  data-layer-lock="${object.id}"
+                  ${
+                    object.isBrand
+                      ? "disabled"
+                      : ""
+                  }
+                >
+                  ${
+                    object.selectable ===
+                    false
+                      ? "🔒"
+                      : "◌"
+                  }
+                </button>
+
+              </div>
+            `;
+          }
+        )
+        .join("");
+
+
+    list
+      .querySelectorAll(
+        "[data-layer-select]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const object =
+                this.findObjectById(
+                  button.dataset
+                    .layerSelect
+                );
+
+
+              if (
+                !object ||
+                object.isBrand
+              ) {
+                return;
+              }
+
+
+              if (
+                object.visible ===
+                false
+              ) {
+
+                object.visible =
+                  true;
+              }
+
+
+              if (
+                object.selectable ===
+                false
+              ) {
+
+                object.selectable =
+                  true;
+
+                object.evented =
+                  true;
+              }
+
+
+              this.canvas.setActiveObject(
+                object
+              );
+
+
+              this.canvas.requestRenderAll();
+
+              this.switchInspectorTab(
+                "edit"
+              );
+
+              this.updateSelectionInspector();
+
+              this.renderLayers();
+            }
+          );
+        }
+      );
+
+
+    list
+      .querySelectorAll(
+        "[data-layer-visibility]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const object =
+                this.findObjectById(
+                  button.dataset
+                    .layerVisibility
+                );
+
+
+              if (!object) return;
+
+
+              object.visible =
+                !object.visible;
+
+
+              this.canvas.requestRenderAll();
+
+              this.renderLayers();
+
+              this.commit();
+            }
+          );
+        }
+      );
+
+
+    list
+      .querySelectorAll(
+        "[data-layer-lock]"
+      )
+      .forEach(
+        button => {
+
+          button.addEventListener(
+            "click",
+            () => {
+
+              const object =
+                this.findObjectById(
+                  button.dataset
+                    .layerLock
+                );
+
+
+              if (
+                !object ||
+                object.isBrand
+              ) {
+                return;
+              }
+
+
+              const locked =
+                object.selectable ===
+                false;
+
+
+              object.selectable =
+                locked;
+
+
+              object.evented =
+                locked;
+
+
+              object.lockMovementX =
+                !locked;
+
+              object.lockMovementY =
+                !locked;
+
+              object.lockScalingX =
+                !locked;
+
+              object.lockScalingY =
+                !locked;
+
+              object.lockRotation =
+                !locked;
+
+
+              this.canvas.discardActiveObject();
+
+              this.canvas.requestRenderAll();
+
+              this.renderLayers();
+
+              this.commit();
+            }
+          );
+        }
+      );
+  }
+
+
+
+  moveSelectedLayer(
+    direction
+  ) {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    const objects =
+      this.canvas
+        .getObjects();
+
+
+    const index =
+      objects.indexOf(
+        object
+      );
+
+
+    let target =
+      index +
+      direction;
+
+
+    target =
+      Math.max(
+        1,
+        Math.min(
+          objects.length -
+          2,
+          target
+        )
+      );
+
+
+    this.moveObjectToIndex(
+      object,
+      target
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.renderLayers();
+
+    this.commit();
+  }
+
+
+
+  moveObjectToIndex(
+    object,
+    index
+  ) {
+
+    const objects =
+      this.canvas._objects;
+
+
+    const current =
+      objects.indexOf(
+        object
+      );
+
+
+    if (
+      current ===
+      -1
+    ) {
+      return;
+    }
+
+
+    objects.splice(
+      current,
+      1
+    );
+
+
+    objects.splice(
+      Math.max(
+        0,
+        Math.min(
+          index,
+          objects.length
+        )
+      ),
+      0,
+      object
+    );
+
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  /* =====================================================
+     DUPLICATE / DELETE / LOCK
+  ====================================================== */
+
+  async duplicateSelected() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    const clone =
+      await object.clone(
+        [
+          "id",
+          "name",
+          "typeLabel",
+          "role"
+        ]
+      );
+
+
+    clone.id =
+      crypto.randomUUID();
+
+
+    clone.name =
+      `${object.name || "Layer"} Copy`;
+
+
+    clone.left +=
+      28;
+
+
+    clone.top +=
+      28;
+
+
+    clone.selectable =
+      true;
+
+
+    clone.evented =
+      true;
+
+
+    this.canvas.add(
+      clone
+    );
+
+
+    this.canvas.setActiveObject(
+      clone
+    );
+
+
+    this.ensureBrandTop();
+
+    this.canvas.requestRenderAll();
+
+    this.renderLayers();
+
+    this.updateSelectionInspector();
+
+    this.commit();
+  }
+
+
+
+  deleteSelected() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    this.canvas.remove(
+      object
+    );
+
+
+    this.canvas.discardActiveObject();
+
+    this.canvas.requestRenderAll();
+
+    this.renderLayers();
+
+    this.updateSelectionInspector();
+
+    this.commit();
+  }
+
+
+
+  toggleLockSelected() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    const locking =
+      !object.lockMovementX;
+
+
+    object.lockMovementX =
+      locking;
+
+    object.lockMovementY =
+      locking;
+
+    object.lockScalingX =
+      locking;
+
+    object.lockScalingY =
+      locking;
+
+    object.lockRotation =
+      locking;
+
+
+    object.hasControls =
+      !locking;
+
+
+    this.canvas.requestRenderAll();
+
+    this.commit();
+  }
+
+
+
+  /* =====================================================
+     SNAP
+  ====================================================== */
+
+  applyLiveSnap(
+    object
+  ) {
+
+    if (
+      !this.state.snap ||
+      !object
+    ) {
+      return;
+    }
+
+
+    const tolerance =
+      12;
+
+
+    const centerX =
+      this.canvas.width /
+      2;
+
+
+    const centerY =
+      this.canvas.height /
+      2;
+
+
+    const objectCenter =
+      object.getCenterPoint();
+
+
+    if (
+      Math.abs(
+        objectCenter.x -
+        centerX
+      ) <
+      tolerance
+    ) {
+
+      object.left +=
+        centerX -
+        objectCenter.x;
+    }
+
+
+    if (
+      Math.abs(
+        objectCenter.y -
+        centerY
+      ) <
+      tolerance
+    ) {
+
+      object.top +=
+        centerY -
+        objectCenter.y;
+    }
+  }
+
+
+
+  snapObjectToGuides() {
+
+    const object =
+      this.getEditableSelection();
+
+
+    if (!object) return;
+
+
+    this.applyLiveSnap(
+      object
+    );
+
+
+    object.setCoords();
+
+    this.canvas.requestRenderAll();
+  }
+
+
+
+  /* =====================================================
+     HISTORY
+  ====================================================== */
+
+  getSnapshot() {
+
+    const json =
+      this.canvas.toJSON(
+        [
+          "id",
+          "name",
+          "typeLabel",
+          "role",
+          "isBrand",
+          "isBackground",
+          "filterBrightness",
+          "filterContrast",
+          "filterSaturation",
+          "filterBlur",
+          "filterGrayscale",
+          "filterSepia",
+          "removeColorEnabled",
+          "removeColor",
+          "removeColorDistance"
+        ]
+      );
+
+
+    return JSON.stringify({
+
+      state:
+        this.state,
+
+      canvas:
+        json
+
+    });
+  }
+
+
+
+  pushHistory() {
+
+    if (
+      this.restoring
+    ) {
+      return;
+    }
+
+
+    const snapshot =
+      this.getSnapshot();
+
+
+    if (
+      this.history[
+        this.historyIndex
+      ] ===
+      snapshot
+    ) {
+      return;
+    }
+
+
+    this.history =
+      this.history.slice(
+        0,
+        this.historyIndex +
+        1
+      );
+
+
+    this.history.push(
+      snapshot
+    );
+
+
+    if (
+      this.history.length >
+      50
+    ) {
+
+      this.history.shift();
+
+    } else {
+
+      this.historyIndex++;
+    }
+  }
+
+
+
+  commit() {
+
+    this.pushHistory();
+
+    this.saveProject();
+  }
+
+
+
+  async undo() {
+
+    if (
+      this.historyIndex <=
+      0
+    ) {
+      return;
+    }
+
+
+    this.historyIndex--;
+
+
+    await this.restoreSnapshot(
+
+      this.history[
+        this.historyIndex
+      ]
+
     );
   }
 
 
-  drawWrappedHeadline(text, x, y, maxWidth, lineHeight) {
 
-    const lines = [];
+  async redo() {
 
-    text.split("\n").forEach(paragraph => {
-      lines.push(...this.wrapLine(paragraph, maxWidth));
-    });
+    if (
+      this.historyIndex >=
+      this.history.length -
+      1
+    ) {
+      return;
+    }
 
-    lines.forEach((line, index) => {
-      this.ctx.fillText(
-        line,
-        x,
-        y + index * lineHeight
-      );
-    });
 
-    return lines.length * lineHeight;
+    this.historyIndex++;
+
+
+    await this.restoreSnapshot(
+
+      this.history[
+        this.historyIndex
+      ]
+
+    );
   }
 
 
-  drawWrappedText(text, x, y, maxWidth, lineHeight) {
 
-    const lines = [];
+  async restoreSnapshot(
+    snapshot
+  ) {
 
-    text.split("\n").forEach(paragraph => {
-      lines.push(...this.wrapLine(paragraph, maxWidth));
-    });
+    this.restoring =
+      true;
 
-    lines.forEach((line, index) => {
-      this.ctx.fillText(
-        line,
-        x,
-        y + index * lineHeight
+
+    const parsed =
+      JSON.parse(
+        snapshot
       );
-    });
 
-    return lines.length * lineHeight;
+
+    this.state =
+      {
+        ...this.state,
+        ...parsed.state
+      };
+
+
+    await this.canvas.loadFromJSON(
+      parsed.canvas
+    );
+
+
+    this.ensureSafeZone();
+
+    this.updateSafeZone();
+
+    this.ensureBrandTop();
+
+    this.applyZoom();
+
+    this.syncBrandInputs();
+
+    this.canvas.requestRenderAll();
+
+    this.renderLayers();
+
+    this.updateSelectionInspector();
+
+
+    this.restoring =
+      false;
   }
 
 
-  wrapLine(text, maxWidth) {
 
-    const words = text.split(/\s+/);
+  saveProject() {
 
-    const lines = [];
+    try {
 
-    let current = "";
+      const snapshot =
+        this.getSnapshot();
 
-    words.forEach(word => {
-
-      const candidate =
-        current
-          ? `${current} ${word}`
-          : word;
 
       if (
-        this.ctx.measureText(candidate).width > maxWidth &&
-        current
+        snapshot.length <
+        4_500_000
       ) {
-        lines.push(current);
-        current = word;
-      } else {
-        current = candidate;
+
+        localStorage.setItem(
+
+          "fwcwl-poster-pro",
+
+          snapshot
+
+        );
       }
-    });
 
-    if (current) {
-      lines.push(current);
+    } catch (
+      error
+    ) {
+
+      console.warn(
+        "Poster autosave skipped:",
+        error
+      );
     }
-
-    return lines;
   }
 
 
-  drawCta(x, y) {
 
-    const ctx = this.ctx;
+  /* =====================================================
+     KEYBOARD
+  ====================================================== */
 
-    ctx.font =
-      `800 20px "DM Sans"`;
+  handleKeyboard(
+    event
+  ) {
 
-    const text =
-      this.state.cta.toUpperCase();
+    const editing =
+      event.target instanceof
+        HTMLInputElement ||
+      event.target instanceof
+        HTMLTextAreaElement ||
+      event.target instanceof
+        HTMLSelectElement;
 
-    const width =
-      ctx.measureText(text).width + 54;
 
-    const height = 56;
+    if (editing) return;
 
-    let left = x;
 
-    if (this.state.align === "center") {
-      left = x - width / 2;
+    if (
+      event.key ===
+        "Delete" ||
+      event.key ===
+        "Backspace"
+    ) {
+
+      event.preventDefault();
+
+      this.deleteSelected();
     }
 
-    if (this.state.align === "right") {
-      left = x - width;
+
+    if (
+      event.key.toLowerCase() ===
+      "d" &&
+      (
+        event.ctrlKey ||
+        event.metaKey
+      )
+    ) {
+
+      event.preventDefault();
+
+      this.duplicateSelected();
     }
 
-    ctx.fillStyle = this.state.accent;
 
-    this.roundRect(
-      left,
-      y,
-      width,
-      height,
-      9
-    );
-
-    ctx.fill();
+    const object =
+      this.getEditableSelection();
 
 
-    ctx.fillStyle =
-      this.getContrastColor(this.state.accent);
+    if (!object) return;
 
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
 
-    ctx.fillText(
-      text,
-      left + width / 2,
-      y + height / 2
+    let changed =
+      false;
+
+
+    const step =
+      event.shiftKey
+        ? 10
+        : 1;
+
+
+    if (
+      event.key ===
+      "ArrowLeft"
+    ) {
+
+      object.left -=
+        step;
+
+      changed =
+        true;
+    }
+
+
+    if (
+      event.key ===
+      "ArrowRight"
+    ) {
+
+      object.left +=
+        step;
+
+      changed =
+        true;
+    }
+
+
+    if (
+      event.key ===
+      "ArrowUp"
+    ) {
+
+      object.top -=
+        step;
+
+      changed =
+        true;
+    }
+
+
+    if (
+      event.key ===
+      "ArrowDown"
+    ) {
+
+      object.top +=
+        step;
+
+      changed =
+        true;
+    }
+
+
+    if (changed) {
+
+      event.preventDefault();
+
+      object.setCoords();
+
+      this.canvas.requestRenderAll();
+
+      this.updateTransformControls();
+    }
+  }
+
+
+
+  /* =====================================================
+     HELPERS
+  ====================================================== */
+
+  assignObjectMeta(
+    object,
+    name,
+    typeLabel
+  ) {
+
+    object.id =
+      crypto.randomUUID();
+
+
+    object.name =
+      name;
+
+
+    object.typeLabel =
+      typeLabel;
+  }
+
+
+
+  findObjectById(
+    id
+  ) {
+
+    return this.canvas
+      .getObjects()
+      .find(
+        object =>
+          object.id ===
+          id
+      );
+  }
+
+
+
+  isTextObject(
+    object
+  ) {
+
+    if (!object) return false;
+
+
+    return (
+      object.type ===
+        "textbox" ||
+      object.type ===
+        "text" ||
+      object.type ===
+        "i-text"
     );
   }
 
 
-  drawSafeZone() {
 
-    const w = this.canvas.width;
-    const h = this.canvas.height;
+  isShapeObject(
+    object
+  ) {
 
-    const side = 72;
+    if (!object) return false;
 
-    const vertical =
-      this.state.canvasSize === "story"
-        ? 245
-        : 72;
 
-    this.ctx.save();
-
-    this.ctx.setLineDash([13, 13]);
-
-    this.ctx.strokeStyle =
-      "rgba(240,195,76,.85)";
-
-    this.ctx.lineWidth = 2;
-
-    this.ctx.strokeRect(
-      side,
-      vertical,
-      w - side * 2,
-      h - vertical * 2
+    return [
+      "rect",
+      "circle",
+      "triangle",
+      "line"
+    ].includes(
+      object.type
     );
-
-    this.ctx.restore();
   }
 
 
-  roundRect(x, y, width, height, radius) {
 
-    const ctx = this.ctx;
+  normalizeColor(
+    value
+  ) {
+
+    let color =
+      String(
+        value
+      )
+        .trim();
+
+
+    if (
+      !color.startsWith(
+        "#"
+      )
+    ) {
+
+      color =
+        `#${color}`;
+    }
+
+
+    if (
+      !/^#[0-9A-Fa-f]{6}$/.test(
+        color
+      )
+    ) {
+
+      return null;
+    }
+
+
+    return color
+      .toUpperCase();
+  }
+
+
+
+  safeHex(
+    value,
+    fallback
+  ) {
+
+    if (
+      typeof value !==
+      "string"
+    ) {
+
+      return fallback;
+    }
+
+
+    const result =
+      this.normalizeColor(
+        value
+      );
+
+
+    return (
+      result ||
+      fallback
+    );
+  }
+
+
+
+  hexToRgba(
+    hex,
+    alpha
+  ) {
+
+    const clean =
+      hex.replace(
+        "#",
+        ""
+      );
+
 
     const r =
-      Math.min(radius, width / 2, height / 2);
-
-    ctx.beginPath();
-
-    ctx.moveTo(x + r, y);
-
-    ctx.arcTo(
-      x + width,
-      y,
-      x + width,
-      y + height,
-      r
-    );
-
-    ctx.arcTo(
-      x + width,
-      y + height,
-      x,
-      y + height,
-      r
-    );
-
-    ctx.arcTo(
-      x,
-      y + height,
-      x,
-      y,
-      r
-    );
-
-    ctx.arcTo(
-      x,
-      y,
-      x + width,
-      y,
-      r
-    );
-
-    ctx.closePath();
-  }
+      parseInt(
+        clean.slice(
+          0,
+          2
+        ),
+        16
+      );
 
 
-  getContrastColor(hex) {
-
-    const clean = hex.replace("#", "");
-
-    const r = parseInt(clean.substring(0, 2), 16);
-    const g = parseInt(clean.substring(2, 4), 16);
-    const b = parseInt(clean.substring(4, 6), 16);
-
-    const brightness =
-      r * 0.299 +
-      g * 0.587 +
-      b * 0.114;
-
-    return brightness > 165
-      ? "#0A0A0B"
-      : "#FFFFFF";
-  }
+    const g =
+      parseInt(
+        clean.slice(
+          2,
+          4
+        ),
+        16
+      );
 
 
-  hexToRgba(hex, alpha) {
+    const b =
+      parseInt(
+        clean.slice(
+          4,
+          6
+        ),
+        16
+      );
 
-    const clean = hex.replace("#", "");
-
-    const r = parseInt(clean.substring(0, 2), 16);
-    const g = parseInt(clean.substring(2, 4), 16);
-    const b = parseInt(clean.substring(4, 6), 16);
 
     return `rgba(${r},${g},${b},${alpha})`;
   }
 
 
-  export(format = "png") {
 
-    const safe = this.state.safeZone;
+  fileToDataUrl(
+    file
+  ) {
 
-    this.state.safeZone = false;
+    return new Promise(
+      (
+        resolve,
+        reject
+      ) => {
 
-    this.render();
+        const reader =
+          new FileReader();
 
-    const mime =
-      format === "jpg"
-        ? "image/jpeg"
-        : "image/png";
 
-    const data =
-      this.canvas.toDataURL(
-        mime,
-        format === "jpg" ? 0.94 : 1
+        reader.onload =
+          () =>
+            resolve(
+              reader.result
+            );
+
+
+        reader.onerror =
+          reject;
+
+
+        reader.readAsDataURL(
+          file
+        );
+      }
+    );
+  }
+
+
+
+  escapeHtml(
+    value
+  ) {
+
+    return String(
+      value
+    )
+      .replace(
+        /&/g,
+        "&amp;"
+      )
+      .replace(
+        /</g,
+        "&lt;"
+      )
+      .replace(
+        />/g,
+        "&gt;"
+      )
+      .replace(
+        /"/g,
+        "&quot;"
+      );
+  }
+
+
+
+  syncBrandInputs() {
+
+    const brand =
+      document.getElementById(
+        "posterBrandName"
       );
 
-    const link = document.createElement("a");
 
-    link.download =
-      `fwcwl-poster-${Date.now()}.${format}`;
+    if (brand) {
 
-    link.href = data;
+      brand.value =
+        this.state
+          .brandName;
+    }
 
-    link.click();
 
-    this.state.safeZone = safe;
+    const accent =
+      document.getElementById(
+        "posterAccentColor"
+      );
 
-    this.render();
+
+    const accentText =
+      document.getElementById(
+        "posterAccentColorText"
+      );
+
+
+    if (accent) {
+
+      accent.value =
+        this.state
+          .accent;
+    }
+
+
+    if (accentText) {
+
+      accentText.value =
+        this.state
+          .accent;
+    }
+
+
+    const text =
+      document.getElementById(
+        "posterTextColor"
+      );
+
+
+    const textString =
+      document.getElementById(
+        "posterTextColorText"
+      );
+
+
+    if (text) {
+
+      text.value =
+        this.state
+          .textColor;
+    }
+
+
+    if (textString) {
+
+      textString.value =
+        this.state
+          .textColor;
+    }
+
+
+    this.syncBackgroundInputs();
   }
+
 }
