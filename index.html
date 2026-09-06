@@ -4,16 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <title>FWCWL Cricket Post Studio</title>
+  <title>FWCWL Creative Studio</title>
 
   <meta
     name="description"
-    content="FWCWL professional cricket Instagram poster and social media creative studio."
+    content="FWCWL cricket poster, Instagram creative and video editing studio."
   />
 
-  <!-- =========================================================
-       GOOGLE FONTS
-  ========================================================== -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
@@ -25,2614 +22,1823 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 
-
 <body>
 
-  <div class="app-shell">
+<div class="app-shell">
 
+  <!-- =========================================================
+       TOPBAR
+  ========================================================== -->
+  <header class="topbar">
 
-    <!-- =========================================================
-         TOP NAVIGATION
-    ========================================================== -->
-    <header class="topbar">
+    <div class="brand">
+      <div class="brand-logo-wrap">
+        <img src="assets/fwcwl-logo.jpeg" alt="FWCWL" />
+      </div>
 
-      <!-- BRAND -->
-      <div class="brand">
-
-        <div class="brand-mark">
-          <img
-            src="assets/fwcwl-logo.jpeg"
-            alt="FWCWL"
-            style="
-              width: 100%;
-              height: 100%;
-              object-fit: contain;
-              border-radius: 8px;
-            "
-          />
+      <div>
+        <div class="brand-title">FWCWL CREATIVE STUDIO</div>
+        <div class="brand-subtitle">
+          Florida West Coast Winter League
         </div>
-
-        <div>
-          <div class="brand-title">
-            FWCWL POST STUDIO
-          </div>
-
-          <div class="brand-subtitle">
-            Cricket Creative Workspace
-          </div>
-        </div>
-
       </div>
+    </div>
 
 
-      <!-- PROJECT NAME -->
-      <div class="topbar-center">
-
-        <label class="project-name-wrap">
-
-          <span>
-            Project
-          </span>
-
-          <input
-            id="projectName"
-            type="text"
-            value="FWCWL Cricket Campaign"
-            maxlength="80"
-            autocomplete="off"
+    <!-- MODE SWITCH -->
+    <div class="studio-switch">
+      <button
+        id="posterModeBtn"
+        class="studio-mode-btn active"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24">
+          <rect
+            x="4"
+            y="4"
+            width="16"
+            height="16"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
           />
+          <circle cx="9" cy="9" r="1.4" fill="currentColor" />
+          <path
+            d="m6 17 4-4 3 3 2-2 3 3"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+          />
+        </svg>
 
-        </label>
+        Poster Studio
+      </button>
 
-      </div>
+      <button
+        id="videoModeBtn"
+        class="studio-mode-btn"
+        type="button"
+      >
+        <svg viewBox="0 0 24 24">
+          <rect
+            x="3"
+            y="5"
+            width="18"
+            height="14"
+            rx="2"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+          />
+          <path
+            d="m10 9 5 3-5 3z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.7"
+            stroke-linejoin="round"
+          />
+        </svg>
 
-
-      <!-- TOP ACTIONS -->
-      <div class="topbar-actions">
-
-        <button
-          class="icon-button"
-          id="undoBtn"
-          type="button"
-          title="Undo"
-          aria-label="Undo"
-        >
-          <svg viewBox="0 0 24 24">
-            <path
-              d="M9 7H5V3M5.5 7.5C7.2 5.7 9.3 5 12 5c4.4 0 8 3.6 8 8s-3.6 8-8 8a8 8 0 0 1-7.3-4.7"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
-
-
-        <button
-          class="icon-button"
-          id="redoBtn"
-          type="button"
-          title="Redo"
-          aria-label="Redo"
-        >
-          <svg viewBox="0 0 24 24">
-            <path
-              d="M15 7h4V3m-.5 4.5C16.8 5.7 14.7 5 12 5c-4.4 0-8 3.6-8 8s3.6 8 8 8a8 8 0 0 0 7.3-4.7"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
-        </button>
+        Video Studio
+      </button>
+    </div>
 
 
-        <button
-          class="secondary-button"
-          id="resetBtn"
-          type="button"
-        >
-          Reset
-        </button>
+    <div class="topbar-actions">
 
+      <button
+        id="posterResetBtn"
+        class="top-secondary poster-only-control"
+        type="button"
+      >
+        Reset
+      </button>
 
-        <button
-          class="export-button"
-          id="exportTopBtn"
-          type="button"
-        >
-          <svg viewBox="0 0 24 24">
-            <path
-              d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-            />
-          </svg>
+      <button
+        id="posterExportTopBtn"
+        class="top-primary poster-only-control"
+        type="button"
+      >
+        Export Poster
+      </button>
 
-          Export
-        </button>
+      <button
+        id="videoExportTopBtn"
+        class="top-primary video-only-control hidden"
+        type="button"
+      >
+        Export Video
+      </button>
 
-      </div>
+    </div>
 
-    </header>
+  </header>
 
 
 
-    <!-- =========================================================
-         MAIN APPLICATION WORKSPACE
-    ========================================================== -->
-    <main class="workspace">
+  <!-- =========================================================
+       MAIN
+  ========================================================== -->
+  <main class="main-layout">
 
 
-      <!-- =======================================================
-           LEFT SIDEBAR
-      ======================================================== -->
-      <aside class="sidebar left-sidebar">
+    <!-- =======================================================
+         LEFT SIDEBAR
+    ======================================================== -->
+    <aside class="left-sidebar">
 
 
-        <!-- LEFT NAVIGATION -->
-        <nav class="sidebar-tabs">
+      <!-- POSTER LEFT PANEL -->
+      <div id="posterLeftPanel" class="left-mode-panel">
+
+        <div class="left-tabs">
 
           <button
-            class="sidebar-tab active"
-            data-panel="templatesPanel"
+            class="left-tab active"
+            data-poster-tab="templates"
             type="button"
           >
-            <span class="tab-icon">
-              ✦
-            </span>
-
             Templates
           </button>
 
-
           <button
-            class="sidebar-tab"
-            data-panel="mediaPanel"
+            class="left-tab"
+            data-poster-tab="media"
             type="button"
           >
-            <span class="tab-icon">
-              ▧
-            </span>
-
             Media
           </button>
 
-
           <button
-            class="sidebar-tab"
-            data-panel="brandPanel"
+            class="left-tab"
+            data-poster-tab="brand"
             type="button"
           >
-            <span class="tab-icon">
-              ◈
-            </span>
-
             Brand
           </button>
 
-        </nav>
+        </div>
 
 
+        <!-- TEMPLATES -->
+        <section
+          id="posterTemplatesPanel"
+          class="left-tab-panel active"
+        >
 
-        <!-- =====================================================
-             LEFT SIDEBAR CONTENT
-        ====================================================== -->
-        <div class="sidebar-content">
+          <div class="panel-title-row">
+            <div>
+              <h2>Cricket Templates</h2>
+              <p>FWCWL professional social creatives.</p>
+            </div>
+
+            <span id="posterTemplateCount" class="count-pill">
+              24
+            </span>
+          </div>
 
 
-          <!-- ===================================================
-               CRICKET TEMPLATES
-          ==================================================== -->
-          <section
-            class="side-panel active"
-            id="templatesPanel"
+          <div class="search-box">
+            <svg viewBox="0 0 24 24">
+              <circle
+                cx="11"
+                cy="11"
+                r="6.5"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+              <path
+                d="m16 16 4 4"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              />
+            </svg>
+
+            <input
+              id="posterTemplateSearch"
+              type="text"
+              placeholder="Search cricket templates..."
+            />
+          </div>
+
+
+          <div id="posterTemplateFilters" class="filter-row">
+            <button class="filter-chip active" data-filter="all">
+              All
+            </button>
+            <button class="filter-chip" data-filter="match">
+              Match
+            </button>
+            <button class="filter-chip" data-filter="team">
+              Team
+            </button>
+            <button class="filter-chip" data-filter="result">
+              Results
+            </button>
+            <button class="filter-chip" data-filter="event">
+              Events
+            </button>
+            <button class="filter-chip" data-filter="social">
+              Social
+            </button>
+          </div>
+
+
+          <div
+            id="posterTemplateGrid"
+            class="poster-template-grid"
+          ></div>
+
+        </section>
+
+
+        <!-- POSTER MEDIA -->
+        <section
+          id="posterMediaPanel"
+          class="left-tab-panel"
+        >
+
+          <div class="panel-title-row">
+            <div>
+              <h2>Media</h2>
+              <p>Add player or match photography.</p>
+            </div>
+          </div>
+
+
+          <label class="upload-card">
+            <input
+              id="posterBackgroundInput"
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              hidden
+            />
+
+            <span class="upload-symbol">＋</span>
+
+            <strong>Player / Match Photo</strong>
+
+            <small>PNG, JPG or WEBP</small>
+          </label>
+
+
+          <div
+            id="posterBackgroundPreviewWrap"
+            class="uploaded-preview hidden"
           >
-
-            <div class="panel-header cricket-template-header">
-
-              <div>
-
-                <h2>
-                  Cricket Templates
-                </h2>
-
-                <p>
-                  Professional FWCWL social media creatives.
-                </p>
-
-              </div>
-
-
-              <div
-                class="template-count"
-                id="templateCount"
-              >
-                24 DESIGNS
-              </div>
-
-            </div>
-
-
-
-            <!-- TEMPLATE SEARCH -->
-            <div class="template-search">
-
-              <svg viewBox="0 0 24 24">
-                <circle
-                  cx="11"
-                  cy="11"
-                  r="6.5"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-
-                <path
-                  d="m16 16 4 4"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-
-              <input
-                id="templateSearch"
-                type="text"
-                placeholder="Search cricket templates..."
-                autocomplete="off"
-              />
-
-            </div>
-
-
-
-            <!-- TEMPLATE CATEGORY FILTER -->
-            <div class="template-filters">
-
-              <button
-                class="template-filter active"
-                data-template-filter="all"
-                type="button"
-              >
-                All
-              </button>
-
-              <button
-                class="template-filter"
-                data-template-filter="match"
-                type="button"
-              >
-                Match
-              </button>
-
-              <button
-                class="template-filter"
-                data-template-filter="team"
-                type="button"
-              >
-                Team
-              </button>
-
-              <button
-                class="template-filter"
-                data-template-filter="result"
-                type="button"
-              >
-                Results
-              </button>
-
-              <button
-                class="template-filter"
-                data-template-filter="event"
-                type="button"
-              >
-                Events
-              </button>
-
-              <button
-                class="template-filter"
-                data-template-filter="social"
-                type="button"
-              >
-                Social
-              </button>
-
-            </div>
-
-
-
-            <!-- =================================================
-                 TEMPLATE GRID
-            ================================================== -->
-            <div class="template-grid cricket-template-grid">
-
-
-              <!-- ===============================================
-                   01 MATCH DAY
-              ================================================ -->
-              <button
-                class="template-card active"
-                data-template="matchday"
-                data-category="match"
-                data-search="match day cricket game today versus vs"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-matchday">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <div class="preview-top-tag">
-                    MATCH DAY
-                  </div>
-
-                  <div class="preview-vs">
-
-                    <b>
-                      TAMPA
-                    </b>
-
-                    <em>
-                      VS
-                    </em>
-
-                    <b>
-                      RIVALS
-                    </b>
-
-                  </div>
-
-                  <small>
-                    SAT • 10:00 AM
-                  </small>
-
-                </div>
-
-                <span>
-                  Match Day
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   02 BIG VS
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="versus"
-                data-category="match"
-                data-search="versus vs matchup opponent cricket match"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-versus">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span class="mini-label">
-                    FWCWL
-                  </span>
-
-                  <strong>
-                    VS
-                  </strong>
-
-                  <small>
-                    GAME NIGHT
-                  </small>
-
-                </div>
-
-                <span>
-                  Big VS
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   03 NEXT FIXTURE
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="fixture"
-                data-category="match"
-                data-search="fixture schedule next upcoming match cricket"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-fixture">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    NEXT
-                  </span>
-
-                  <strong>
-                    FIXTURE
-                  </strong>
-
-                  <div class="preview-date">
-                    OCT 18
-                  </div>
-
-                </div>
-
-                <span>
-                  Next Fixture
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   04 GAME DAY
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="gameday"
-                data-category="match"
-                data-search="game day match today cricket"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-gameday">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <strong>
-                    GAME
-                    <br />
-                    DAY
-                  </strong>
-
-                  <small>
-                    READY FOR BATTLE
-                  </small>
-
-                </div>
-
-                <span>
-                  Game Day
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   05 THE FINAL
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="final"
-                data-category="event"
-                data-search="final championship trophy final match cricket"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-final">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    THE
-                  </span>
-
-                  <strong>
-                    FINAL
-                  </strong>
-
-                  <small>
-                    ONE GAME. ONE CHAMPION.
-                  </small>
-
-                </div>
-
-                <span>
-                  The Final
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   06 SEMI FINAL
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="semifinal"
-                data-category="event"
-                data-search="semi final semifinal knockout playoff cricket"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-semifinal">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    ROAD TO GLORY
-                  </span>
-
-                  <strong>
-                    SEMI
-                    <br />
-                    FINAL
-                  </strong>
-
-                </div>
-
-                <span>
-                  Semi Final
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   07 PLAYING XI
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="playingxi"
-                data-category="team"
-                data-search="playing xi lineup eleven squad starting eleven"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-playingxi">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    OFFICIAL
-                  </span>
-
-                  <strong>
-                    PLAYING
-                    <br />
-                    XI
-                  </strong>
-
-                  <small>
-                    TODAY'S LINEUP
-                  </small>
-
-                </div>
-
-                <span>
-                  Playing XI
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   08 TEAM SQUAD
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="squad"
-                data-category="team"
-                data-search="team squad roster players cricket team"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-squad">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <strong>
-                    THE
-                    <br />
-                    SQUAD
-                  </strong>
-
-                  <small>
-                    FWCWL 2026
-                  </small>
-
-                </div>
-
-                <span>
-                  Team Squad
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   09 PLAYER SIGNING
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="playerannouncement"
-                data-category="team"
-                data-search="player signing announcement new player welcome"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-player">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    WELCOME
-                  </span>
-
-                  <strong>
-                    NEW
-                    <br />
-                    SIGNING
-                  </strong>
-
-                </div>
-
-                <span>
-                  Player Signing
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   10 CAPTAIN
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="captain"
-                data-category="team"
-                data-search="captain announcement team leadership cricket"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-captain">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <small>
-                    INTRODUCING
-                  </small>
-
-                  <strong>
-                    CAPTAIN
-                  </strong>
-
-                  <span>
-                    2026
-                  </span>
-
-                </div>
-
-                <span>
-                  Captain
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   11 MVP
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="mvp"
-                data-category="result"
-                data-search="mvp most valuable player game award"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-mvp">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <strong>
-                    MVP
-                  </strong>
-
-                  <span>
-                    PLAYER OF THE GAME
-                  </span>
-
-                </div>
-
-                <span>
-                  MVP
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   12 PLAYER OF MATCH
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="motm"
-                data-category="result"
-                data-search="player of match man of match award performance"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-motm">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    PLAYER
-                  </span>
-
-                  <strong>
-                    OF THE
-                    <br />
-                    MATCH
-                  </strong>
-
-                </div>
-
-                <span>
-                  Player of Match
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   13 MATCH RESULT
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="result"
-                data-category="result"
-                data-search="match result winner win won cricket final result"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-result">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    FULL TIME
-                  </span>
-
-                  <strong>
-                    WE
-                    <br />
-                    WON
-                  </strong>
-
-                </div>
-
-                <span>
-                  Match Result
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   14 SCORECARD
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="scorecard"
-                data-category="result"
-                data-search="score scorecard innings runs wickets cricket result"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-scorecard">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    FINAL SCORE
-                  </span>
-
-                  <strong>
-                    186/5
-                  </strong>
-
-                  <small>
-                    20 OVERS
-                  </small>
-
-                </div>
-
-                <span>
-                  Scorecard
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   15 LIVE SCORE
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="live"
-                data-category="result"
-                data-search="live score live cricket innings update"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-live">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    ● LIVE
-                  </span>
-
-                  <strong>
-                    142/3
-                  </strong>
-
-                  <small>
-                    15.2 OVERS
-                  </small>
-
-                </div>
-
-                <span>
-                  Live Score
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   16 CHAMPIONS
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="champions"
-                data-category="result"
-                data-search="champions winner trophy champion league cricket"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-champions">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <small>
-                    2026
-                  </small>
-
-                  <strong>
-                    CHAMPIONS
-                  </strong>
-
-                  <span>
-                    ★ ★ ★
-                  </span>
-
-                </div>
-
-                <span>
-                  Champions
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   17 TOURNAMENT
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="tournament"
-                data-category="event"
-                data-search="tournament winter league cricket competition event"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-tournament">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    FWCWL
-                  </span>
-
-                  <strong>
-                    WINTER
-                    <br />
-                    LEAGUE
-                  </strong>
-
-                </div>
-
-                <span>
-                  Tournament
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   18 REGISTRATION
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="registration"
-                data-category="event"
-                data-search="registration open register tournament team entry"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-registration">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <strong>
-                    REGISTRATION
-                  </strong>
-
-                  <span>
-                    NOW OPEN
-                  </span>
-
-                </div>
-
-                <span>
-                  Registration
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   19 TRYOUTS
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="tryouts"
-                data-category="event"
-                data-search="tryouts trials player recruitment cricket open"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-tryout">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    THINK YOU HAVE IT?
-                  </span>
-
-                  <strong>
-                    TRYOUTS
-                  </strong>
-
-                  <small>
-                    REGISTER TODAY
-                  </small>
-
-                </div>
-
-                <span>
-                  Tryouts
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   20 PLAYER AUCTION
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="auction"
-                data-category="event"
-                data-search="player auction cricket auction draft bidding"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-auction">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    PLAYER
-                  </span>
-
-                  <strong>
-                    AUCTION
-                  </strong>
-
-                  <small>
-                    LIVE • SATURDAY
-                  </small>
-
-                </div>
-
-                <span>
-                  Player Auction
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   21 MILESTONE
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="milestone"
-                data-category="social"
-                data-search="milestone 100 runs wickets century fifty cricket achievement"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-milestone">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    MILESTONE
-                  </span>
-
-                  <strong>
-                    100
-                  </strong>
-
-                  <small>
-                    CAREER WICKETS
-                  </small>
-
-                </div>
-
-                <span>
-                  Milestone
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   22 BIRTHDAY
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="birthday"
-                data-category="social"
-                data-search="birthday happy birthday cricket player celebration"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-birthday">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    HAPPY
-                  </span>
-
-                  <strong>
-                    BIRTHDAY
-                  </strong>
-
-                  <small>
-                    CHAMP!
-                  </small>
-
-                </div>
-
-                <span>
-                  Birthday
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   23 SPONSOR / PARTNER
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="sponsor"
-                data-category="social"
-                data-search="sponsor sponsorship partner partnership announcement"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-sponsor">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <span>
-                    OFFICIAL
-                  </span>
-
-                  <strong>
-                    PARTNER
-                  </strong>
-
-                  <small>
-                    WELCOME ABOARD
-                  </small>
-
-                </div>
-
-                <span>
-                  Sponsor
-                </span>
-
-              </button>
-
-
-
-              <!-- ===============================================
-                   24 THANK YOU
-              ================================================ -->
-              <button
-                class="template-card"
-                data-template="thankyou"
-                data-category="social"
-                data-search="thank you fans supporters volunteers cricket appreciation"
-                type="button"
-              >
-
-                <div class="template-preview cricket-preview preview-thankyou">
-
-                  <img
-                    src="assets/fwcwl-logo.jpeg"
-                    class="template-logo"
-                    alt="FWCWL"
-                  />
-
-                  <strong>
-                    THANK
-                    <br />
-                    YOU
-                  </strong>
-
-                  <small>
-                    FWCWL FAMILY
-                  </small>
-
-                </div>
-
-                <span>
-                  Thank You
-                </span>
-
-              </button>
-
-
-            </div>
-
-
-            <!-- NO RESULTS -->
-            <div
-              class="template-empty hidden"
-              id="templateEmpty"
-            >
-              No cricket templates found.
-            </div>
-
-          </section>
-
-
-
-          <!-- ===================================================
-               MEDIA PANEL
-          ==================================================== -->
-          <section
-            class="side-panel"
-            id="mediaPanel"
-          >
-
-            <div class="panel-header">
-
-              <div>
-
-                <h2>
-                  Media
-                </h2>
-
-                <p>
-                  Add player photos and cricket assets.
-                </p>
-
-              </div>
-
-            </div>
-
-
-
-            <!-- BACKGROUND / PLAYER IMAGE -->
-            <div
-              class="upload-zone"
-              id="backgroundUploadZone"
-            >
-
-              <input
-                id="backgroundInput"
-                type="file"
-                accept="image/png,image/jpeg,image/webp"
-                hidden
-              />
-
-
-              <div class="upload-icon">
-
-                <svg viewBox="0 0 24 24">
-                  <path
-                    d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5h14v-5"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="1.7"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
-
-              </div>
-
-
-              <strong>
-                Upload Player / Match Photo
-              </strong>
-
-              <span>
-                PNG, JPG or WEBP
-              </span>
-
-            </div>
-
-
-
-            <!-- BACKGROUND PREVIEW -->
-            <div
-              class="media-thumb-wrap hidden"
-              id="backgroundPreviewWrap"
-            >
-
-              <img
-                id="backgroundPreview"
-                alt="Uploaded cricket image"
-              />
-
-              <button
-                class="remove-media"
-                id="removeBackgroundBtn"
-                type="button"
-                title="Remove image"
-              >
-                ×
-              </button>
-
-            </div>
-
-
-
-            <!-- IMAGE SCALE -->
-            <div class="control-group">
-
-              <div class="control-label">
-
-                <span>
-                  Image Zoom
-                </span>
-
-                <span id="imageScaleValue">
-                  100%
-                </span>
-
-              </div>
-
-              <input
-                id="imageScale"
-                type="range"
-                min="100"
-                max="220"
-                step="1"
-                value="100"
-              />
-
-            </div>
-
-
-
-            <!-- IMAGE X -->
-            <div class="control-group">
-
-              <div class="control-label">
-
-                <span>
-                  Horizontal Position
-                </span>
-
-                <span id="imageXValue">
-                  50%
-                </span>
-
-              </div>
-
-              <input
-                id="imageX"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-              />
-
-            </div>
-
-
-
-            <!-- IMAGE Y -->
-            <div class="control-group">
-
-              <div class="control-label">
-
-                <span>
-                  Vertical Position
-                </span>
-
-                <span id="imageYValue">
-                  50%
-                </span>
-
-              </div>
-
-              <input
-                id="imageY"
-                type="range"
-                min="0"
-                max="100"
-                value="50"
-              />
-
-            </div>
-
-
-            <div class="panel-divider"></div>
-
-
-            <!-- OPTIONAL SECONDARY LOGO -->
-            <div class="section-label">
-              Team / Sponsor Logo
-            </div>
-
+            <img id="posterBackgroundPreview" alt="" />
 
             <button
-              class="upload-button"
-              id="logoUploadBtn"
+              id="posterRemoveBackgroundBtn"
               type="button"
             >
-
-              <input
-                id="logoInput"
-                type="file"
-                accept="image/png,image/jpeg,image/webp,image/svg+xml"
-                hidden
-              />
-
-              <svg viewBox="0 0 24 24">
-                <path
-                  d="M12 5v14M5 12h14"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-
-              Upload Team / Sponsor Logo
-
+              Remove
             </button>
+          </div>
 
 
-
-            <div
-              class="logo-preview-card hidden"
-              id="logoPreviewWrap"
-            >
-
-              <div class="logo-preview-inner">
-
-                <img
-                  id="logoPreview"
-                  alt="Team or sponsor logo"
-                />
-
-              </div>
-
-              <button
-                id="removeLogoBtn"
-                type="button"
-              >
-                Remove
-              </button>
-
+          <div class="field-block">
+            <div class="range-head">
+              <label>Image Zoom</label>
+              <span id="posterImageScaleValue">100%</span>
             </div>
 
+            <input
+              id="posterImageScale"
+              type="range"
+              min="100"
+              max="220"
+              value="100"
+            />
+          </div>
 
-            <div class="panel-divider"></div>
 
-
-            <!-- BRANDING INFORMATION -->
-            <div
-              style="
-                padding: 12px;
-                border: 1px solid rgba(238,192,78,.14);
-                background: rgba(238,192,78,.035);
-                border-radius: 10px;
-              "
-            >
-
-              <div
-                style="
-                  color: #efc34e;
-                  font-size: 9px;
-                  font-weight: 800;
-                  margin-bottom: 5px;
-                "
-              >
-                FWCWL BRANDING
-              </div>
-
-              <div
-                style="
-                  color: #777a81;
-                  font-size: 8px;
-                  line-height: 1.5;
-                "
-              >
-                The official FWCWL logo remains on the
-                top-left of every poster. An optional team
-                or sponsor logo can be added separately.
-              </div>
-
+          <div class="field-block">
+            <div class="range-head">
+              <label>Horizontal Position</label>
+              <span id="posterImageXValue">50%</span>
             </div>
 
-          </section>
+            <input
+              id="posterImageX"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+            />
+          </div>
 
 
+          <div class="field-block">
+            <div class="range-head">
+              <label>Vertical Position</label>
+              <span id="posterImageYValue">50%</span>
+            </div>
 
-          <!-- ===================================================
-               BRAND PANEL
-          ==================================================== -->
-          <section
-            class="side-panel"
-            id="brandPanel"
+            <input
+              id="posterImageY"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+            />
+          </div>
+
+
+          <div class="section-divider"></div>
+
+
+          <label class="upload-card compact">
+            <input
+              id="posterSponsorLogoInput"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/svg+xml"
+              hidden
+            />
+
+            <span class="upload-symbol">＋</span>
+
+            <strong>Team / Sponsor Logo</strong>
+
+            <small>Optional • top right</small>
+          </label>
+
+
+          <div
+            id="posterSponsorPreviewWrap"
+            class="uploaded-preview logo-preview hidden"
           >
+            <img id="posterSponsorPreview" alt="" />
 
-            <div class="panel-header">
+            <button
+              id="posterRemoveSponsorBtn"
+              type="button"
+            >
+              Remove
+            </button>
+          </div>
 
-              <div>
+        </section>
 
-                <h2>
-                  Brand Kit
-                </h2>
 
-                <p>
-                  Customize FWCWL poster styling.
-                </p>
+        <!-- POSTER BRAND -->
+        <section
+          id="posterBrandPanel"
+          class="left-tab-panel"
+        >
 
-              </div>
-
+          <div class="panel-title-row">
+            <div>
+              <h2>FWCWL Brand</h2>
+              <p>League identity and colors.</p>
             </div>
+          </div>
 
 
+          <div class="official-brand-card">
+            <img
+              src="assets/fwcwl-logo.jpeg"
+              alt="FWCWL logo"
+            />
 
-            <!-- BRAND NAME -->
-            <div class="field">
+            <div>
+              <strong>Official FWCWL Logo</strong>
+              <p>
+                Automatically placed in the upper-left of
+                every poster and exported creative.
+              </p>
+            </div>
+          </div>
 
-              <label for="brandName">
-                Display Name
-              </label>
+
+          <div class="form-field">
+            <label>Brand / Team Name</label>
+
+            <input
+              id="posterBrandName"
+              type="text"
+              value="FWCWL"
+            />
+          </div>
+
+
+          <div class="form-field">
+            <label>Accent Color</label>
+
+            <div class="color-row">
+              <input
+                id="posterAccentColor"
+                type="color"
+                value="#F0C34C"
+              />
 
               <input
-                id="brandName"
+                id="posterAccentColorText"
                 type="text"
-                value="FWCWL"
-                maxlength="50"
-                autocomplete="off"
+                value="#F0C34C"
+              />
+            </div>
+          </div>
+
+
+          <div class="form-field">
+            <label>Text Color</label>
+
+            <div class="color-row">
+              <input
+                id="posterTextColor"
+                type="color"
+                value="#FFFFFF"
               />
 
+              <input
+                id="posterTextColorText"
+                type="text"
+                value="#FFFFFF"
+              />
             </div>
+          </div>
 
 
+          <div class="form-field">
+            <label>Background Color</label>
 
-            <!-- PRIMARY COLOR -->
-            <div class="field">
-
-              <label>
-                Accent Color
-              </label>
-
-              <div class="color-control">
-
-                <input
-                  id="primaryColor"
-                  type="color"
-                  value="#f1c34d"
-                />
-
-                <input
-                  id="primaryColorText"
-                  type="text"
-                  value="#F1C34D"
-                  maxlength="7"
-                />
-
-              </div>
-
-            </div>
-
-
-
-            <!-- TEXT COLOR -->
-            <div class="field">
-
-              <label>
-                Main Text Color
-              </label>
-
-              <div class="color-control">
-
-                <input
-                  id="textColor"
-                  type="color"
-                  value="#ffffff"
-                />
-
-                <input
-                  id="textColorText"
-                  type="text"
-                  value="#FFFFFF"
-                  maxlength="7"
-                />
-
-              </div>
-
-            </div>
-
-
-
-            <!-- BACKGROUND -->
-            <div class="field">
-
-              <label>
-                Background Color
-              </label>
-
-              <div class="color-control">
-
-                <input
-                  id="backgroundColor"
-                  type="color"
-                  value="#230b0e"
-                />
-
-                <input
-                  id="backgroundColorText"
-                  type="text"
-                  value="#230B0E"
-                  maxlength="7"
-                />
-
-              </div>
-
-            </div>
-
-
-            <!-- OFFICIAL LOGO NOTE -->
-            <div
-              style="
-                margin-top: 22px;
-                padding: 14px;
-                border-radius: 12px;
-                background:
-                  linear-gradient(
-                    145deg,
-                    rgba(239,195,78,.07),
-                    rgba(255,255,255,.018)
-                  );
-                border: 1px solid rgba(239,195,78,.12);
-              "
-            >
-
-              <img
-                src="assets/fwcwl-logo.jpeg"
-                alt="Official FWCWL Logo"
-                style="
-                  width: 64px;
-                  height: 64px;
-                  object-fit: contain;
-                  display: block;
-                  margin-bottom: 10px;
-                  border-radius: 8px;
-                "
+            <div class="color-row">
+              <input
+                id="posterBackgroundColor"
+                type="color"
+                value="#210B0E"
               />
 
-              <strong
-                style="
-                  font-size: 10px;
-                  display: block;
-                  margin-bottom: 4px;
-                "
-              >
-                Official FWCWL Logo
-              </strong>
-
-              <span
-                style="
-                  color: #6d7077;
-                  font-size: 8px;
-                  line-height: 1.5;
-                  display: block;
-                "
-              >
-                Locked to the upper-left corner of all
-                FWCWL templates and exported creatives.
-              </span>
-
+              <input
+                id="posterBackgroundColorText"
+                type="text"
+                value="#210B0E"
+              />
             </div>
+          </div>
 
-          </section>
+        </section>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           VIDEO LEFT PANEL
+      ====================================================== -->
+      <div
+        id="videoLeftPanel"
+        class="left-mode-panel hidden"
+      >
+
+        <div class="left-tabs video-tabs">
+
+          <button
+            class="left-tab active"
+            data-video-tab="media"
+            type="button"
+          >
+            Media
+          </button>
+
+          <button
+            class="left-tab"
+            data-video-tab="templates"
+            type="button"
+          >
+            Cricket
+          </button>
+
+          <button
+            class="left-tab"
+            data-video-tab="text"
+            type="button"
+          >
+            Text
+          </button>
 
         </div>
 
-      </aside>
+
+        <!-- VIDEO MEDIA -->
+        <section
+          id="videoMediaPanel"
+          class="left-tab-panel active"
+        >
+
+          <div class="panel-title-row">
+            <div>
+              <h2>Media Library</h2>
+              <p>Videos, photos and music.</p>
+            </div>
+          </div>
+
+
+          <div class="media-upload-grid">
+
+            <label class="mini-upload">
+              <input
+                id="videoUploadInput"
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                multiple
+                hidden
+              />
+
+              <span>＋</span>
+              <strong>Video</strong>
+            </label>
+
+
+            <label class="mini-upload">
+              <input
+                id="videoImageUploadInput"
+                type="file"
+                accept="image/png,image/jpeg,image/webp"
+                multiple
+                hidden
+              />
+
+              <span>＋</span>
+              <strong>Photo</strong>
+            </label>
+
+
+            <label class="mini-upload">
+              <input
+                id="videoAudioUploadInput"
+                type="file"
+                accept="audio/*"
+                hidden
+              />
+
+              <span>＋</span>
+              <strong>Audio</strong>
+            </label>
+
+          </div>
+
+
+          <div class="section-label-row">
+            <span>Your Media</span>
+            <small id="videoMediaCount">0 items</small>
+          </div>
+
+
+          <div
+            id="videoMediaLibrary"
+            class="video-media-library"
+          >
+
+            <div class="empty-state">
+              <div class="empty-state-icon">▶</div>
+              <strong>Add your first clip</strong>
+              <span>
+                Uploaded videos will appear here and can be
+                added to the timeline.
+              </span>
+            </div>
+
+          </div>
+
+        </section>
+
+
+        <!-- CRICKET VIDEO PRESETS -->
+        <section
+          id="videoTemplatesPanel"
+          class="left-tab-panel"
+        >
+
+          <div class="panel-title-row">
+            <div>
+              <h2>Cricket Graphics</h2>
+              <p>Instant FWCWL video presets.</p>
+            </div>
+          </div>
+
+          <div
+            id="videoPresetGrid"
+            class="video-preset-grid"
+          ></div>
+
+        </section>
+
+
+        <!-- TEXT PRESETS -->
+        <section
+          id="videoTextPanel"
+          class="left-tab-panel"
+        >
+
+          <div class="panel-title-row">
+            <div>
+              <h2>Add Text</h2>
+              <p>Cricket title and score graphics.</p>
+            </div>
+          </div>
+
+
+          <button
+            id="videoAddMatchTitleBtn"
+            class="text-preset-card"
+            type="button"
+          >
+            <span class="text-preview-large">
+              MATCH DAY
+            </span>
+            <small>Match Title</small>
+          </button>
+
+
+          <button
+            id="videoAddPlayerTitleBtn"
+            class="text-preset-card"
+            type="button"
+          >
+            <span class="text-preview-player">
+              PLAYER NAME
+            </span>
+            <small>Player Lower Third</small>
+          </button>
+
+
+          <button
+            id="videoAddScoreTitleBtn"
+            class="text-preset-card"
+            type="button"
+          >
+            <span class="text-preview-score">
+              186/5
+            </span>
+            <small>Score Graphic</small>
+          </button>
+
+        </section>
+
+      </div>
+
+    </aside>
 
 
 
-      <!-- =======================================================
-           CENTER CANVAS WORKSPACE
-      ======================================================== -->
-      <section class="canvas-workspace">
+    <!-- =======================================================
+         CENTER WORKSPACE
+    ======================================================== -->
+    <section class="center-workspace">
 
 
-        <!-- CANVAS TOOLBAR -->
-        <div class="canvas-toolbar">
+      <!-- =====================================================
+           POSTER WORKSPACE
+      ====================================================== -->
+      <div
+        id="posterWorkspace"
+        class="studio-workspace"
+      >
 
+        <div class="workspace-toolbar">
 
-          <div class="canvas-toolbar-left">
+          <div class="toolbar-group">
 
-            <select id="canvasSize">
-
+            <select id="posterCanvasSize">
               <option value="portrait">
                 Instagram Portrait · 1080 × 1350
               </option>
-
               <option value="square">
                 Instagram Square · 1080 × 1080
               </option>
-
               <option value="story">
                 Story / Reel Cover · 1080 × 1920
               </option>
-
             </select>
 
           </div>
 
 
+          <div class="toolbar-group">
 
-          <div class="canvas-toolbar-right">
-
-
-            <!-- SAFE ZONE -->
             <button
-              class="toolbar-toggle"
-              id="safeZoneBtn"
+              id="posterSafeZoneBtn"
+              class="tool-btn"
               type="button"
             >
-
-              <span class="toggle-dot"></span>
-
               Safe Zone
-
             </button>
-
-
-
-            <!-- ZOOM -->
-            <div class="zoom-control">
-
-              <button
-                id="zoomOutBtn"
-                type="button"
-                aria-label="Zoom out"
-              >
-                −
-              </button>
-
-              <span id="zoomLabel">
-                70%
-              </span>
-
-              <button
-                id="zoomInBtn"
-                type="button"
-                aria-label="Zoom in"
-              >
-                +
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- CANVAS -->
-        <div class="stage-scroll">
-
-          <div
-            class="stage"
-            id="stage"
-          >
-
-            <canvas
-              id="posterCanvas"
-              width="1080"
-              height="1350"
-            ></canvas>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- CANVAS FOOTER -->
-        <div class="canvas-statusbar">
-
-          <div>
-
-            <span class="status-dot"></span>
-
-            Auto-saved locally
-
-          </div>
-
-          <div id="canvasDimensions">
-            1080 × 1350 px
-          </div>
-
-        </div>
-
-      </section>
-
-
-
-      <!-- =======================================================
-           RIGHT PROPERTIES SIDEBAR
-      ======================================================== -->
-      <aside class="sidebar right-sidebar">
-
-
-        <!-- HEADER -->
-        <div class="properties-heading">
-
-          <div>
-
-            <h2>
-              Poster Content
-            </h2>
-
-            <p>
-              Customize your cricket creative.
-            </p>
-
-          </div>
-
-        </div>
-
-
-
-        <!-- RIGHT SCROLL AREA -->
-        <div class="properties-scroll">
-
-
-          <!-- ===================================================
-               MAIN CONTENT
-          ==================================================== -->
-          <div class="property-section">
 
             <button
-              class="section-toggle active"
+              id="posterZoomOutBtn"
+              class="icon-tool"
               type="button"
             >
-
-              <span>
-                Main Content
-              </span>
-
-              <span>
-                ⌃
-              </span>
-
+              −
             </button>
 
-
-            <div class="section-content">
-
-
-              <!-- EYEBROW -->
-              <div class="field">
-
-                <label for="kickerText">
-                  Eyebrow / Category
-                </label>
-
-                <input
-                  id="kickerText"
-                  type="text"
-                  value="FWCWL • MATCH DAY"
-                  maxlength="80"
-                  autocomplete="off"
-                />
-
-              </div>
-
-
-
-              <!-- HEADLINE -->
-              <div class="field">
-
-                <label for="headlineText">
-                  Main Headline
-                </label>
-
-                <textarea
-                  id="headlineText"
-                  rows="3"
-                  maxlength="150"
-                >TAMPA
-VS RIVALS</textarea>
-
-              </div>
-
-
-
-              <!-- SUB HEADLINE -->
-              <div class="field">
-
-                <label for="subheadlineText">
-                  Match / Event Details
-                </label>
-
-                <textarea
-                  id="subheadlineText"
-                  rows="3"
-                  maxlength="200"
-                >Saturday • 10:00 AM • Tampa, Florida</textarea>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- ===================================================
-               CALL TO ACTION
-          ==================================================== -->
-          <div class="property-section">
-
-            <button
-              class="section-toggle active"
-              type="button"
+            <span
+              id="posterZoomValue"
+              class="zoom-value"
             >
-
-              <span>
-                Call to Action
-              </span>
-
-              <span>
-                ⌃
-              </span>
-
-            </button>
-
-
-            <div class="section-content">
-
-
-              <div class="field">
-
-                <label for="ctaText">
-                  CTA
-                </label>
-
-                <input
-                  id="ctaText"
-                  type="text"
-                  value="MATCH DETAILS"
-                  maxlength="50"
-                  autocomplete="off"
-                />
-
-              </div>
-
-
-
-              <div class="field">
-
-                <label for="footerText">
-                  Footer
-                </label>
-
-                <input
-                  id="footerText"
-                  type="text"
-                  value="FLORIDA WEST COAST WINTER LEAGUE"
-                  maxlength="100"
-                  autocomplete="off"
-                />
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- ===================================================
-               TYPOGRAPHY
-          ==================================================== -->
-          <div class="property-section">
-
-            <button
-              class="section-toggle active"
-              type="button"
-            >
-
-              <span>
-                Typography
-              </span>
-
-              <span>
-                ⌃
-              </span>
-
-            </button>
-
-
-            <div class="section-content">
-
-
-              <!-- HEADLINE FONT -->
-              <div class="field">
-
-                <label for="headlineFont">
-                  Headline Font
-                </label>
-
-                <select id="headlineFont">
-
-                  <option value="Montserrat">
-                    Montserrat
-                  </option>
-
-                  <option value="Bebas Neue">
-                    Bebas Neue
-                  </option>
-
-                  <option value="Playfair Display">
-                    Playfair Display
-                  </option>
-
-                  <option value="Poppins">
-                    Poppins
-                  </option>
-
-                  <option value="DM Sans">
-                    DM Sans
-                  </option>
-
-                </select>
-
-              </div>
-
-
-
-              <!-- BODY FONT -->
-              <div class="field">
-
-                <label for="bodyFont">
-                  Supporting Font
-                </label>
-
-                <select id="bodyFont">
-
-                  <option value="DM Sans">
-                    DM Sans
-                  </option>
-
-                  <option value="Montserrat">
-                    Montserrat
-                  </option>
-
-                  <option value="Poppins">
-                    Poppins
-                  </option>
-
-                  <option value="Playfair Display">
-                    Playfair Display
-                  </option>
-
-                </select>
-
-              </div>
-
-
-
-              <!-- HEADLINE SIZE -->
-              <div class="control-group">
-
-                <div class="control-label">
-
-                  <span>
-                    Headline Size
-                  </span>
-
-                  <span id="headlineSizeValue">
-                    112
-                  </span>
-
-                </div>
-
-                <input
-                  id="headlineSize"
-                  type="range"
-                  min="60"
-                  max="190"
-                  value="112"
-                />
-
-              </div>
-
-
-
-              <!-- VERTICAL POSITION -->
-              <div class="control-group">
-
-                <div class="control-label">
-
-                  <span>
-                    Content Position
-                  </span>
-
-                  <span id="contentYValue">
-                    56%
-                  </span>
-
-                </div>
-
-                <input
-                  id="contentY"
-                  type="range"
-                  min="20"
-                  max="78"
-                  value="56"
-                />
-
-              </div>
-
-
-
-              <!-- ALIGNMENT -->
-              <div class="alignment-buttons">
-
-                <button
-                  data-align="left"
-                  class="align-button active"
-                  type="button"
-                  title="Align left"
-                >
-                  ≡
-                </button>
-
-                <button
-                  data-align="center"
-                  class="align-button"
-                  type="button"
-                  title="Align center"
-                >
-                  ≡
-                </button>
-
-                <button
-                  data-align="right"
-                  class="align-button"
-                  type="button"
-                  title="Align right"
-                >
-                  ≡
-                </button>
-
-              </div>
-
-            </div>
-
-          </div>
-
-
-
-          <!-- ===================================================
-               IMAGE EFFECTS
-          ==================================================== -->
-          <div class="property-section">
-
-            <button
-              class="section-toggle active"
-              type="button"
-            >
-
-              <span>
-                Photo & Effects
-              </span>
-
-              <span>
-                ⌃
-              </span>
-
-            </button>
-
-
-            <div class="section-content">
-
-
-              <!-- OVERLAY -->
-              <div class="control-group">
-
-                <div class="control-label">
-
-                  <span>
-                    Dark Overlay
-                  </span>
-
-                  <span id="overlayValue">
-                    37%
-                  </span>
-
-                </div>
-
-                <input
-                  id="overlayOpacity"
-                  type="range"
-                  min="0"
-                  max="85"
-                  value="37"
-                />
-
-              </div>
-
-
-
-              <!-- BRIGHTNESS -->
-              <div class="control-group">
-
-                <div class="control-label">
-
-                  <span>
-                    Photo Brightness
-                  </span>
-
-                  <span id="brightnessValue">
-                    100%
-                  </span>
-
-                </div>
-
-                <input
-                  id="brightness"
-                  type="range"
-                  min="40"
-                  max="140"
-                  value="100"
-                />
-
-              </div>
-
-
-
-              <!-- SATURATION -->
-              <div class="control-group">
-
-                <div class="control-label">
-
-                  <span>
-                    Photo Saturation
-                  </span>
-
-                  <span id="saturationValue">
-                    100%
-                  </span>
-
-                </div>
-
-                <input
-                  id="saturation"
-                  type="range"
-                  min="0"
-                  max="180"
-                  value="100"
-                />
-
-              </div>
-
-
-
-              <!-- ACCENT GLOW -->
-              <label class="switch-row">
-
-                <div>
-
-                  <strong>
-                    Gold Accent Glow
-                  </strong>
-
-                  <span>
-                    Adds FWCWL-style highlight.
-                  </span>
-
-                </div>
-
-                <input
-                  id="accentGlow"
-                  type="checkbox"
-                  checked
-                />
-
-                <span class="switch"></span>
-
-              </label>
-
-            </div>
-
-          </div>
-
-
-        </div>
-
-
-
-        <!-- =====================================================
-             DOWNLOAD AREA
-        ====================================================== -->
-        <div class="right-sidebar-footer">
-
-
-          <button
-            class="download-button"
-            id="downloadPngBtn"
-            type="button"
-          >
-
-            <span>
-
-              <strong>
-                Download PNG
-              </strong>
-
-              <small>
-                Instagram quality · 1080px
-              </small>
-
+              55%
             </span>
 
+            <button
+              id="posterZoomInBtn"
+              class="icon-tool"
+              type="button"
+            >
+              +
+            </button>
 
-            <svg viewBox="0 0 24 24">
-              <path
-                d="M12 4v11m0 0 4-4m-4 4-4-4M5 20h14"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+          </div>
 
-          </button>
+        </div>
 
 
+        <div class="poster-stage-area">
+
+          <canvas
+            id="posterCanvas"
+            width="1080"
+            height="1350"
+          ></canvas>
+
+        </div>
+
+
+        <div class="workspace-statusbar">
+
+          <span>
+            <i class="online-dot"></i>
+            FWCWL Poster Studio
+          </span>
+
+          <span id="posterDimensions">
+            1080 × 1350
+          </span>
+
+        </div>
+
+      </div>
+
+
+
+      <!-- =====================================================
+           VIDEO WORKSPACE
+      ====================================================== -->
+      <div
+        id="videoWorkspace"
+        class="studio-workspace hidden"
+      >
+
+        <!-- VIDEO PREVIEW TOOLBAR -->
+        <div class="workspace-toolbar">
+
+          <div class="toolbar-group">
+
+            <select id="videoAspectSelect">
+              <option value="reel">
+                Reel / Story · 1080 × 1920 · 9:16
+              </option>
+
+              <option value="portrait">
+                Instagram Portrait · 1080 × 1350 · 4:5
+              </option>
+
+              <option value="square">
+                Instagram Square · 1080 × 1080 · 1:1
+              </option>
+
+              <option value="landscape">
+                Landscape · 1920 × 1080 · 16:9
+              </option>
+            </select>
+
+          </div>
+
+
+          <div class="toolbar-group">
+
+            <button
+              id="videoSplitBtn"
+              class="tool-btn"
+              type="button"
+            >
+              ✂ Split
+            </button>
+
+            <button
+              id="videoDuplicateBtn"
+              class="tool-btn"
+              type="button"
+            >
+              Duplicate
+            </button>
+
+            <button
+              id="videoDeleteBtn"
+              class="tool-btn danger"
+              type="button"
+            >
+              Delete
+            </button>
+
+          </div>
+
+        </div>
+
+
+        <!-- VIDEO PREVIEW -->
+        <div class="video-preview-area">
+
+          <div class="video-preview-shell">
+
+            <canvas
+              id="videoCanvas"
+              width="1080"
+              height="1920"
+            ></canvas>
+
+
+            <div
+              id="videoEmptyPreview"
+              class="video-empty-preview"
+            >
+              <div class="video-empty-icon">
+                ▶
+              </div>
+
+              <strong>
+                Start your FWCWL video
+              </strong>
+
+              <span>
+                Upload a cricket clip or select a preset.
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- PLAYBACK BAR -->
+        <div class="playback-bar">
 
           <button
-            class="jpg-button"
-            id="downloadJpgBtn"
+            id="videoSkipBackBtn"
+            class="playback-icon"
             type="button"
           >
-            Download JPG
+            ↶
           </button>
 
+          <button
+            id="videoPlayBtn"
+            class="play-button"
+            type="button"
+          >
+            ▶
+          </button>
+
+          <button
+            id="videoSkipForwardBtn"
+            class="playback-icon"
+            type="button"
+          >
+            ↷
+          </button>
+
+
+          <span
+            id="videoCurrentTime"
+            class="timecode"
+          >
+            00:00.0
+          </span>
+
+          <div class="playback-progress-wrap">
+
+            <input
+              id="videoSeekRange"
+              type="range"
+              min="0"
+              max="1000"
+              value="0"
+            />
+
+          </div>
+
+          <span
+            id="videoDuration"
+            class="timecode"
+          >
+            00:00.0
+          </span>
+
         </div>
 
 
-      </aside>
+
+        <!-- ===================================================
+             TIMELINE
+        ==================================================== -->
+        <div class="timeline-panel">
+
+          <div class="timeline-toolbar">
+
+            <div>
+              <strong>Timeline</strong>
+              <span id="timelineDurationLabel">
+                0.0 sec
+              </span>
+            </div>
+
+            <div class="timeline-toolbar-right">
+              <span>Zoom</span>
+
+              <input
+                id="timelineZoom"
+                type="range"
+                min="50"
+                max="200"
+                value="100"
+              />
+            </div>
+
+          </div>
 
 
-    </main>
+          <div
+            id="timelineScroll"
+            class="timeline-scroll"
+          >
 
-  </div>
+            <div
+              id="timelineContent"
+              class="timeline-content"
+            >
 
-
-
-  <!-- =========================================================
-       EXPORT MODAL
-  ========================================================== -->
-  <div
-    class="modal-backdrop hidden"
-    id="exportModal"
-  >
-
-    <div class="export-modal">
-
-
-      <button
-        class="modal-close"
-        id="closeExportModal"
-        type="button"
-        aria-label="Close export window"
-      >
-        ×
-      </button>
+              <!-- RULER -->
+              <div
+                id="timelineRuler"
+                class="timeline-ruler"
+              ></div>
 
 
+              <!-- VIDEO TRACK -->
+              <div class="timeline-track-row">
 
-      <div class="modal-icon">
+                <div class="track-label">
+                  <span>V1</span>
+                  Video
+                </div>
 
-        <svg viewBox="0 0 24 24">
-          <path
-            d="M12 3v12m0 0 4-4m-4 4-4-4M5 20h14"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.8"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          />
-        </svg>
+                <div
+                  id="videoTrack"
+                  class="track-lane"
+                ></div>
+
+              </div>
+
+
+              <!-- IMAGE TRACK -->
+              <div class="timeline-track-row">
+
+                <div class="track-label">
+                  <span>P1</span>
+                  Photos
+                </div>
+
+                <div
+                  id="imageTrack"
+                  class="track-lane"
+                ></div>
+
+              </div>
+
+
+              <!-- TEXT TRACK -->
+              <div class="timeline-track-row">
+
+                <div class="track-label">
+                  <span>T1</span>
+                  Text
+                </div>
+
+                <div
+                  id="textTrack"
+                  class="track-lane"
+                ></div>
+
+              </div>
+
+
+              <!-- LOGO TRACK -->
+              <div class="timeline-track-row">
+
+                <div class="track-label">
+                  <span>L1</span>
+                  FWCWL
+                </div>
+
+                <div class="track-lane">
+
+                  <div
+                    id="logoTimelineBlock"
+                    class="timeline-block logo-block"
+                  >
+                    FWCWL LOGO
+                  </div>
+
+                </div>
+
+              </div>
+
+
+              <!-- AUDIO TRACK -->
+              <div class="timeline-track-row">
+
+                <div class="track-label">
+                  <span>A1</span>
+                  Audio
+                </div>
+
+                <div
+                  id="audioTrack"
+                  class="track-lane"
+                ></div>
+
+              </div>
+
+
+              <!-- PLAYHEAD -->
+              <div
+                id="timelinePlayhead"
+                class="timeline-playhead"
+              >
+                <div class="playhead-handle"></div>
+                <div class="playhead-line"></div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+
+    <!-- =======================================================
+         RIGHT SIDEBAR - POSTER
+    ======================================================== -->
+    <aside
+      id="posterRightPanel"
+      class="right-sidebar"
+    >
+
+      <div class="right-header">
+        <h2>Poster Content</h2>
+        <p>Customize the selected cricket template.</p>
+      </div>
+
+
+      <div class="right-scroll">
+
+        <!-- CONTENT -->
+        <section class="inspector-section">
+          <div class="inspector-title">Content</div>
+
+          <div class="form-field">
+            <label>Eyebrow</label>
+            <input
+              id="posterKicker"
+              type="text"
+              value="FWCWL • MATCH DAY"
+            />
+          </div>
+
+          <div class="form-field">
+            <label>Headline</label>
+            <textarea
+              id="posterHeadline"
+              rows="3"
+            >TAMPA
+VS RIVALS</textarea>
+          </div>
+
+          <div class="form-field">
+            <label>Details</label>
+            <textarea
+              id="posterSubheadline"
+              rows="3"
+            >Saturday • 10:00 AM • Tampa, Florida</textarea>
+          </div>
+
+          <div class="form-field">
+            <label>CTA</label>
+            <input
+              id="posterCta"
+              type="text"
+              value="MATCH DETAILS"
+            />
+          </div>
+
+          <div class="form-field">
+            <label>Footer</label>
+            <input
+              id="posterFooter"
+              type="text"
+              value="FLORIDA WEST COAST WINTER LEAGUE"
+            />
+          </div>
+        </section>
+
+
+        <!-- TYPOGRAPHY -->
+        <section class="inspector-section">
+          <div class="inspector-title">Typography</div>
+
+          <div class="form-field">
+            <label>Headline Font</label>
+
+            <select id="posterHeadlineFont">
+              <option value="Montserrat">
+                Montserrat
+              </option>
+              <option value="Bebas Neue">
+                Bebas Neue
+              </option>
+              <option value="Poppins">
+                Poppins
+              </option>
+              <option value="DM Sans">
+                DM Sans
+              </option>
+              <option value="Playfair Display">
+                Playfair Display
+              </option>
+            </select>
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Headline Size</label>
+              <span id="posterHeadlineSizeValue">112</span>
+            </div>
+
+            <input
+              id="posterHeadlineSize"
+              type="range"
+              min="60"
+              max="190"
+              value="112"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Vertical Position</label>
+              <span id="posterContentYValue">56%</span>
+            </div>
+
+            <input
+              id="posterContentY"
+              type="range"
+              min="20"
+              max="78"
+              value="56"
+            />
+          </div>
+
+
+          <div
+            id="posterAlignmentButtons"
+            class="segmented-control"
+          >
+            <button class="active" data-align="left">
+              Left
+            </button>
+            <button data-align="center">
+              Center
+            </button>
+            <button data-align="right">
+              Right
+            </button>
+          </div>
+        </section>
+
+
+        <!-- EFFECTS -->
+        <section class="inspector-section">
+          <div class="inspector-title">Photo & Effects</div>
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Dark Overlay</label>
+              <span id="posterOverlayValue">37%</span>
+            </div>
+
+            <input
+              id="posterOverlay"
+              type="range"
+              min="0"
+              max="85"
+              value="37"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Brightness</label>
+              <span id="posterBrightnessValue">100%</span>
+            </div>
+
+            <input
+              id="posterBrightness"
+              type="range"
+              min="40"
+              max="140"
+              value="100"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Saturation</label>
+              <span id="posterSaturationValue">100%</span>
+            </div>
+
+            <input
+              id="posterSaturation"
+              type="range"
+              min="0"
+              max="180"
+              value="100"
+            />
+          </div>
+
+
+          <label class="switch-row">
+            <div>
+              <strong>Gold Accent Glow</strong>
+              <span>FWCWL premium highlight</span>
+            </div>
+
+            <input
+              id="posterAccentGlow"
+              type="checkbox"
+              checked
+            />
+
+            <span class="switch-ui"></span>
+          </label>
+        </section>
 
       </div>
 
 
-
-      <h2>
-        Export FWCWL Poster
-      </h2>
-
-
-      <p>
-        Choose the format for your final cricket creative.
-      </p>
-
-
-
-      <div class="export-options">
-
+      <div class="right-footer">
 
         <button
-          class="export-option"
-          data-export-format="png"
+          id="posterDownloadPngBtn"
+          class="export-main-btn"
           type="button"
         >
-
-          <strong>
-            PNG
-          </strong>
-
           <span>
-            Maximum quality · recommended
+            <strong>Download PNG</strong>
+            <small>Instagram quality</small>
           </span>
 
+          <span>↓</span>
+        </button>
+
+        <button
+          id="posterDownloadJpgBtn"
+          class="export-alt-btn"
+          type="button"
+        >
+          Download JPG
+        </button>
+
+      </div>
+
+    </aside>
+
+
+
+    <!-- =======================================================
+         RIGHT SIDEBAR - VIDEO
+    ======================================================== -->
+    <aside
+      id="videoRightPanel"
+      class="right-sidebar hidden"
+    >
+
+      <div class="right-header">
+        <h2>Video Inspector</h2>
+        <p>Edit the selected timeline clip.</p>
+      </div>
+
+
+      <div class="right-scroll">
+
+        <!-- CLIP -->
+        <section class="inspector-section">
+
+          <div class="inspector-title-row">
+            <div class="inspector-title">
+              Selected Clip
+            </div>
+
+            <span
+              id="selectedClipBadge"
+              class="selected-badge"
+            >
+              None
+            </span>
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+              <label>Trim Start</label>
+              <input
+                id="clipTrimStart"
+                type="number"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+            </div>
+
+            <div class="form-field">
+              <label>Trim End</label>
+              <input
+                id="clipTrimEnd"
+                type="number"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+            </div>
+
+          </div>
+
+
+          <div class="form-field">
+            <label>Speed</label>
+
+            <select id="clipSpeed">
+              <option value="0.5">0.5×</option>
+              <option value="0.75">0.75×</option>
+              <option value="1" selected>1×</option>
+              <option value="1.25">1.25×</option>
+              <option value="1.5">1.5×</option>
+              <option value="2">2×</option>
+            </select>
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Clip Volume</label>
+              <span id="clipVolumeValue">100%</span>
+            </div>
+
+            <input
+              id="clipVolume"
+              type="range"
+              min="0"
+              max="100"
+              value="100"
+            />
+          </div>
+
+        </section>
+
+
+
+        <!-- TRANSFORM -->
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            Transform
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Scale</label>
+              <span id="clipScaleValue">100%</span>
+            </div>
+
+            <input
+              id="clipScale"
+              type="range"
+              min="50"
+              max="220"
+              value="100"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Horizontal</label>
+              <span id="clipXValue">50%</span>
+            </div>
+
+            <input
+              id="clipX"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Vertical</label>
+              <span id="clipYValue">50%</span>
+            </div>
+
+            <input
+              id="clipY"
+              type="range"
+              min="0"
+              max="100"
+              value="50"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Rotation</label>
+              <span id="clipRotationValue">0°</span>
+            </div>
+
+            <input
+              id="clipRotation"
+              type="range"
+              min="-180"
+              max="180"
+              value="0"
+            />
+          </div>
+
+        </section>
+
+
+
+        <!-- FILTER -->
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            Filters
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Brightness</label>
+              <span id="clipBrightnessValue">100%</span>
+            </div>
+
+            <input
+              id="clipBrightness"
+              type="range"
+              min="20"
+              max="180"
+              value="100"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Saturation</label>
+              <span id="clipSaturationValue">100%</span>
+            </div>
+
+            <input
+              id="clipSaturation"
+              type="range"
+              min="0"
+              max="220"
+              value="100"
+            />
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Contrast</label>
+              <span id="clipContrastValue">100%</span>
+            </div>
+
+            <input
+              id="clipContrast"
+              type="range"
+              min="20"
+              max="180"
+              value="100"
+            />
+          </div>
+
+        </section>
+
+
+
+        <!-- TRANSITIONS -->
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            Transitions
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+              <label>In</label>
+
+              <select id="clipTransitionIn">
+                <option value="none">None</option>
+                <option value="fade">Fade</option>
+                <option value="zoom">Zoom</option>
+                <option value="slide">Slide</option>
+                <option value="flash">Flash</option>
+              </select>
+            </div>
+
+
+            <div class="form-field">
+              <label>Out</label>
+
+              <select id="clipTransitionOut">
+                <option value="none">None</option>
+                <option value="fade">Fade</option>
+                <option value="zoom">Zoom</option>
+                <option value="slide">Slide</option>
+                <option value="flash">Flash</option>
+              </select>
+            </div>
+
+          </div>
+
+        </section>
+
+
+
+        <!-- VIDEO TEXT -->
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            Cricket Graphic
+          </div>
+
+
+          <div class="form-field">
+            <label>Title</label>
+
+            <input
+              id="videoTitleText"
+              type="text"
+              value="MATCH DAY"
+            />
+          </div>
+
+
+          <div class="form-field">
+            <label>Subtitle</label>
+
+            <input
+              id="videoSubtitleText"
+              type="text"
+              value="FWCWL • TAMPA, FLORIDA"
+            />
+          </div>
+
+
+          <div class="form-field">
+            <label>Score / Stat</label>
+
+            <input
+              id="videoScoreText"
+              type="text"
+              value=""
+              placeholder="186/5"
+            />
+          </div>
+
+
+          <div class="form-grid-2">
+
+            <div class="form-field">
+              <label>Start</label>
+
+              <input
+                id="videoTextStart"
+                type="number"
+                min="0"
+                step="0.1"
+                value="0"
+              />
+            </div>
+
+
+            <div class="form-field">
+              <label>End</label>
+
+              <input
+                id="videoTextEnd"
+                type="number"
+                min="0"
+                step="0.1"
+                value="5"
+              />
+            </div>
+
+          </div>
+
+
+          <div class="form-field">
+            <label>Animation</label>
+
+            <select id="videoTextAnimation">
+              <option value="fade">Fade</option>
+              <option value="rise">Rise</option>
+              <option value="pop">Pop</option>
+              <option value="slide">Slide</option>
+              <option value="none">None</option>
+            </select>
+          </div>
+
+        </section>
+
+
+
+        <!-- BRAND -->
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            FWCWL Branding
+          </div>
+
+
+          <label class="switch-row">
+            <div>
+              <strong>Official Logo</strong>
+              <span>Visible for entire video</span>
+            </div>
+
+            <input
+              id="videoShowLogo"
+              type="checkbox"
+              checked
+            />
+
+            <span class="switch-ui"></span>
+          </label>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Logo Size</label>
+              <span id="videoLogoSizeValue">100%</span>
+            </div>
+
+            <input
+              id="videoLogoSize"
+              type="range"
+              min="50"
+              max="180"
+              value="100"
+            />
+          </div>
+
+        </section>
+
+
+
+        <!-- AUDIO -->
+        <section class="inspector-section">
+
+          <div class="inspector-title">
+            Background Music
+          </div>
+
+
+          <div id="audioStatusCard" class="audio-status">
+            No background music
+          </div>
+
+
+          <div class="field-block">
+            <div class="range-head">
+              <label>Music Volume</label>
+              <span id="videoMusicVolumeValue">60%</span>
+            </div>
+
+            <input
+              id="videoMusicVolume"
+              type="range"
+              min="0"
+              max="100"
+              value="60"
+            />
+          </div>
+
+        </section>
+
+      </div>
+
+
+      <!-- EXPORT -->
+      <div class="right-footer">
+
+        <button
+          id="videoExportBtn"
+          class="export-main-btn"
+          type="button"
+        >
+          <span>
+            <strong>Export Video</strong>
+            <small id="videoExportTypeLabel">
+              Browser optimized
+            </small>
+          </span>
+
+          <span>↓</span>
         </button>
 
 
-
-        <button
-          class="export-option"
-          data-export-format="jpg"
-          type="button"
+        <div
+          id="videoExportProgressWrap"
+          class="export-progress-wrap hidden"
         >
 
-          <strong>
-            JPG
-          </strong>
+          <div class="export-progress-head">
+            <span>Rendering</span>
+            <span id="videoExportProgressLabel">0%</span>
+          </div>
 
-          <span>
-            Smaller file size
-          </span>
+          <div class="export-progress-track">
+            <div
+              id="videoExportProgressBar"
+              class="export-progress-bar"
+            ></div>
+          </div>
 
-        </button>
-
+        </div>
 
       </div>
 
+    </aside>
 
+  </main>
 
-      <div class="export-meta">
-
-
-        <div>
-
-          <span>
-            Resolution
-          </span>
-
-          <strong id="exportResolution">
-            1080 × 1350
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <span>
-            Branding
-          </span>
-
-          <strong>
-            FWCWL
-          </strong>
-
-        </div>
-
-
-        <div>
-
-          <span>
-            Color
-          </span>
-
-          <strong>
-            RGB
-          </strong>
-
-        </div>
-
-
-      </div>
-
-    </div>
-
-  </div>
+</div>
 
 
 
-  <!-- =========================================================
-       APP SCRIPT
-  ========================================================== -->
-  <script src="app.js"></script>
+<!-- =========================================================
+     HIDDEN MEDIA ELEMENTS
+========================================================== -->
+<video
+  id="videoSource"
+  playsinline
+  preload="auto"
+  style="display:none"
+></video>
+
+<audio
+  id="audioSource"
+  preload="auto"
+  loop
+  style="display:none"
+></audio>
+
+
+<script
+  type="module"
+  src="app.js"
+></script>
 
 </body>
 </html>
