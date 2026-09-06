@@ -1,53 +1,43 @@
-/* ============================================================
-   FWCWL CREATIVE STUDIO
-   POSTER EDITOR V9.3
-   ============================================================
-
-   SELF-CONTAINED POSTER ENGINE
-
-   Includes:
-   • 48+ cricket templates
-   • Exact template thumbnails
-   • Text layers
-   • Photo layers
-   • Cricket graphic layers
-   • Drag editing
-   • Layer manager
-   • Visibility / lock
-   • Typography controls
-   • Photo adjustments
-   • Position / scale / rotation
-   • Duplicate / reorder / delete
-   • Undo / redo
-   • Safe area
-   • Snap
-   • Responsive canvas fitting
-   • PNG / JPG export
-   • FWCWL official branding
-   • Enhanced Properties inspector
-   • Stronger selected-layer visibility
-   • Canvas design controls
-   • Texture-strength control
-   • Keyboard shortcuts
-
-   No external JS imports.
-============================================================ */
-
 (() => {
-  "use strict";
+  'use strict';
+
+  /* ============================================================
+     FWCWL POSTER EDITOR V10.0.0
+     ------------------------------------------------------------
+     SELF-CONTAINED / FAIL-SAFE BUILD
+
+     Protects against:
+     • Blank template library
+     • Silent runtime failures
+     • Missing required HTML IDs
+     • Individual template-preview failures
+     • Logo-load failures
+     • Upload failures
+     • Rendering exceptions
+     • Stale browser cache when used with V10 index script
+  ============================================================ */
+
+  const VERSION = '10.0.0';
+  const LOGO_PATH = 'assets/fwcwl-logo.jpeg';
 
 
-  /* ==========================================================
-     DOM HELPERS
-  ========================================================== */
+  /* ============================================================
+     HELPERS
+  ============================================================ */
 
-  const $ = selector =>
-    document.querySelector(selector);
+  const $ = (
+    selector,
+    root = document
+  ) =>
+    root.querySelector(selector);
 
 
-  const $$ = selector =>
+  const $$ = (
+    selector,
+    root = document
+  ) =>
     Array.from(
-      document.querySelectorAll(selector)
+      root.querySelectorAll(selector)
     );
 
 
@@ -66,28 +56,28 @@
 
 
   const uid = prefix =>
-    `${prefix}-${Math.random()
+    `${prefix}-${Date.now()
+      .toString(36)}-${Math.random()
       .toString(36)
-      .slice(2, 10)}-${Date.now()
-      .toString(36)
-      .slice(-6)}`;
+      .slice(2, 8)}`;
 
 
-  const escapeHtml = value =>
-    String(value ?? "")
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+  const esc = value =>
+    String(value ?? '')
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
 
 
   const normalizeHex = value => {
+
     let color =
-      String(value || "")
+      String(value || '')
         .trim();
 
-    if (!color.startsWith("#")) {
+    if (!color.startsWith('#')) {
       color = `#${color}`;
     }
 
@@ -98,33 +88,44 @@
 
 
   const rgba = (
-    color,
+    hex,
     alpha
   ) => {
-    const cleaned =
-      String(
-        color || "#ffffff"
-      ).replace("#", "");
 
-    const expanded =
-      cleaned.length === 3
-        ? cleaned
-            .split("")
-            .map(char => char + char)
-            .join("")
-        : cleaned;
+    let value =
+      String(
+        hex || '#ffffff'
+      ).replace('#', '');
+
+
+    if (
+      value.length === 3
+    ) {
+
+      value =
+        value
+          .split('')
+          .map(
+            char =>
+              char + char
+          )
+          .join('');
+    }
+
 
     const number =
       parseInt(
-        expanded,
+        value,
         16
       );
+
 
     if (
       Number.isNaN(number)
     ) {
       return `rgba(255,255,255,${alpha})`;
     }
+
 
     return `rgba(${
       (number >> 16) & 255
@@ -136,18 +137,13 @@
   };
 
 
-  const cloneSerializable =
-    object =>
-      JSON.parse(
-        JSON.stringify(object)
-      );
+  const clone = object =>
+    JSON.parse(
+      JSON.stringify(object)
+    );
 
 
-  /* ==========================================================
-     CANVAS HELPERS
-  ========================================================== */
-
-  function roundedRect(
+  function roundRectPath(
     ctx,
     x,
     y,
@@ -155,12 +151,14 @@
     height,
     radius
   ) {
+
     const r =
       Math.min(
         radius,
         Math.abs(width) / 2,
         Math.abs(height) / 2
       );
+
 
     ctx.beginPath();
 
@@ -205,41 +203,35 @@
   }
 
 
-  /* ==========================================================
-     POSTER FORMATS
-  ========================================================== */
+  /* ============================================================
+     FORMATS
+  ============================================================ */
 
   const FORMATS = {
 
     portrait: {
       width: 1080,
-      height: 1350,
-      label:
-        "Instagram Portrait"
+      height: 1350
     },
 
     square: {
       width: 1080,
-      height: 1080,
-      label:
-        "Instagram Square"
+      height: 1080
     },
 
     story: {
       width: 1080,
-      height: 1920,
-      label:
-        "Story / Reel Cover"
+      height: 1920
     }
 
   };
 
 
-  /* ==========================================================
+  /* ============================================================
      TEMPLATE FACTORY
-  ========================================================== */
+  ============================================================ */
 
-  const template = (
+  const T = (
     id,
     name,
     category,
@@ -257,14 +249,15 @@
     kicker,
     title,
     detail,
+    palette,
 
     cta:
       options.cta ||
-      "FWCWL",
+      'FWCWL',
 
     align:
       options.align ||
-      "left",
+      'left',
 
     titleSize:
       options.titleSize ||
@@ -280,7 +273,7 @@
 
     font:
       options.font ||
-      "Montserrat",
+      'Montserrat',
 
     texture:
       options.texture ||
@@ -288,256 +281,243 @@
   });
 
 
-  /* ==========================================================
-     CRICKET TEMPLATE LIBRARY
-  ========================================================== */
+  /* ============================================================
+     COMPLETE CRICKET TEMPLATE LIBRARY
+  ============================================================ */
 
   const TEMPLATES = [
 
-    template(
-      "match-day",
-      "Match Day",
-      "match",
-      "slash",
-      "FWCWL • MATCH DAY",
-      "TAMPA\nVS RIVALS",
-      "SATURDAY • 10:00 AM • TAMPA",
+    T(
+      'match-day',
+      'Match Day',
+      'match',
+      'slash',
+      'FWCWL • MATCH DAY',
+      'TAMPA\nVS RIVALS',
+      'SATURDAY • 10:00 AM • TAMPA',
       [
-        "#09090b",
-        "#551019",
-        "#f1c34d"
+        '#09090b',
+        '#551019',
+        '#f1c34d'
       ],
       {
         titleSize: 132
       }
     ),
 
-
-    template(
-      "big-vs",
-      "Big VS",
-      "match",
-      "versus",
-      "THE SHOWDOWN",
-      "TEAM A\nVS\nTEAM B",
-      "TWO TEAMS • ONE WINNER",
+    T(
+      'big-vs',
+      'Big VS',
+      'match',
+      'versus',
+      'THE SHOWDOWN',
+      'TEAM A\nVS\nTEAM B',
+      'TWO TEAMS • ONE WINNER',
       [
-        "#061522",
-        "#65141f",
-        "#f1c34d"
+        '#061522',
+        '#65141f',
+        '#f1c34d'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 122,
         titleY: 37,
-        font:
-          "Bebas Neue"
+        font: 'Bebas Neue'
       }
     ),
 
-
-    template(
-      "next-fixture",
-      "Next Fixture",
-      "match",
-      "fixture",
-      "NEXT FIXTURE",
-      "SATURDAY\n10:00 AM",
-      "TAMPA • FLORIDA",
+    T(
+      'next-fixture',
+      'Next Fixture',
+      'match',
+      'fixture',
+      'NEXT FIXTURE',
+      'SATURDAY\n10:00 AM',
+      'TAMPA • FLORIDA',
       [
-        "#111317",
-        "#4b1017",
-        "#f1c34d"
+        '#111317',
+        '#4b1017',
+        '#f1c34d'
       ],
       {
         titleSize: 115
       }
     ),
 
-
-    template(
-      "game-day",
-      "Game Day",
-      "match",
-      "stadium",
+    T(
+      'game-day',
+      'Game Day',
+      'match',
+      'stadium',
       "IT'S TIME",
-      "GAME\nDAY",
-      "FWCWL • PRIME TIME CRICKET",
+      'GAME\nDAY',
+      'FWCWL • PRIME TIME CRICKET',
       [
-        "#04151d",
-        "#0e3440",
-        "#f1c34d"
+        '#04151d',
+        '#0e3440',
+        '#f1c34d'
       ],
       {
         titleSize: 158
       }
     ),
 
-
-    template(
-      "night-match",
-      "Night Match",
-      "match",
-      "stadium",
-      "UNDER THE LIGHTS",
-      "GAME\nNIGHT",
-      "FRIDAY • 7:30 PM",
+    T(
+      'night-match',
+      'Night Match',
+      'match',
+      'stadium',
+      'UNDER THE LIGHTS',
+      'GAME\nNIGHT',
+      'FRIDAY • 7:30 PM',
       [
-        "#03090f",
-        "#102a3a",
-        "#e5b63a"
+        '#03090f',
+        '#102a3a',
+        '#e5b63a'
       ],
       {
         titleSize: 150
       }
     ),
 
-
-    template(
-      "rivalry",
-      "Rivalry",
-      "match",
-      "split",
-      "RIVALRY SERIES",
-      "NO\nFRIENDS",
-      "ONLY CRICKET",
+    T(
+      'rivalry',
+      'Rivalry',
+      'match',
+      'split',
+      'RIVALRY SERIES',
+      'NO\nFRIENDS',
+      'ONLY CRICKET',
       [
-        "#0c0e12",
-        "#66131d",
-        "#f1c34d"
+        '#0c0e12',
+        '#66131d',
+        '#f1c34d'
       ],
       {
         titleSize: 142
       }
     ),
 
-
-    template(
-      "pre-match",
-      "Pre-Match",
-      "match",
-      "lines",
-      "MATCH PREVIEW",
-      "READY\nTO GO",
-      "THE COUNTDOWN STARTS NOW",
+    T(
+      'pre-match',
+      'Pre-Match',
+      'match',
+      'lines',
+      'MATCH PREVIEW',
+      'READY\nTO GO',
+      'THE COUNTDOWN STARTS NOW',
       [
-        "#071418",
-        "#4a1017",
-        "#efc34f"
+        '#071418',
+        '#4a1017',
+        '#efc34f'
       ],
       {
         titleSize: 140
       }
     ),
 
-
-    template(
-      "match-centre",
-      "Match Centre",
-      "match",
-      "score",
-      "FWCWL MATCH CENTRE",
-      "LIVE\nCRICKET",
-      "SCORES • STATS • UPDATES",
+    T(
+      'match-centre',
+      'Match Centre',
+      'match',
+      'score',
+      'FWCWL MATCH CENTRE',
+      'LIVE\nCRICKET',
+      'SCORES • STATS • UPDATES',
       [
-        "#071515",
-        "#142820",
-        "#f1c34d"
+        '#071515',
+        '#142820',
+        '#f1c34d'
       ],
       {
         titleSize: 136
       }
     ),
 
-
-    template(
-      "playing-xi",
-      "Playing XI",
-      "team",
-      "lineup",
-      "MATCH PLAN",
-      "PLAYING\nXI",
-      "TEAM SHEET",
+    T(
+      'playing-xi',
+      'Playing XI',
+      'team',
+      'lineup',
+      'MATCH PLAN',
+      'PLAYING\nXI',
+      'TEAM SHEET',
       [
-        "#061b19",
-        "#102922",
-        "#f1c34d"
+        '#061b19',
+        '#102922',
+        '#f1c34d'
       ],
       {
         titleSize: 148
       }
     ),
 
-
-    template(
-      "squad",
-      "Squad Reveal",
-      "team",
-      "grid",
-      "FWCWL SQUAD",
-      "MEET\nTHE TEAM",
-      "READY FOR BATTLE",
+    T(
+      'squad',
+      'Squad Reveal',
+      'team',
+      'grid',
+      'FWCWL SQUAD',
+      'MEET\nTHE TEAM',
+      'READY FOR BATTLE',
       [
-        "#130e11",
-        "#5e1520",
-        "#efc04a"
+        '#130e11',
+        '#5e1520',
+        '#efc04a'
       ],
       {
         titleSize: 132
       }
     ),
 
-
-    template(
-      "captain",
-      "Captain",
-      "team",
-      "captain",
-      "LEADING THE SIDE",
-      "OUR\nCAPTAIN",
-      "LEADERSHIP • BELIEF • INTENT",
+    T(
+      'captain',
+      'Captain',
+      'team',
+      'captain',
+      'LEADING THE SIDE',
+      'OUR\nCAPTAIN',
+      'LEADERSHIP • BELIEF • INTENT',
       [
-        "#06131b",
-        "#321016",
-        "#f1c34d"
+        '#06131b',
+        '#321016',
+        '#f1c34d'
       ],
       {
         titleSize: 150
       }
     ),
 
-
-    template(
-      "vice-captain",
-      "Vice Captain",
-      "team",
-      "captain",
-      "LEADERSHIP GROUP",
-      "VICE\nCAPTAIN",
-      "READY TO LEAD",
+    T(
+      'vice-captain',
+      'Vice Captain',
+      'team',
+      'captain',
+      'LEADERSHIP GROUP',
+      'VICE\nCAPTAIN',
+      'READY TO LEAD',
       [
-        "#06141a",
-        "#48131c",
-        "#d9ac37"
+        '#06141a',
+        '#48131c',
+        '#d9ac37'
       ],
       {
         titleSize: 132
       }
     ),
 
-
-    template(
-      "player-spotlight",
-      "Player Spotlight",
-      "team",
-      "player",
-      "FWCWL PLAYER SERIES",
-      "PLAYER\nSPOTLIGHT",
-      "NAME • ROLE • TEAM",
+    T(
+      'player-spotlight',
+      'Player Spotlight',
+      'team',
+      'player',
+      'FWCWL PLAYER SERIES',
+      'PLAYER\nSPOTLIGHT',
+      'NAME • ROLE • TEAM',
       [
-        "#061a1d",
-        "#521620",
-        "#f1c34d"
+        '#061a1d',
+        '#521620',
+        '#f1c34d'
       ],
       {
         titleSize: 126,
@@ -545,57 +525,54 @@
       }
     ),
 
-
-    template(
-      "new-signing",
-      "Player Signing",
-      "team",
-      "player",
-      "WELCOME TO THE TEAM",
-      "NEW\nSIGNING",
-      "THE JOURNEY BEGINS",
+    T(
+      'new-signing',
+      'Player Signing',
+      'team',
+      'player',
+      'WELCOME TO THE TEAM',
+      'NEW\nSIGNING',
+      'THE JOURNEY BEGINS',
       [
-        "#0a1014",
-        "#59111a",
-        "#f1c34d"
+        '#0a1014',
+        '#59111a',
+        '#f1c34d'
       ],
       {
         titleSize: 140
       }
     ),
 
-
-    template(
-      "training-day",
-      "Training Day",
-      "team",
-      "lines",
-      "PUT IN THE WORK",
-      "TRAINING\nDAY",
-      "NO SHORTCUTS",
+    T(
+      'training-day',
+      'Training Day',
+      'team',
+      'lines',
+      'PUT IN THE WORK',
+      'TRAINING\nDAY',
+      'NO SHORTCUTS',
       [
-        "#081518",
-        "#1d2e2c",
-        "#e9bb43"
+        '#081518',
+        '#1d2e2c',
+        '#e9bb43'
       ],
       {
         titleSize: 140
       }
     ),
 
-
-    template(
-      "team-culture",
-      "Team Culture",
-      "team",
-      "grit",
-      "FWCWL • CRICKET CULTURE",
-      "PLAY\nHARD",
-      "ONE TEAM • ONE PURPOSE",
+    T(
+      'team-culture',
+      'Team Culture',
+      'team',
+      'grit',
+      'FWCWL • CRICKET CULTURE',
+      'PLAY\nHARD',
+      'ONE TEAM • ONE PURPOSE',
       [
-        "#32110d",
-        "#6c2b1a",
-        "#f0bf47"
+        '#32110d',
+        '#6c2b1a',
+        '#f0bf47'
       ],
       {
         titleSize: 152,
@@ -603,19 +580,18 @@
       }
     ),
 
-
-    template(
-      "potm",
-      "Player of the Match",
-      "result",
-      "award",
-      "OUTSTANDING PERFORMANCE",
-      "PLAYER OF\nTHE MATCH",
-      "A PERFORMANCE THAT CHANGED THE GAME",
+    T(
+      'potm',
+      'Player of the Match',
+      'result',
+      'award',
+      'OUTSTANDING PERFORMANCE',
+      'PLAYER OF\nTHE MATCH',
+      'A PERFORMANCE THAT CHANGED THE GAME',
       [
-        "#171019",
-        "#681d2c",
-        "#d5a83b"
+        '#171019',
+        '#681d2c',
+        '#d5a83b'
       ],
       {
         titleSize: 116,
@@ -623,432 +599,407 @@
       }
     ),
 
-
-    template(
-      "mvp",
-      "MVP",
-      "result",
-      "gold",
-      "MOST VALUABLE PLAYER",
-      "MVP",
-      "PURE IMPACT • PURE PERFORMANCE",
+    T(
+      'mvp',
+      'MVP',
+      'result',
+      'gold',
+      'MOST VALUABLE PLAYER',
+      'MVP',
+      'PURE IMPACT • PURE PERFORMANCE',
       [
-        "#090909",
-        "#2e220d",
-        "#f6cd54"
+        '#090909',
+        '#2e220d',
+        '#f6cd54'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 220,
-        font:
-          "Bebas Neue"
+        font: 'Bebas Neue'
       }
     ),
 
-
-    template(
-      "result",
-      "Match Result",
-      "result",
-      "result",
-      "FINAL RESULT",
-      "VICTORY",
-      "WON BY 24 RUNS",
+    T(
+      'result',
+      'Match Result',
+      'result',
+      'result',
+      'FINAL RESULT',
+      'VICTORY',
+      'WON BY 24 RUNS',
       [
-        "#06171b",
-        "#49131a",
-        "#f1c34d"
+        '#06171b',
+        '#49131a',
+        '#f1c34d'
       ],
       {
         titleSize: 160
       }
     ),
 
-
-    template(
-      "scorecard",
-      "Scorecard",
-      "result",
-      "score",
-      "FINAL SCORE",
-      "186 / 5",
-      "20 OVERS • TARGET 163",
+    T(
+      'scorecard',
+      'Scorecard',
+      'result',
+      'score',
+      'FINAL SCORE',
+      '186 / 5',
+      '20 OVERS • TARGET 163',
       [
-        "#050708",
-        "#182327",
-        "#f1c34d"
+        '#050708',
+        '#182327',
+        '#f1c34d'
       ],
       {
         titleSize: 180,
-        font:
-          "Bebas Neue"
+        font: 'Bebas Neue'
       }
     ),
 
-
-    template(
-      "live-score",
-      "Live Score",
-      "result",
-      "score",
-      "● LIVE",
-      "142 / 4",
-      "16.2 OVERS • NEED 38 FROM 22",
+    T(
+      'live-score',
+      'Live Score',
+      'result',
+      'score',
+      '● LIVE',
+      '142 / 4',
+      '16.2 OVERS • NEED 38 FROM 22',
       [
-        "#061219",
-        "#181b20",
-        "#e93d49"
+        '#061219',
+        '#181b20',
+        '#e93d49'
       ],
       {
         titleSize: 180,
-        font:
-          "Bebas Neue"
+        font: 'Bebas Neue'
       }
     ),
 
-
-    template(
-      "champions",
-      "Champions",
-      "result",
-      "gold",
-      "FWCWL CHAMPIONS",
-      "CHAMPIONS",
-      "THE TROPHY IS OURS",
+    T(
+      'champions',
+      'Champions',
+      'result',
+      'gold',
+      'FWCWL CHAMPIONS',
+      'CHAMPIONS',
+      'THE TROPHY IS OURS',
       [
-        "#080808",
-        "#33210b",
-        "#f1c34d"
+        '#080808',
+        '#33210b',
+        '#f1c34d'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 148,
         titleY: 46
       }
     ),
 
-
-    template(
-      "top-scorer",
-      "Top Scorer",
-      "result",
-      "award",
-      "BATSMAN OF THE SEASON",
-      "TOP\nSCORER",
-      "RUNS • AVERAGE • STRIKE RATE",
+    T(
+      'top-scorer',
+      'Top Scorer',
+      'result',
+      'award',
+      'BATSMAN OF THE SEASON',
+      'TOP\nSCORER',
+      'RUNS • AVERAGE • STRIKE RATE',
       [
-        "#0a1216",
-        "#4e121c",
-        "#e8b63e"
+        '#0a1216',
+        '#4e121c',
+        '#e8b63e'
       ],
       {
         titleSize: 148
       }
     ),
 
-
-    template(
-      "best-bowler",
-      "Best Bowler",
-      "result",
-      "award",
-      "BOWLER OF THE SEASON",
-      "BEST\nBOWLER",
-      "WICKETS • ECONOMY • IMPACT",
+    T(
+      'best-bowler',
+      'Best Bowler',
+      'result',
+      'award',
+      'BOWLER OF THE SEASON',
+      'BEST\nBOWLER',
+      'WICKETS • ECONOMY • IMPACT',
       [
-        "#06171c",
-        "#42121a",
-        "#f1c34d"
+        '#06171c',
+        '#42121a',
+        '#f1c34d'
       ],
       {
         titleSize: 148
       }
     ),
 
-
-    template(
-      "final",
-      "The Final",
-      "event",
-      "final",
-      "CHAMPIONSHIP",
-      "THE\nFINAL",
-      "ONE GAME • ONE TROPHY",
+    T(
+      'final',
+      'The Final',
+      'event',
+      'final',
+      'CHAMPIONSHIP',
+      'THE\nFINAL',
+      'ONE GAME • ONE TROPHY',
       [
-        "#08080a",
-        "#431017",
-        "#f2ca55"
+        '#08080a',
+        '#431017',
+        '#f2ca55'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 174,
         titleY: 40
       }
     ),
 
-
-    template(
-      "semi-final",
-      "Semi Final",
-      "event",
-      "final",
-      "ONE STEP AWAY",
-      "SEMI\nFINAL",
-      "EVERY BALL MATTERS",
+    T(
+      'semi-final',
+      'Semi Final',
+      'event',
+      'final',
+      'ONE STEP AWAY',
+      'SEMI\nFINAL',
+      'EVERY BALL MATTERS',
       [
-        "#071120",
-        "#711623",
-        "#f1c34d"
+        '#071120',
+        '#711623',
+        '#f1c34d'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 160,
         titleY: 40
       }
     ),
 
-
-    template(
-      "tournament",
-      "Tournament",
-      "event",
-      "pitch",
-      "FWCWL PRESENTS",
-      "WINTER\nLEAGUE",
-      "TAMPA • FLORIDA",
+    T(
+      'tournament',
+      'Tournament',
+      'event',
+      'pitch',
+      'FWCWL PRESENTS',
+      'WINTER\nLEAGUE',
+      'TAMPA • FLORIDA',
       [
-        "#052023",
-        "#10504e",
-        "#edbc42"
+        '#052023',
+        '#10504e',
+        '#edbc42'
       ],
       {
         titleSize: 144
       }
     ),
 
-
-    template(
-      "registration",
-      "Registration",
-      "event",
-      "ticket",
-      "REGISTRATION IS OPEN",
-      "JOIN\nTHE LEAGUE",
-      "TEAMS • PLAYERS • CRICKET",
+    T(
+      'registration',
+      'Registration',
+      'event',
+      'ticket',
+      'REGISTRATION IS OPEN',
+      'JOIN\nTHE LEAGUE',
+      'TEAMS • PLAYERS • CRICKET',
       [
-        "#111013",
-        "#5c131d",
-        "#f1c34d"
+        '#111013',
+        '#5c131d',
+        '#f1c34d'
       ],
       {
         titleSize: 138
       }
     ),
 
-
-    template(
-      "tryouts",
-      "Tryouts",
-      "event",
-      "slash",
-      "SHOW US YOUR GAME",
-      "OPEN\nTRYOUTS",
-      "YOUR NEXT INNINGS STARTS HERE",
+    T(
+      'tryouts',
+      'Tryouts',
+      'event',
+      'slash',
+      'SHOW US YOUR GAME',
+      'OPEN\nTRYOUTS',
+      'YOUR NEXT INNINGS STARTS HERE',
       [
-        "#06171b",
-        "#1e3a43",
-        "#f1c34d"
+        '#06171b',
+        '#1e3a43',
+        '#f1c34d'
       ],
       {
         titleSize: 150
       }
     ),
 
-
-    template(
-      "auction",
-      "Player Auction",
-      "event",
-      "cards",
-      "FWCWL AUCTION NIGHT",
-      "PLAYER\nAUCTION",
-      "BUILD YOUR SQUAD",
+    T(
+      'auction',
+      'Player Auction',
+      'event',
+      'cards',
+      'FWCWL AUCTION NIGHT',
+      'PLAYER\nAUCTION',
+      'BUILD YOUR SQUAD',
       [
-        "#140f11",
-        "#5b121b",
-        "#f1c34d"
+        '#140f11',
+        '#5b121b',
+        '#f1c34d'
       ],
       {
         titleSize: 138
       }
     ),
 
-
-    template(
-      "schedule",
-      "Season Schedule",
-      "event",
-      "fixture",
-      "SEASON 2026",
-      "FIXTURE\nDROP",
-      "THE ROAD STARTS HERE",
+    T(
+      'schedule',
+      'Season Schedule',
+      'event',
+      'fixture',
+      'SEASON 2026',
+      'FIXTURE\nDROP',
+      'THE ROAD STARTS HERE',
       [
-        "#081116",
-        "#3d1016",
-        "#f1c34d"
+        '#081116',
+        '#3d1016',
+        '#f1c34d'
       ],
       {
         titleSize: 144
       }
     ),
 
-
-    template(
-      "opening",
-      "Opening Ceremony",
-      "event",
-      "gold",
-      "FWCWL OPENING NIGHT",
-      "LET THE\nSEASON BEGIN",
-      "WELCOME TO THE LEAGUE",
+    T(
+      'opening',
+      'Opening Ceremony',
+      'event',
+      'gold',
+      'FWCWL OPENING NIGHT',
+      'LET THE\nSEASON BEGIN',
+      'WELCOME TO THE LEAGUE',
       [
-        "#090909",
-        "#41141b",
-        "#efc04b"
+        '#090909',
+        '#41141b',
+        '#efc04b'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 116
       }
     ),
 
-
-    template(
-      "milestone",
-      "Milestone",
-      "social",
-      "milestone",
-      "CAREER MILESTONE",
-      "100",
-      "A LANDMARK INNINGS",
+    T(
+      'milestone',
+      'Milestone',
+      'social',
+      'milestone',
+      'CAREER MILESTONE',
+      '100',
+      'A LANDMARK INNINGS',
       [
-        "#071419",
-        "#50131c",
-        "#f1c34d"
+        '#071419',
+        '#50131c',
+        '#f1c34d'
       ],
       {
         titleSize: 230
       }
     ),
 
-
-    template(
-      "birthday",
-      "Birthday",
-      "social",
-      "confetti",
-      "FWCWL FAMILY",
-      "HAPPY\nBIRTHDAY",
-      "WISHING YOU A GREAT YEAR",
+    T(
+      'birthday',
+      'Birthday',
+      'social',
+      'confetti',
+      'FWCWL FAMILY',
+      'HAPPY\nBIRTHDAY',
+      'WISHING YOU A GREAT YEAR',
       [
-        "#160f18",
-        "#6b203c",
-        "#f1c34d"
+        '#160f18',
+        '#6b203c',
+        '#f1c34d'
       ],
       {
         titleSize: 134
       }
     ),
 
-
-    template(
-      "sponsor",
-      "Sponsor",
-      "social",
-      "frame",
-      "OFFICIAL PARTNER",
-      "WELCOME\nABOARD",
-      "PROUDLY PARTNERING WITH FWCWL",
+    T(
+      'sponsor',
+      'Sponsor',
+      'social',
+      'frame',
+      'OFFICIAL PARTNER',
+      'WELCOME\nABOARD',
+      'PROUDLY PARTNERING WITH FWCWL',
       [
-        "#0a0b0d",
-        "#232529",
-        "#f1c34d"
+        '#0a0b0d',
+        '#232529',
+        '#f1c34d'
       ],
       {
         titleSize: 126
       }
     ),
 
-
-    template(
-      "thank-you",
-      "Thank You",
-      "social",
-      "radial",
-      "FROM THE FWCWL FAMILY",
-      "THANK\nYOU",
-      "FOR YOUR SUPPORT",
+    T(
+      'thank-you',
+      'Thank You',
+      'social',
+      'radial',
+      'FROM THE FWCWL FAMILY',
+      'THANK\nYOU',
+      'FOR YOUR SUPPORT',
       [
-        "#091417",
-        "#47121a",
-        "#f1c34d"
+        '#091417',
+        '#47121a',
+        '#f1c34d'
       ],
       {
         titleSize: 162
       }
     ),
 
-
-    template(
-      "breaking",
-      "Breaking News",
-      "social",
-      "news",
-      "FWCWL • BREAKING",
-      "BIG\nNEWS",
-      "OFFICIAL ANNOUNCEMENT",
+    T(
+      'breaking',
+      'Breaking News',
+      'social',
+      'news',
+      'FWCWL • BREAKING',
+      'BIG\nNEWS',
+      'OFFICIAL ANNOUNCEMENT',
       [
-        "#090a0d",
-        "#601019",
-        "#f1c34d"
+        '#090a0d',
+        '#601019',
+        '#f1c34d'
       ],
       {
         titleSize: 180
       }
     ),
 
-
-    template(
-      "highlights",
-      "Match Highlights",
-      "social",
-      "slash",
-      "MATCH RECAP",
-      "HIGHLIGHTS",
-      "THE MOMENTS THAT DECIDED THE GAME",
+    T(
+      'highlights',
+      'Match Highlights',
+      'social',
+      'slash',
+      'MATCH RECAP',
+      'HIGHLIGHTS',
+      'THE MOMENTS THAT DECIDED THE GAME',
       [
-        "#061419",
-        "#55131d",
-        "#f1c34d"
+        '#061419',
+        '#55131d',
+        '#f1c34d'
       ],
       {
         titleSize: 140
       }
     ),
 
-
-    template(
-      "brutalist",
-      "Brutalist Match",
-      "rustic",
-      "brutalist",
-      "FWCWL MATCH CENTRE",
-      "NO\nEXCUSES",
-      "LIMITED • RAW • CRICKET",
+    T(
+      'brutalist',
+      'Brutalist Match',
+      'rustic',
+      'brutalist',
+      'FWCWL MATCH CENTRE',
+      'NO\nEXCUSES',
+      'LIMITED • RAW • CRICKET',
       [
-        "#111111",
-        "#1c1a16",
-        "#d4ad4a"
+        '#111111',
+        '#1c1a16',
+        '#d4ad4a'
       ],
       {
         titleSize: 160,
@@ -1056,19 +1007,18 @@
       }
     ),
 
-
-    template(
-      "film-grain",
-      "Film Grain Player",
-      "rustic",
-      "film",
-      "PLAYER FEATURE",
-      "BUILT\nDIFFERENT",
-      "GRIT • DISCIPLINE • GAME",
+    T(
+      'film-grain',
+      'Film Grain Player',
+      'rustic',
+      'film',
+      'PLAYER FEATURE',
+      'BUILT\nDIFFERENT',
+      'GRIT • DISCIPLINE • GAME',
       [
-        "#221814",
-        "#3a2820",
-        "#d2aa48"
+        '#221814',
+        '#3a2820',
+        '#d2aa48'
       ],
       {
         titleSize: 140,
@@ -1076,19 +1026,18 @@
       }
     ),
 
-
-    template(
-      "red-clay",
-      "Red Clay Cricket",
-      "rustic",
-      "grit",
-      "FWCWL • CRICKET CULTURE",
-      "PLAY\nHARD",
-      "RUSTIC SERIES",
+    T(
+      'red-clay',
+      'Red Clay Cricket',
+      'rustic',
+      'grit',
+      'FWCWL • CRICKET CULTURE',
+      'PLAY\nHARD',
+      'RUSTIC SERIES',
       [
-        "#35120d",
-        "#722c1a",
-        "#e8bb48"
+        '#35120d',
+        '#722c1a',
+        '#e8bb48'
       ],
       {
         titleSize: 150,
@@ -1096,19 +1045,18 @@
       }
     ),
 
-
-    template(
-      "black-gold",
-      "Black Gold Texture",
-      "rustic",
-      "gold-grit",
-      "PREMIER CRICKET",
-      "THE\nFINAL",
-      "LIMITED EDITION",
+    T(
+      'black-gold',
+      'Black Gold Texture',
+      'rustic',
+      'gold-grit',
+      'PREMIER CRICKET',
+      'THE\nFINAL',
+      'LIMITED EDITION',
       [
-        "#090909",
-        "#171309",
-        "#d6a93a"
+        '#090909',
+        '#171309',
+        '#d6a93a'
       ],
       {
         titleSize: 158,
@@ -1116,19 +1064,18 @@
       }
     ),
 
-
-    template(
-      "weathered",
-      "Weathered Fixture",
-      "rustic",
-      "paper",
-      "MATCH NOTICE",
-      "NEXT\nFIXTURE",
-      "FWCWL ARCHIVES",
+    T(
+      'weathered',
+      'Weathered Fixture',
+      'rustic',
+      'paper',
+      'MATCH NOTICE',
+      'NEXT\nFIXTURE',
+      'FWCWL ARCHIVES',
       [
-        "#d8c7a6",
-        "#9f8869",
-        "#7f2226"
+        '#d8c7a6',
+        '#9f8869',
+        '#7f2226'
       ],
       {
         titleSize: 138,
@@ -1136,259 +1083,412 @@
       }
     ),
 
-
-    template(
-      "player-collage",
-      "Player Collage",
-      "layered",
-      "collage",
-      "FWCWL PLAYER SERIES",
-      "PLAYER\nSPOTLIGHT",
-      "LAYERED EDITORIAL",
+    T(
+      'player-collage',
+      'Player Collage',
+      'layered',
+      'collage',
+      'FWCWL PLAYER SERIES',
+      'PLAYER\nSPOTLIGHT',
+      'LAYERED EDITORIAL',
       [
-        "#171016",
-        "#6b1b27",
-        "#efc14b"
+        '#171016',
+        '#6b1b27',
+        '#efc14b'
       ],
       {
         titleSize: 128
       }
     ),
 
-
-    template(
-      "tactical-lineup",
-      "Tactical Lineup",
-      "layered",
-      "lineup",
-      "MATCH PLAN",
-      "PLAYING\nXI",
-      "TACTICAL TEAM SHEET",
+    T(
+      'tactical-lineup',
+      'Tactical Lineup',
+      'layered',
+      'lineup',
+      'MATCH PLAN',
+      'PLAYING\nXI',
+      'TACTICAL TEAM SHEET',
       [
-        "#061b18",
-        "#142b22",
-        "#f1c34d"
+        '#061b18',
+        '#142b22',
+        '#f1c34d'
       ],
       {
         titleSize: 148
       }
     ),
 
-
-    template(
-      "stacked-rivalry",
-      "Stacked Rivalry",
-      "layered",
-      "stack",
-      "RIVALRY WEEK",
-      "TEAM A\nVS\nTEAM B",
-      "LAYERED MATCH SERIES",
+    T(
+      'stacked-rivalry',
+      'Stacked Rivalry',
+      'layered',
+      'stack',
+      'RIVALRY WEEK',
+      'TEAM A\nVS\nTEAM B',
+      'LAYERED MATCH SERIES',
       [
-        "#101118",
-        "#701822",
-        "#f1c34d"
+        '#101118',
+        '#701822',
+        '#f1c34d'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 118
       }
     ),
 
-
-    template(
-      "cutout-hero",
-      "Cutout Hero",
-      "layered",
-      "cutout",
-      "PLAYER FEATURE",
-      "OWN\nTHE GAME",
-      "FWCWL HERO SERIES",
+    T(
+      'cutout-hero',
+      'Cutout Hero',
+      'layered',
+      'cutout',
+      'PLAYER FEATURE',
+      'OWN\nTHE GAME',
+      'FWCWL HERO SERIES',
       [
-        "#07141b",
-        "#50131d",
-        "#f1c34d"
+        '#07141b',
+        '#50131d',
+        '#f1c34d'
       ],
       {
         titleSize: 150
       }
     ),
 
-
-    template(
-      "retro",
-      "Retro Cricket",
-      "vintage",
-      "retro",
-      "TAMPA CRICKET",
-      "SUMMER\nCRICKET",
-      "ARCHIVE SERIES",
+    T(
+      'retro',
+      'Retro Cricket',
+      'vintage',
+      'retro',
+      'TAMPA CRICKET',
+      'SUMMER\nCRICKET',
+      'ARCHIVE SERIES',
       [
-        "#c8ac81",
-        "#74464b",
-        "#4b2b25"
+        '#c8ac81',
+        '#74464b',
+        '#4b2b25'
       ],
       {
         titleSize: 132,
-        font:
-          "Playfair Display",
+        font: 'Playfair Display',
         texture: 1
       }
     ),
 
-
-    template(
-      "trophy-archive",
-      "Trophy Archive",
-      "vintage",
-      "paper",
-      "FWCWL ARCHIVES",
-      "CHAMPIONS",
-      "A SEASON TO REMEMBER",
+    T(
+      'trophy-archive',
+      'Trophy Archive',
+      'vintage',
+      'paper',
+      'FWCWL ARCHIVES',
+      'CHAMPIONS',
+      'A SEASON TO REMEMBER',
       [
-        "#d4bc8d",
-        "#a78760",
-        "#852c31"
+        '#d4bc8d',
+        '#a78760',
+        '#852c31'
       ],
       {
-        align: "center",
+        align: 'center',
         titleSize: 124,
-        font:
-          "Playfair Display",
+        font: 'Playfair Display',
         texture: 1
       }
     ),
 
-
-    template(
-      "heritage",
-      "Heritage Match",
-      "vintage",
-      "retro",
-      "HERITAGE SERIES",
-      "CLASSIC\nCRICKET",
-      "TRADITION MEETS COMPETITION",
+    T(
+      'heritage',
+      'Heritage Match',
+      'vintage',
+      'retro',
+      'HERITAGE SERIES',
+      'CLASSIC\nCRICKET',
+      'TRADITION MEETS COMPETITION',
       [
-        "#c6af88",
-        "#675747",
-        "#7b292c"
+        '#c6af88',
+        '#675747',
+        '#7b292c'
       ],
       {
         titleSize: 126,
-        font:
-          "Playfair Display",
+        font: 'Playfair Display',
         texture: 1
       }
     ),
 
-
-    template(
-      "editorial-feature",
-      "Editorial Feature",
-      "editorial",
-      "editorial",
-      "THE FWCWL EDIT",
-      "THE\nGAME",
-      "A MODERN CRICKET STORY",
+    T(
+      'editorial-feature',
+      'Editorial Feature',
+      'editorial',
+      'editorial',
+      'THE FWCWL EDIT',
+      'THE\nGAME',
+      'A MODERN CRICKET STORY',
       [
-        "#eee4cf",
-        "#cbb892",
-        "#6f1d28"
+        '#eee4cf',
+        '#cbb892',
+        '#6f1d28'
       ],
       {
         titleSize: 158,
-        font:
-          "Playfair Display"
+        font: 'Playfair Display'
       }
     )
 
   ];
 
 
-  /* ==========================================================
-     POSTER EDITOR
-  ========================================================== */
+  /* ============================================================
+     REQUIRED HTML CONTRACT
+  ============================================================ */
+
+  const REQUIRED_IDS = [
+
+    'posterWorkspace',
+    'posterCanvas',
+    'posterTemplateGrid',
+    'posterTemplateCount',
+    'posterInspector',
+    'posterInspectorTitle',
+    'posterInspectorType',
+    'posterCanvasSize',
+    'posterStage',
+    'posterZoomValue'
+
+  ];
+
+
+  function setBootState(
+    state,
+    detail = ''
+  ) {
+
+    document.documentElement
+      .dataset
+      .posterBoot =
+      state;
+
+
+    window.__FWCWL_POSTER_STATUS__ = {
+
+      version:
+        VERSION,
+
+      state,
+
+      detail,
+
+      at:
+        Date.now()
+
+    };
+  }
+
+
+  function validateDOM() {
+
+    const missing =
+      REQUIRED_IDS.filter(
+        id =>
+          !document.getElementById(
+            id
+          )
+      );
+
+
+    if (
+      missing.length
+    ) {
+
+      throw new Error(
+        `Missing required HTML IDs: ${missing.join(', ')}`
+      );
+    }
+  }
+
+
+  /* ============================================================
+     VISIBLE FAILURE MODE
+     Never leave user with an unexplained empty screen.
+  ============================================================ */
+
+  function showBootError(
+    message,
+    error
+  ) {
+
+    setBootState(
+      'error',
+      message
+    );
+
+
+    console.error(
+      '[FWCWL Poster]',
+      message,
+      error || ''
+    );
+
+
+    const count =
+      $('#posterTemplateCount');
+
+
+    if (count) {
+      count.textContent =
+        '!';
+    }
+
+
+    const grid =
+      $('#posterTemplateGrid');
+
+
+    if (grid) {
+
+      grid.innerHTML = `
+        <div
+          style="
+            grid-column:1/-1;
+            padding:14px;
+            border:1px solid rgba(222,102,112,.28);
+            border-radius:10px;
+            background:rgba(222,102,112,.05);
+            color:#e58b93;
+            font-size:8px;
+            line-height:1.5;
+          "
+        >
+
+          <strong
+            style="
+              display:block;
+              margin-bottom:5px;
+              color:#ff9fa7;
+            "
+          >
+            Poster engine could not start
+          </strong>
+
+          ${esc(message)}
+
+          <br>
+
+          <span
+            style="color:#777d86"
+          >
+            Poster Editor V${VERSION}
+          </span>
+
+        </div>
+      `;
+    }
+
+
+    const inspector =
+      $('#posterInspector');
+
+
+    if (inspector) {
+
+      inspector.innerHTML = `
+        <div
+          class="inspector-help"
+          style="color:#da7a82"
+        >
+          Poster Editor failed to initialize.
+          ${esc(message)}
+        </div>
+      `;
+    }
+  }
+
+
+  /* ============================================================
+     EDITOR
+  ============================================================ */
 
   class PosterEditor {
 
     constructor() {
 
+      validateDOM();
+
+
       this.canvas =
-        $("#posterCanvas");
-
-
-      if (!this.canvas) {
-        console.error(
-          "FWCWL Poster Editor: #posterCanvas not found."
-        );
-
-        return;
-      }
+        $('#posterCanvas');
 
 
       this.ctx =
         this.canvas.getContext(
-          "2d"
+          '2d',
+          {
+            alpha: false
+          }
         );
+
+
+      if (
+        !this.ctx
+      ) {
+
+        throw new Error(
+          'Canvas 2D context is unavailable.'
+        );
+      }
 
 
       this.assets =
         new Map();
 
 
-      this.logo =
-        new Image();
+      this.activeFilter =
+        'all';
 
 
-      this.logoReady =
-        false;
+      this.searchTerm =
+        '';
 
 
-      this.logo.onload =
-        () => {
-          this.logoReady =
-            true;
-
-          this.render();
-
-          this.renderTemplates();
-        };
+      this.dragState =
+        null;
 
 
-      this.logo.onerror =
-        () => {
-          this.logoReady =
-            false;
-
-          this.render();
-        };
+      this.history =
+        [];
 
 
-      this.logo.src =
-        "assets/fwcwl-logo.jpeg";
+      this.historyIndex =
+        -1;
+
+
+      this.resizeTimer =
+        0;
 
 
       this.state = {
 
         format:
-          "portrait",
+          'portrait',
 
         width:
-          FORMATS.portrait.width,
+          1080,
 
         height:
-          FORMATS.portrait.height,
+          1350,
 
         templateId:
-          "match-day",
+          'match-day',
 
         accent:
-          "#f1c34d",
+          '#f1c34d',
 
         background:
-          "#12090d",
+          '#12090d',
 
         brandName:
-          "FWCWL",
+          'FWCWL',
 
         showLogo:
           true,
@@ -1413,31 +1513,56 @@
       };
 
 
-      this.activeFilter =
-        "all";
+      /* ========================================================
+         LOGO
+      ======================================================== */
+
+      this.logo =
+        new Image();
 
 
-      this.searchTerm =
-        "";
+      this.logoReady =
+        false;
 
 
-      this.dragState =
-        null;
+      this.logo.onload =
+        () => {
+
+          this.logoReady =
+            true;
 
 
-      this.history =
-        [];
+          this.safeRender();
 
 
-      this.historyIndex =
-        -1;
+          this.safeRenderTemplates();
+        };
 
+
+      this.logo.onerror =
+        () => {
+
+          this.logoReady =
+            false;
+
+
+          this.safeRender();
+        };
+
+
+      this.logo.src =
+        LOGO_PATH;
+
+
+      /* ========================================================
+         INITIALIZE
+      ======================================================== */
 
       this.bindUI();
 
 
       this.applyTemplate(
-        "match-day",
+        'match-day',
         false
       );
 
@@ -1451,15 +1576,23 @@
       this.renderInspector();
 
 
-      document.fonts
-        ?.ready
-        ?.then(
-          () => {
-            this.render();
+      this.safeRenderTemplates();
 
-            this.renderTemplates();
-          }
-        );
+
+      this.safeRender();
+
+
+      const counter =
+        $('#posterTemplateCount');
+
+
+      if (counter) {
+
+        counter.textContent =
+          String(
+            TEMPLATES.length
+          );
+      }
 
 
       requestAnimationFrame(
@@ -1467,11 +1600,108 @@
           this.fitCanvas()
       );
 
+
+      if (
+        document.fonts &&
+        document.fonts.ready
+      ) {
+
+        document.fonts
+          .ready
+          .then(
+            () => {
+
+              this.safeRender();
+
+
+              this.safeRenderTemplates();
+            }
+          )
+          .catch(
+            () => {}
+          );
+      }
+
+
+      setBootState(
+        'ready',
+        `${TEMPLATES.length} templates loaded`
+      );
+
+
+      window.FWCWLPosterEditor =
+        this;
     }
 
 
     /* ========================================================
-       TEMPLATE HELPERS
+       SAFE RENDER WRAPPERS
+       One failed preview can no longer crash the whole editor.
+    ======================================================== */
+
+    safeRender() {
+
+      try {
+
+        this.render();
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          '[FWCWL Poster Render]',
+          error
+        );
+      }
+    }
+
+
+    safeRenderTemplates() {
+
+      try {
+
+        this.renderTemplates();
+
+      } catch (
+        error
+      ) {
+
+        console.error(
+          '[FWCWL Poster Templates]',
+          error
+        );
+
+
+        const grid =
+          $('#posterTemplateGrid');
+
+
+        if (
+          grid &&
+          !grid.children.length
+        ) {
+
+          grid.innerHTML = `
+            <div class="empty-state">
+
+              <strong>
+                Templates unavailable
+              </strong>
+
+              <span>
+                Reload after updating poster-editor.js.
+              </span>
+
+            </div>
+          `;
+        }
+      }
+    }
+
+
+    /* ========================================================
+       CURRENT TEMPLATE
     ======================================================== */
 
     currentTemplate() {
@@ -1484,7 +1714,72 @@
         ) ||
         TEMPLATES[0]
       );
+    }
 
+
+    /* ========================================================
+       TEXT LAYER FACTORY
+    ======================================================== */
+
+    makeTextLayer(
+      name,
+      text,
+      x,
+      y,
+      width,
+      size,
+      weight,
+      font,
+      color,
+      align,
+      lineHeight = 1,
+      letterSpacing = 0,
+      opacity = 1
+    ) {
+
+      return {
+
+        id:
+          uid('text'),
+
+        type:
+          'text',
+
+        role:
+          'template',
+
+        name,
+
+        text,
+
+        x,
+
+        y,
+
+        width,
+
+        size,
+
+        weight,
+
+        font,
+
+        color,
+
+        align,
+
+        lineHeight,
+
+        letterSpacing,
+
+        opacity,
+
+        visible:
+          true,
+
+        locked:
+          false
+      };
     }
 
 
@@ -1497,294 +1792,120 @@
       save = true
     ) {
 
-      const selectedTemplate =
+      const item =
         TEMPLATES.find(
-          item =>
-            item.id === id
+          template =>
+            template.id === id
         ) ||
         TEMPLATES[0];
 
 
-      /*
-       * Preserve user-uploaded images when changing template.
-       */
-
-      const imageLayers =
+      const preservedImages =
         this.state.layers.filter(
           layer =>
             layer.type ===
-            "image"
+            'image'
         );
 
 
       this.state.templateId =
-        selectedTemplate.id;
+        item.id;
 
 
       this.state.accent =
-        selectedTemplate.palette[2];
+        item.palette[2];
 
 
       this.state.background =
-        selectedTemplate.palette[0];
+        item.palette[0];
 
 
       this.state.layers = [
 
-        {
-          id:
-            uid("text"),
-
-          type:
-            "text",
-
-          role:
-            "template",
-
-          name:
-            "Kicker",
-
-          text:
-            selectedTemplate.kicker,
-
-          x:
-            selectedTemplate.align ===
-            "center"
-              ? 50
-              : 7,
-
-          y:
-            selectedTemplate.titleY -
-            10,
-
-          width:
-            selectedTemplate.align ===
-            "center"
-              ? 82
-              : selectedTemplate
-                  .titleWidth,
-
-          size:
-            25,
-
-          weight:
-            900,
-
-          font:
-            "DM Sans",
-
-          color:
-            selectedTemplate
-              .palette[2],
-
-          align:
-            selectedTemplate.align,
-
-          opacity:
-            1,
-
-          lineHeight:
-            1,
-
-          letterSpacing:
-            2,
-
-          visible:
-            true,
-
-          locked:
-            false
-        },
-
-
-        {
-          id:
-            uid("text"),
-
-          type:
-            "text",
-
-          role:
-            "template",
-
-          name:
-            "Headline",
-
-          text:
-            selectedTemplate.title,
-
-          x:
-            selectedTemplate.align ===
-            "center"
-              ? 50
-              : 7,
-
-          y:
-            selectedTemplate.titleY,
-
-          width:
-            selectedTemplate
-              .titleWidth,
-
-          size:
-            selectedTemplate
-              .titleSize,
-
-          weight:
-            selectedTemplate.font ===
-            "Bebas Neue"
-              ? 400
-              : 900,
-
-          font:
-            selectedTemplate.font,
-
-          color:
-            "#ffffff",
-
-          align:
-            selectedTemplate.align,
-
-          opacity:
-            1,
-
-          lineHeight:
-            .84,
-
-          letterSpacing:
-            0,
-
-          visible:
-            true,
-
-          locked:
-            false
-        },
-
-
-        {
-          id:
-            uid("text"),
-
-          type:
-            "text",
-
-          role:
-            "template",
-
-          name:
-            "Details",
-
-          text:
-            selectedTemplate.detail,
-
-          x:
-            selectedTemplate.align ===
-            "center"
-              ? 50
-              : 7,
-
-          y:
-            selectedTemplate.titleY +
-            28,
-
-          width:
-            selectedTemplate.align ===
-            "center"
-              ? 78
-              : 68,
-
-          size:
-            27,
-
-          weight:
-            650,
-
-          font:
-            "DM Sans",
-
-          color:
-            "#c8cbd0",
-
-          align:
-            selectedTemplate.align,
-
-          opacity:
-            .82,
-
-          lineHeight:
-            1.15,
-
-          letterSpacing:
-            .4,
-
-          visible:
-            true,
-
-          locked:
-            false
-        },
-
-
-        {
-          id:
-            uid("text"),
-
-          type:
-            "text",
-
-          role:
-            "template",
-
-          name:
-            "Footer",
-
-          text:
-            selectedTemplate.cta,
-
-          x:
-            7,
-
-          y:
-            91,
-
-          width:
-            45,
-
-          size:
-            19,
-
-          weight:
-            900,
-
-          font:
-            "DM Sans",
-
-          color:
-            selectedTemplate
-              .palette[2],
-
-          align:
-            "left",
-
-          opacity:
-            1,
-
-          lineHeight:
-            1,
-
-          letterSpacing:
-            1.8,
-
-          visible:
-            true,
-
-          locked:
-            false
-        },
-
-
-        ...imageLayers
+        this.makeTextLayer(
+          'Kicker',
+          item.kicker,
+          item.align ===
+            'center'
+            ? 50
+            : 7,
+          item.titleY - 10,
+          item.align ===
+            'center'
+            ? 82
+            : item.titleWidth,
+          25,
+          900,
+          'DM Sans',
+          item.palette[2],
+          item.align,
+          1,
+          2
+        ),
+
+
+        this.makeTextLayer(
+          'Headline',
+          item.title,
+          item.align ===
+            'center'
+            ? 50
+            : 7,
+          item.titleY,
+          item.titleWidth,
+          item.titleSize,
+          item.font ===
+            'Bebas Neue'
+            ? 400
+            : 900,
+          item.font,
+          '#ffffff',
+          item.align,
+          .84,
+          0
+        ),
+
+
+        this.makeTextLayer(
+          'Details',
+          item.detail,
+          item.align ===
+            'center'
+            ? 50
+            : 7,
+          item.titleY + 28,
+          item.align ===
+            'center'
+            ? 78
+            : 68,
+          27,
+          650,
+          'DM Sans',
+          '#c8cbd0',
+          item.align,
+          1.15,
+          .4,
+          .82
+        ),
+
+
+        this.makeTextLayer(
+          'Footer',
+          item.cta,
+          7,
+          91,
+          45,
+          19,
+          900,
+          'DM Sans',
+          item.palette[2],
+          'left',
+          1,
+          1.8
+        ),
+
+
+        ...preservedImages
       ];
 
 
@@ -1795,10 +1916,10 @@
       this.syncBrandUI();
 
 
-      this.render();
+      this.safeRender();
 
 
-      this.renderTemplates();
+      this.safeRenderTemplates();
 
 
       this.renderInspector();
@@ -1807,7 +1928,6 @@
       if (save) {
         this.commit();
       }
-
     }
 
 
@@ -1818,7 +1938,7 @@
     renderTemplates() {
 
       const grid =
-        $("#posterTemplateGrid");
+        $('#posterTemplateGrid');
 
 
       if (!grid) {
@@ -1836,56 +1956,54 @@
         TEMPLATES.filter(
           item => {
 
-            const matchesCategory =
+            const categoryMatch =
               this.activeFilter ===
-                "all" ||
+                'all' ||
               item.category ===
                 this.activeFilter;
 
 
-            const haystack =
-              [
-                item.name,
-                item.category,
-                item.style,
-                item.kicker,
-                item.title,
+            const text =
+              `${
+                item.name
+              } ${
+                item.category
+              } ${
+                item.style
+              } ${
+                item.kicker
+              } ${
+                item.title
+              } ${
                 item.detail
-              ]
-                .join(" ")
+              }`
                 .toLowerCase();
 
 
-            const matchesSearch =
-              !search ||
-              haystack.includes(
-                search
-              );
-
-
             return (
-              matchesCategory &&
-              matchesSearch
+              categoryMatch &&
+              (
+                !search ||
+                text.includes(
+                  search
+                )
+              )
             );
-
           }
         );
 
 
-      const counter =
-        $("#posterTemplateCount");
+      $('#posterTemplateCount')
+        .textContent =
+        String(
+          filtered.length
+        );
 
 
-      if (counter) {
-        counter.textContent =
-          filtered.length;
-      }
-
-
-      $("#posterTemplateEmpty")
+      $('#posterTemplateEmpty')
         ?.classList
         .toggle(
-          "hidden",
+          'hidden',
           filtered.length > 0
         );
 
@@ -1898,16 +2016,11 @@
                 class="template-card ${
                   item.id ===
                   this.state.templateId
-                    ? "active"
-                    : ""
+                    ? 'active'
+                    : ''
                 }"
                 data-template-id="${item.id}"
                 type="button"
-                aria-label="Use ${
-                  escapeHtml(
-                    item.name
-                  )
-                } template"
               >
 
                 <div class="template-art">
@@ -1924,13 +2037,13 @@
                 <div class="template-meta">
 
                   <strong>
-                    ${escapeHtml(
+                    ${esc(
                       item.name
                     )}
                   </strong>
 
                   <small>
-                    ${escapeHtml(
+                    ${esc(
                       item.category
                     )}
                   </small>
@@ -1940,30 +2053,25 @@
               </button>
             `
           )
-          .join("");
+          .join('');
 
 
-      grid
-        .querySelectorAll(
-          "[data-template-id]"
-        )
-        .forEach(
-          button => {
+      $$(
+        '[data-template-id]',
+        grid
+      ).forEach(
+        button => {
 
-            button.addEventListener(
-              "click",
-              () => {
-
-                this.applyTemplate(
-                  button.dataset
-                    .templateId
-                );
-
-              }
-            );
-
-          }
-        );
+          button.addEventListener(
+            'click',
+            () =>
+              this.applyTemplate(
+                button.dataset
+                  .templateId
+              )
+          );
+        }
+      );
 
 
       requestAnimationFrame(
@@ -1972,41 +2080,55 @@
           filtered.forEach(
             item => {
 
-              const preview =
-                grid.querySelector(
-                  `[data-template-preview="${item.id}"]`
+              try {
+
+                const preview =
+                  $(
+                    `[data-template-preview="${item.id}"]`,
+                    grid
+                  );
+
+
+                if (!preview) {
+                  return;
+                }
+
+
+                const context =
+                  preview.getContext(
+                    '2d',
+                    {
+                      alpha: false
+                    }
+                  );
+
+
+                this.drawTemplatePreview(
+                  context,
+                  preview.width,
+                  preview.height,
+                  item
                 );
 
+              } catch (
+                error
+              ) {
 
-              if (!preview) {
-                return;
+                console.warn(
+                  '[FWCWL Template Preview]',
+                  item.id,
+                  error
+                );
               }
-
-
-              const ctx =
-                preview.getContext(
-                  "2d"
-                );
-
-
-              this.drawTemplatePreview(
-                ctx,
-                preview.width,
-                preview.height,
-                item
-              );
-
             }
           );
-
         }
       );
-
     }
 
 
     /* ========================================================
-       TEMPLATE PREVIEW
+       EXACT TEMPLATE THUMBNAIL
     ======================================================== */
 
     drawTemplatePreview(
@@ -2020,7 +2142,11 @@
         ctx,
         width,
         height,
-        item
+        item,
+        Math.min(
+          52,
+          this.state.textureStrength
+        )
       );
 
 
@@ -2029,42 +2155,29 @@
         this.logo.naturalWidth
       ) {
 
-        const maxWidth =
-          width * .17;
-
-
-        const maxHeight =
-          height * .09;
-
-
         const scale =
           Math.min(
-            maxWidth /
-              this.logo.naturalWidth,
+            (
+              width * .17
+            ) /
+            this.logo.naturalWidth,
 
-            maxHeight /
-              this.logo.naturalHeight
+            (
+              height * .09
+            ) /
+            this.logo.naturalHeight
           );
-
-
-        const logoWidth =
-          this.logo.naturalWidth *
-          scale;
-
-
-        const logoHeight =
-          this.logo.naturalHeight *
-          scale;
 
 
         ctx.drawImage(
           this.logo,
           width * .055,
           height * .035,
-          logoWidth,
-          logoHeight
+          this.logo.naturalWidth *
+          scale,
+          this.logo.naturalHeight *
+          scale
         );
-
       }
 
 
@@ -2073,12 +2186,13 @@
 
 
       const x =
-        align === "center"
+        align ===
+          'center'
           ? width / 2
           : width * .065;
 
 
-      const maxTextWidth =
+      const maxWidth =
         width *
         (
           item.titleWidth /
@@ -2091,7 +2205,7 @@
 
 
       ctx.textBaseline =
-        "top";
+        'top';
 
 
       ctx.fillStyle =
@@ -2118,11 +2232,7 @@
       );
 
 
-      ctx.fillStyle =
-        "#ffffff";
-
-
-      const titleSize =
+      const fontSize =
         width *
         (
           item.titleSize /
@@ -2130,21 +2240,21 @@
         );
 
 
+      ctx.fillStyle =
+        '#ffffff';
+
+
       ctx.font =
         `${
           item.font ===
-          "Bebas Neue"
+          'Bebas Neue'
             ? 400
             : 900
-        } ${titleSize}px "${item.font}"`;
-
-
-      const titleLines =
-        this.wrapText(
-          ctx,
-          item.title,
-          maxTextWidth
-        );
+        } ${
+          fontSize
+        }px "${
+          item.font
+        }"`;
 
 
       let y =
@@ -2155,12 +2265,11 @@
         );
 
 
-      const lineHeight =
-        titleSize *
-        .84;
-
-
-      titleLines.forEach(
+      this.wrapText(
+        ctx,
+        item.title,
+        maxWidth
+      ).forEach(
         line => {
 
           ctx.fillText(
@@ -2171,14 +2280,14 @@
 
 
           y +=
-            lineHeight;
-
+            fontSize *
+            .84;
         }
       );
 
 
       ctx.fillStyle =
-        "rgba(255,255,255,.62)";
+        'rgba(255,255,255,.62)';
 
 
       ctx.font =
@@ -2202,11 +2311,11 @@
 
 
       ctx.textAlign =
-        "right";
+        'right';
 
 
       ctx.fillStyle =
-        "rgba(255,255,255,.34)";
+        'rgba(255,255,255,.34)';
 
 
       ctx.font =
@@ -2216,25 +2325,20 @@
 
 
       ctx.fillText(
-        "FWCWL",
+        'FWCWL',
         width * .94,
         height * .94
       );
-
     }
 
 
     /* ========================================================
-       MASTER RENDER
+       MAIN POSTER RENDER
     ======================================================== */
 
     render(
       exporting = false
     ) {
-
-      const ctx =
-        this.ctx;
-
 
       const width =
         this.state.width;
@@ -2246,58 +2350,73 @@
 
       if (
         this.canvas.width !==
-          width ||
-        this.canvas.height !==
-          height
+        width
       ) {
-
         this.canvas.width =
           width;
-
-
-        this.canvas.height =
-          height;
-
       }
 
 
-      const currentTemplate =
+      if (
+        this.canvas.height !==
+        height
+      ) {
+        this.canvas.height =
+          height;
+      }
+
+
+      /*
+       * Keep template's second background tone,
+       * but make Brand Background + Accent controls functional.
+       */
+
+      const baseTemplate =
         this.currentTemplate();
 
 
+      const liveTemplate = {
+
+        ...baseTemplate,
+
+        palette: [
+          this.state.background,
+          baseTemplate.palette[1],
+          this.state.accent
+        ]
+      };
+
+
       this.drawDesignBase(
-        ctx,
+        this.ctx,
         width,
         height,
-        currentTemplate
+        liveTemplate,
+        this.state.textureStrength
       );
 
 
-      for (
-        const layer of
-        this.state.layers
-      ) {
+      this.state.layers.forEach(
+        layer => {
 
-        if (
-          layer.visible ===
-          false
-        ) {
-          continue;
+          if (
+            layer.visible !==
+            false
+          ) {
+
+            this.drawLayer(
+              this.ctx,
+              layer,
+              width,
+              height
+            );
+          }
         }
-
-
-        this.drawLayer(
-          ctx,
-          layer,
-          width,
-          height
-        );
-
-      }
+      );
 
 
       this.drawOfficialBrand(
-        ctx,
+        this.ctx,
         width,
         height
       );
@@ -2309,11 +2428,10 @@
       ) {
 
         this.drawSafeZone(
-          ctx,
+          this.ctx,
           width,
           height
         );
-
       }
 
 
@@ -2332,27 +2450,25 @@
         ) {
 
           this.drawSelection(
-            ctx,
+            this.ctx,
             selected._bounds,
             width
           );
-
         }
-
       }
-
     }
 
 
     /* ========================================================
-       BASE TEMPLATE ART
+       TEMPLATE BACKGROUND
     ======================================================== */
 
     drawDesignBase(
       ctx,
       width,
       height,
-      item
+      item,
+      textureStrength = 52
     ) {
 
       const palette =
@@ -2392,307 +2508,311 @@
       );
 
 
+      const accent =
+        palette[2];
+
+
       switch (
         item.style
       ) {
 
-        case "slash":
+        case 'slash':
 
           this.drawSlashes(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "versus":
+        case 'versus':
 
           this.drawVersus(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "fixture":
+        case 'fixture':
 
           this.drawFixture(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "stadium":
+        case 'stadium':
 
           this.drawStadium(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "split":
+        case 'split':
 
           this.drawSplit(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "lines":
+        case 'lines':
 
           this.drawLines(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "score":
+        case 'score':
 
           this.drawScorePanel(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "lineup":
-        case "pitch":
+        case 'lineup':
+        case 'pitch':
 
           this.drawPitch(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "grid":
+        case 'grid':
 
           this.drawGrid(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "captain":
+        case 'captain':
 
           this.drawCaptain(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "player":
+        case 'player':
 
           this.drawPlayerPanel(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "award":
+        case 'award':
 
           this.drawAward(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "gold":
-        case "radial":
+        case 'gold':
+        case 'radial':
 
           this.drawGoldRays(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "result":
+        case 'result':
 
           this.drawResult(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "final":
+        case 'final':
 
           this.drawFinal(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "ticket":
+        case 'ticket':
 
           this.drawTicket(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "cards":
+        case 'cards':
 
           this.drawCards(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "milestone":
+        case 'milestone':
 
           this.drawMilestone(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "confetti":
+        case 'confetti':
 
           this.drawConfetti(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "frame":
+        case 'frame':
 
           this.drawFrame(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "news":
+        case 'news':
 
           this.drawNews(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "brutalist":
+        case 'brutalist':
 
           this.drawBrutalist(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "film":
+        case 'film':
 
           this.drawFilm(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "grit":
+        case 'grit':
 
           this.drawGrit(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "gold-grit":
+        case 'gold-grit':
 
           this.drawGoldRays(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
 
@@ -2700,87 +2820,96 @@
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "paper":
+        case 'paper':
 
           this.drawPaper(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "collage":
+        case 'collage':
 
           this.drawCollage(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "stack":
+        case 'stack':
 
           this.drawStack(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "cutout":
+        case 'cutout':
 
           this.drawCutout(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "retro":
+        case 'retro':
 
           this.drawRetro(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
 
-        case "editorial":
+        case 'editorial':
 
           this.drawEditorial(
             ctx,
             width,
             height,
-            palette[2]
+            accent
           );
 
           break;
 
+
+        default:
+
+          this.drawSlashes(
+            ctx,
+            width,
+            height,
+            accent
+          );
       }
 
 
-      const bottomShade =
+      const shade =
         ctx.createLinearGradient(
           0,
           height * .50,
@@ -2789,20 +2918,20 @@
         );
 
 
-      bottomShade.addColorStop(
+      shade.addColorStop(
         0,
-        "rgba(0,0,0,0)"
+        'rgba(0,0,0,0)'
       );
 
 
-      bottomShade.addColorStop(
+      shade.addColorStop(
         1,
-        "rgba(0,0,0,.44)"
+        'rgba(0,0,0,.44)'
       );
 
 
       ctx.fillStyle =
-        bottomShade;
+        shade;
 
 
       ctx.fillRect(
@@ -2821,16 +2950,14 @@
           ctx,
           width,
           height,
-          this.state.textureStrength
+          textureStrength
         );
-
       }
-
     }
 
 
     /* ========================================================
-       TEMPLATE DECORATIONS
+       TEMPLATE DECORATION METHODS
     ======================================================== */
 
     drawSlashes(
@@ -2848,7 +2975,6 @@
 
         ctx.save();
 
-
         ctx.translate(
           width *
           (
@@ -2858,11 +2984,9 @@
           height * .45
         );
 
-
         ctx.rotate(
           -.25
         );
-
 
         ctx.fillStyle =
           rgba(
@@ -2871,7 +2995,6 @@
             i * .015
           );
 
-
         ctx.fillRect(
           0,
           -height * .65,
@@ -2879,9 +3002,7 @@
           height * 1.30
         );
 
-
         ctx.restore();
-
       }
 
 
@@ -2895,7 +3016,6 @@
         width * .12,
         height * .004
       );
-
     }
 
 
@@ -2907,38 +3027,32 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(84,12,22,.38)";
+        'rgba(84,12,22,.38)';
 
 
       ctx.beginPath();
-
 
       ctx.moveTo(
         width * .52,
         0
       );
 
-
       ctx.lineTo(
         width,
         0
       );
 
-
       ctx.lineTo(
         width,
         height
       );
-
 
       ctx.lineTo(
         width * .40,
         height
       );
 
-
       ctx.closePath();
-
 
       ctx.fill();
 
@@ -2949,13 +3063,11 @@
           .34
         );
 
-
       ctx.lineWidth =
         width * .008;
 
 
       ctx.beginPath();
-
 
       ctx.arc(
         width * .50,
@@ -2965,9 +3077,7 @@
         Math.PI * 2
       );
 
-
       ctx.stroke();
-
     }
 
 
@@ -2979,8 +3089,7 @@
     ) {
 
       ctx.strokeStyle =
-        "rgba(255,255,255,.045)";
-
+        'rgba(255,255,255,.045)';
 
       ctx.lineWidth =
         2;
@@ -2996,21 +3105,17 @@
 
         ctx.beginPath();
 
-
         ctx.moveTo(
           0,
           y
         );
-
 
         ctx.lineTo(
           width,
           y
         );
 
-
         ctx.stroke();
-
       }
 
 
@@ -3027,7 +3132,6 @@
         width * .20,
         height * .19
       );
-
     }
 
 
@@ -3063,13 +3167,13 @@
 
         beam.addColorStop(
           0,
-          "rgba(255,255,255,.10)"
+          'rgba(255,255,255,.10)'
         );
 
 
         beam.addColorStop(
           1,
-          "rgba(255,255,255,0)"
+          'rgba(255,255,255,0)'
         );
 
 
@@ -3079,30 +3183,24 @@
 
         ctx.beginPath();
 
-
         ctx.moveTo(
           x - width * .018,
           0
         );
-
 
         ctx.lineTo(
           x + width * .018,
           0
         );
 
-
         ctx.lineTo(
           width / 2,
           height * .76
         );
 
-
         ctx.closePath();
 
-
         ctx.fill();
-
       }
 
 
@@ -3119,7 +3217,6 @@
 
       ctx.beginPath();
 
-
       ctx.ellipse(
         width / 2,
         height * .87,
@@ -3130,9 +3227,7 @@
         Math.PI * 2
       );
 
-
       ctx.stroke();
-
     }
 
 
@@ -3152,36 +3247,29 @@
 
       ctx.beginPath();
 
-
       ctx.moveTo(
         width * .67,
         0
       );
 
-
       ctx.lineTo(
         width,
         0
       );
 
-
       ctx.lineTo(
         width,
         height
       );
-
 
       ctx.lineTo(
         width * .42,
         height
       );
 
-
       ctx.closePath();
 
-
       ctx.fill();
-
     }
 
 
@@ -3212,7 +3300,6 @@
 
         ctx.beginPath();
 
-
         ctx.moveTo(
           width *
           (
@@ -3221,7 +3308,6 @@
           ),
           0
         );
-
 
         ctx.lineTo(
           width *
@@ -3232,11 +3318,8 @@
           height
         );
 
-
         ctx.stroke();
-
       }
-
     }
 
 
@@ -3248,10 +3331,10 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(0,0,0,.20)";
+        'rgba(0,0,0,.20)';
 
 
-      roundedRect(
+      roundRectPath(
         ctx,
         width * .08,
         height * .25,
@@ -3276,7 +3359,6 @@
 
 
       ctx.stroke();
-
     }
 
 
@@ -3308,7 +3390,6 @@
 
       ctx.beginPath();
 
-
       ctx.arc(
         width * .745,
         height * .44,
@@ -3317,9 +3398,7 @@
         Math.PI * 2
       );
 
-
       ctx.stroke();
-
     }
 
 
@@ -3343,16 +3422,18 @@
         ) {
 
           ctx.fillStyle =
-            row === 0 &&
-            col === 0
+            (
+              row === 0 &&
+              col === 0
+            )
               ? rgba(
                   accent,
                   .15
                 )
-              : "rgba(255,255,255,.025)";
+              : 'rgba(255,255,255,.025)';
 
 
-          roundedRect(
+          roundRectPath(
             ctx,
             width *
             (
@@ -3371,11 +3452,8 @@
 
 
           ctx.fill();
-
         }
-
       }
-
     }
 
 
@@ -3399,42 +3477,34 @@
 
       ctx.beginPath();
 
-
       ctx.moveTo(
         width * .68,
         height * .26
       );
-
 
       ctx.lineTo(
         width * .77,
         height * .19
       );
 
-
       ctx.lineTo(
         width * .87,
         height * .26
       );
-
 
       ctx.lineTo(
         width * .82,
         height * .39
       );
 
-
       ctx.lineTo(
         width * .72,
         height * .39
       );
 
-
       ctx.closePath();
 
-
       ctx.stroke();
-
     }
 
 
@@ -3446,10 +3516,10 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(255,255,255,.025)";
+        'rgba(255,255,255,.025)';
 
 
-      roundedRect(
+      roundRectPath(
         ctx,
         width * .61,
         height * .18,
@@ -3475,7 +3545,6 @@
 
       ctx.beginPath();
 
-
       ctx.arc(
         width * .76,
         height * .37,
@@ -3484,9 +3553,7 @@
         Math.PI * 2
       );
 
-
       ctx.stroke();
-
     }
 
 
@@ -3519,11 +3586,10 @@
 
 
       ctx.fillText(
-        "01",
+        '01',
         width * .61,
         height * .65
       );
-
     }
 
 
@@ -3542,12 +3608,10 @@
 
         ctx.save();
 
-
         ctx.translate(
           width / 2,
           height * .43
         );
-
 
         ctx.rotate(
           i /
@@ -3575,9 +3639,7 @@
 
 
         ctx.restore();
-
       }
-
     }
 
 
@@ -3620,7 +3682,6 @@
         width * .90,
         height * .88
       );
-
     }
 
 
@@ -3656,7 +3717,6 @@
         height,
         accent
       );
-
     }
 
 
@@ -3675,7 +3735,7 @@
 
         ctx.fillStyle =
           i % 2
-            ? "rgba(255,255,255,.018)"
+            ? 'rgba(255,255,255,.018)'
             : rgba(
                 accent,
                 .035
@@ -3692,9 +3752,7 @@
           width * .024,
           height * .58
         );
-
       }
-
     }
 
 
@@ -3713,7 +3771,6 @@
 
         ctx.save();
 
-
         ctx.translate(
           width *
           (
@@ -3726,7 +3783,6 @@
             i * .06
           )
         );
-
 
         ctx.rotate(
           (
@@ -3742,10 +3798,10 @@
                 accent,
                 .10
               )
-            : "rgba(255,255,255,.025)";
+            : 'rgba(255,255,255,.025)';
 
 
-        roundedRect(
+        roundRectPath(
           ctx,
           -width * .11,
           -height * .13,
@@ -3757,11 +3813,8 @@
 
         ctx.fill();
 
-
         ctx.restore();
-
       }
-
     }
 
 
@@ -3785,7 +3838,6 @@
 
       ctx.beginPath();
 
-
       ctx.arc(
         width * .76,
         height * .39,
@@ -3794,9 +3846,7 @@
         Math.PI * 2
       );
 
-
       ctx.stroke();
-
     }
 
 
@@ -3833,12 +3883,10 @@
 
         ctx.save();
 
-
         ctx.translate(
           x,
           y
         );
-
 
         ctx.rotate(
           i
@@ -3847,7 +3895,7 @@
 
         ctx.fillStyle =
           i % 3 === 0
-            ? "#ffffff"
+            ? '#ffffff'
             : accent;
 
 
@@ -3864,9 +3912,7 @@
 
 
         ctx.restore();
-
       }
-
     }
 
 
@@ -3897,7 +3943,7 @@
 
 
       ctx.strokeStyle =
-        "rgba(255,255,255,.05)";
+        'rgba(255,255,255,.05)';
 
 
       ctx.strokeRect(
@@ -3906,7 +3952,6 @@
         width * .28,
         height * .31
       );
-
     }
 
 
@@ -3920,19 +3965,18 @@
       for (
         let x =
           -width * .1;
-        x < width * 1.2;
+        x <
+          width * 1.2;
         x +=
           width * .12
       ) {
 
         ctx.save();
 
-
         ctx.translate(
           x,
           height * .73
         );
-
 
         ctx.rotate(
           -.28
@@ -3955,9 +3999,7 @@
 
 
         ctx.restore();
-
       }
-
     }
 
 
@@ -3977,36 +4019,29 @@
 
       ctx.beginPath();
 
-
       ctx.moveTo(
         width * .56,
         0
       );
-
 
       ctx.lineTo(
         width,
         0
       );
 
-
       ctx.lineTo(
         width * .78,
         height
       );
-
 
       ctx.lineTo(
         width * .35,
         height
       );
 
-
       ctx.closePath();
 
-
       ctx.fill();
-
     }
 
 
@@ -4018,7 +4053,7 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(255,225,185,.035)";
+        'rgba(255,225,185,.035)';
 
 
       ctx.fillRect(
@@ -4042,7 +4077,6 @@
         width * .20,
         height
       );
-
     }
 
 
@@ -4062,36 +4096,29 @@
 
       ctx.beginPath();
 
-
       ctx.moveTo(
         width * .65,
         0
       );
-
 
       ctx.lineTo(
         width,
         0
       );
 
-
       ctx.lineTo(
         width * .84,
         height
       );
-
 
       ctx.lineTo(
         width * .44,
         height
       );
 
-
       ctx.closePath();
 
-
       ctx.fill();
-
     }
 
 
@@ -4103,7 +4130,7 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(255,255,255,.08)";
+        'rgba(255,255,255,.08)';
 
 
       ctx.fillRect(
@@ -4127,7 +4154,6 @@
         width,
         height * .04
       );
-
     }
 
 
@@ -4146,7 +4172,6 @@
 
         ctx.save();
 
-
         ctx.translate(
           width *
           (
@@ -4159,7 +4184,6 @@
             i * .045
           )
         );
-
 
         ctx.rotate(
           (
@@ -4175,7 +4199,7 @@
                 accent,
                 .12
               )
-            : "rgba(255,255,255,.035)";
+            : 'rgba(255,255,255,.035)';
 
 
         ctx.fillRect(
@@ -4187,9 +4211,7 @@
 
 
         ctx.restore();
-
       }
-
     }
 
 
@@ -4228,9 +4250,7 @@
           width * .31,
           height * .58
         );
-
       }
-
     }
 
 
@@ -4263,7 +4283,7 @@
 
       glow.addColorStop(
         1,
-        "rgba(0,0,0,0)"
+        'rgba(0,0,0,0)'
       );
 
 
@@ -4277,7 +4297,6 @@
         width,
         height
       );
-
     }
 
 
@@ -4308,7 +4327,7 @@
 
 
       ctx.fillStyle =
-        "rgba(255,255,255,.05)";
+        'rgba(255,255,255,.05)';
 
 
       ctx.fillRect(
@@ -4317,7 +4336,6 @@
         width * .08,
         height
       );
-
     }
 
 
@@ -4329,7 +4347,7 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(255,255,255,.14)";
+        'rgba(255,255,255,.14)';
 
 
       ctx.fillRect(
@@ -4353,7 +4371,6 @@
         width,
         height * .015
       );
-
     }
 
 
@@ -4435,8 +4452,8 @@
 
         ctx.fillStyle =
           i % 3
-            ? "#000000"
-            : "#ffffff";
+            ? '#000000'
+            : '#ffffff';
 
 
         ctx.fillRect(
@@ -4445,17 +4462,15 @@
           size,
           size
         );
-
       }
 
 
       ctx.restore();
-
     }
 
 
     /* ========================================================
-       LAYER RENDERER
+       DRAW LAYER
     ======================================================== */
 
     drawLayer(
@@ -4467,7 +4482,7 @@
 
       if (
         layer.type ===
-        "text"
+        'text'
       ) {
 
         this.drawTextLayer(
@@ -4477,12 +4492,9 @@
           height
         );
 
-      }
-
-
-      if (
+      } else if (
         layer.type ===
-        "image"
+        'image'
       ) {
 
         this.drawImageLayer(
@@ -4492,12 +4504,9 @@
           height
         );
 
-      }
-
-
-      if (
+      } else if (
         layer.type ===
-        "element"
+        'element'
       ) {
 
         this.drawElementLayer(
@@ -4506,9 +4515,7 @@
           width,
           height
         );
-
       }
-
     }
 
 
@@ -4567,38 +4574,42 @@
 
       ctx.fillStyle =
         layer.color ||
-        "#ffffff";
+        '#ffffff';
 
 
       ctx.font =
         `${
           layer.weight ||
           700
-        } ${fontSize}px "${
+        } ${
+          fontSize
+        }px "${
           layer.font ||
-          "Montserrat"
+          'Montserrat'
         }"`;
 
 
       ctx.textAlign =
         layer.align ||
-        "left";
+        'left';
 
 
       ctx.textBaseline =
-        "top";
+        'top';
 
 
       ctx.shadowColor =
-        "rgba(0,0,0,.42)";
+        'rgba(0,0,0,.42)';
 
 
       ctx.shadowBlur =
-        fontSize * .08;
+        fontSize *
+        .08;
 
 
       ctx.shadowOffsetY =
-        fontSize * .035;
+        fontSize *
+        .035;
 
 
       const lines =
@@ -4633,19 +4644,10 @@
             layer.letterSpacing ||
             0,
             layer.align ||
-            "left"
+            'left'
           );
-
         }
       );
-
-
-      const textHeight =
-        Math.max(
-          lineHeight,
-          lines.length *
-          lineHeight
-        );
 
 
       let left =
@@ -4654,29 +4656,26 @@
 
       if (
         layer.align ===
-        "center"
+        'center'
       ) {
 
         left =
           x -
           maxWidth / 2;
 
-      }
-
-
-      if (
+      } else if (
         layer.align ===
-        "right"
+        'right'
       ) {
 
         left =
           x -
           maxWidth;
-
       }
 
 
       layer._bounds = {
+
         x:
           left,
 
@@ -4686,17 +4685,20 @@
           maxWidth,
 
         height:
-          textHeight
+          Math.max(
+            lineHeight,
+            lines.length *
+            lineHeight
+          )
       };
 
 
       ctx.restore();
-
     }
 
 
     /* ========================================================
-       IMAGE LAYER
+       PHOTO LAYER
     ======================================================== */
 
     drawImageLayer(
@@ -4752,14 +4754,12 @@
         );
 
 
-      const ratio =
-        image.naturalHeight /
-        image.naturalWidth;
-
-
       const boxHeight =
         boxWidth *
-        ratio;
+        (
+          image.naturalHeight /
+          image.naturalWidth
+        );
 
 
       ctx.save();
@@ -4786,36 +4786,29 @@
         1;
 
 
-      ctx.filter = [
+      ctx.filter =
         `brightness(${
           100 +
           (
             layer.brightness ||
             0
           )
-        }%)`,
-
-        `contrast(${
+        }%) contrast(${
           100 +
           (
             layer.contrast ||
             0
           )
-        }%)`,
-
-        `saturate(${
+        }%) saturate(${
           100 +
           (
             layer.saturation ||
             0
           )
-        }%)`,
-
-        `blur(${
+        }%) blur(${
           layer.blur ||
           0
-        }px)`
-      ].join(" ");
+        }px)`;
 
 
       ctx.drawImage(
@@ -4828,6 +4821,7 @@
 
 
       layer._bounds = {
+
         x:
           centerX -
           boxWidth / 2,
@@ -4845,12 +4839,11 @@
 
 
       ctx.restore();
-
     }
 
 
     /* ========================================================
-       ELEMENT LAYER
+       GRAPHIC ELEMENT LAYER
     ======================================================== */
 
     drawElementLayer(
@@ -4885,14 +4878,17 @@
         1080;
 
 
-      ctx.save();
+      const color =
+        layer.color ||
+        this.state.accent;
 
+
+      ctx.save();
 
       ctx.translate(
         x,
         y
       );
-
 
       ctx.rotate(
         (
@@ -4903,28 +4899,21 @@
         180
       );
 
-
       ctx.scale(
         scale,
         scale
       );
-
 
       ctx.globalAlpha =
         layer.opacity ??
         1;
 
 
-      const color =
-        layer.color ||
-        this.state.accent;
-
-
       switch (
         layer.kind
       ) {
 
-        case "ball":
+        case 'ball':
 
           this.drawBallElement(
             ctx,
@@ -4934,7 +4923,7 @@
           break;
 
 
-        case "wickets":
+        case 'wickets':
 
           this.drawWicketsElement(
             ctx,
@@ -4944,7 +4933,7 @@
           break;
 
 
-        case "vs":
+        case 'vs':
 
           this.drawVsElement(
             ctx,
@@ -4954,7 +4943,7 @@
           break;
 
 
-        case "score":
+        case 'score':
 
           this.drawScoreElement(
             ctx,
@@ -4964,7 +4953,7 @@
           break;
 
 
-        case "trophy":
+        case 'trophy':
 
           this.drawTrophyElement(
             ctx,
@@ -4974,7 +4963,7 @@
           break;
 
 
-        case "frame":
+        case 'frame':
 
           this.drawFrameElement(
             ctx,
@@ -4982,46 +4971,41 @@
           );
 
           break;
-
       }
 
 
-      const baseSize =
+      const base =
         layer.kind ===
-        "frame"
+        'frame'
           ? 320
           : 190;
 
 
       layer._bounds = {
+
         x:
           x -
-          (
-            baseSize *
-            scale /
-            2
-          ),
+          base *
+          scale /
+          2,
 
         y:
           y -
-          (
-            baseSize *
-            scale /
-            2
-          ),
+          base *
+          scale /
+          2,
 
         width:
-          baseSize *
+          base *
           scale,
 
         height:
-          baseSize *
+          base *
           scale
       };
 
 
       ctx.restore();
-
     }
 
 
@@ -5035,11 +5019,10 @@
     ) {
 
       ctx.fillStyle =
-        "#9b1c29";
+        '#9b1c29';
 
 
       ctx.beginPath();
-
 
       ctx.arc(
         0,
@@ -5049,12 +5032,11 @@
         Math.PI * 2
       );
 
-
       ctx.fill();
 
 
       ctx.strokeStyle =
-        "#f0d5d7";
+        '#f0d5d7';
 
 
       ctx.lineWidth =
@@ -5063,18 +5045,15 @@
 
       ctx.beginPath();
 
-
       ctx.moveTo(
         -10,
         -62
       );
 
-
       ctx.lineTo(
         10,
         62
       );
-
 
       ctx.stroke();
 
@@ -5092,7 +5071,6 @@
 
       ctx.beginPath();
 
-
       ctx.arc(
         0,
         0,
@@ -5101,9 +5079,7 @@
         Math.PI * 2
       );
 
-
       ctx.stroke();
-
     }
 
 
@@ -5113,7 +5089,7 @@
     ) {
 
       ctx.fillStyle =
-        "#f3ead4";
+        '#f3ead4';
 
 
       [
@@ -5123,7 +5099,7 @@
       ].forEach(
         x => {
 
-          roundedRect(
+          roundRectPath(
             ctx,
             x - 7,
             -100,
@@ -5134,7 +5110,6 @@
 
 
           ctx.fill();
-
         }
       );
 
@@ -5157,7 +5132,6 @@
         53,
         9
       );
-
     }
 
 
@@ -5167,7 +5141,7 @@
     ) {
 
       ctx.fillStyle =
-        "rgba(8,9,11,.92)";
+        'rgba(8,9,11,.92)';
 
 
       ctx.strokeStyle =
@@ -5180,7 +5154,6 @@
 
       ctx.beginPath();
 
-
       ctx.arc(
         0,
         0,
@@ -5189,15 +5162,13 @@
         Math.PI * 2
       );
 
-
       ctx.fill();
-
 
       ctx.stroke();
 
 
       ctx.fillStyle =
-        "#ffffff";
+        '#ffffff';
 
 
       ctx.font =
@@ -5205,19 +5176,18 @@
 
 
       ctx.textAlign =
-        "center";
+        'center';
 
 
       ctx.textBaseline =
-        "middle";
+        'middle';
 
 
       ctx.fillText(
-        "VS",
+        'VS',
         0,
         6
       );
-
     }
 
 
@@ -5227,7 +5197,7 @@
     ) {
 
       ctx.fillStyle =
-        "#101317";
+        '#101317';
 
 
       ctx.strokeStyle =
@@ -5238,7 +5208,7 @@
         3;
 
 
-      roundedRect(
+      roundRectPath(
         ctx,
         -170,
         -60,
@@ -5250,12 +5220,11 @@
 
       ctx.fill();
 
-
       ctx.stroke();
 
 
       ctx.fillStyle =
-        "#ffffff";
+        '#ffffff';
 
 
       ctx.font =
@@ -5263,19 +5232,18 @@
 
 
       ctx.textAlign =
-        "center";
+        'center';
 
 
       ctx.textBaseline =
-        "middle";
+        'middle';
 
 
       ctx.fillText(
-        "186 / 5",
+        '186 / 5',
         0,
         -3
       );
-
     }
 
 
@@ -5288,7 +5256,7 @@
         accent;
 
 
-      roundedRect(
+      roundRectPath(
         ctx,
         -55,
         -95,
@@ -5309,7 +5277,7 @@
       );
 
 
-      roundedRect(
+      roundRectPath(
         ctx,
         -70,
         67,
@@ -5320,7 +5288,6 @@
 
 
       ctx.fill();
-
     }
 
 
@@ -5343,12 +5310,11 @@
         310,
         310
       );
-
     }
 
 
     /* ========================================================
-       OFFICIAL FWCWL BRAND
+       OFFICIAL BRAND
     ======================================================== */
 
     drawOfficialBrand(
@@ -5366,39 +5332,25 @@
           this.logo.naturalWidth
         ) {
 
-          const maxWidth =
-            width * .12;
-
-
-          const maxHeight =
-            height * .07;
-
-
           const scale =
             Math.min(
-              maxWidth /
-                this.logo.naturalWidth,
+              (
+                width * .12
+              ) /
+              this.logo.naturalWidth,
 
-              maxHeight /
-                this.logo.naturalHeight
+              (
+                height * .07
+              ) /
+              this.logo.naturalHeight
             );
-
-
-          const logoWidth =
-            this.logo.naturalWidth *
-            scale;
-
-
-          const logoHeight =
-            this.logo.naturalHeight *
-            scale;
 
 
           ctx.save();
 
 
           ctx.shadowColor =
-            "rgba(0,0,0,.48)";
+            'rgba(0,0,0,.48)';
 
 
           ctx.shadowBlur =
@@ -5409,8 +5361,10 @@
             this.logo,
             width * .052,
             height * .032,
-            logoWidth,
-            logoHeight
+            this.logo.naturalWidth *
+            scale,
+            this.logo.naturalHeight *
+            scale
           );
 
 
@@ -5429,13 +5383,11 @@
 
 
           ctx.fillText(
-            "FWCWL",
+            'FWCWL',
             width * .055,
             height * .045
           );
-
         }
-
       }
 
 
@@ -5443,11 +5395,11 @@
 
 
       ctx.textAlign =
-        "right";
+        'right';
 
 
       ctx.fillStyle =
-        "rgba(255,255,255,.40)";
+        'rgba(255,255,255,.40)';
 
 
       ctx.font =
@@ -5458,19 +5410,18 @@
 
       ctx.fillText(
         this.state.brandName ||
-        "FWCWL",
+        'FWCWL',
         width * .94,
         height * .955
       );
 
 
       ctx.restore();
-
     }
 
 
     /* ========================================================
-       SAFE ZONE
+       SAFE AREA
     ======================================================== */
 
     drawSafeZone(
@@ -5508,12 +5459,11 @@
 
 
       ctx.restore();
-
     }
 
 
     /* ========================================================
-       SELECTED LAYER OUTLINE
+       SELECTION OUTLINE
     ======================================================== */
 
     drawSelection(
@@ -5553,8 +5503,7 @@
       ctx.setLineDash([]);
 
 
-      const points = [
-
+      [
         [
           bounds.x,
           bounds.y
@@ -5579,10 +5528,7 @@
           bounds.height
         ]
 
-      ];
-
-
-      points.forEach(
+      ].forEach(
         point => {
 
           ctx.fillStyle =
@@ -5590,7 +5536,6 @@
 
 
           ctx.beginPath();
-
 
           ctx.arc(
             point[0],
@@ -5600,20 +5545,17 @@
             Math.PI * 2
           );
 
-
           ctx.fill();
-
         }
       );
 
 
       ctx.restore();
-
     }
 
 
     /* ========================================================
-       TEXT HELPERS
+       TEXT WRAPPING
     ======================================================== */
 
     wrapText(
@@ -5622,82 +5564,73 @@
       maxWidth
     ) {
 
-      const paragraphs =
-        String(
-          text || ""
-        ).split("\n");
+      const result =
+        [];
 
 
-      const result = [];
+      String(
+        text || ''
+      )
+        .split('\n')
+        .forEach(
+          paragraph => {
 
+            if (!paragraph) {
 
-      paragraphs.forEach(
-        paragraph => {
+              result.push('');
 
-          if (
-            paragraph === ""
-          ) {
-
-            result.push("");
-
-            return;
-
-          }
-
-
-          const words =
-            paragraph
-              .split(/\s+/);
-
-
-          let current = "";
-
-
-          words.forEach(
-            word => {
-
-              const test =
-                current
-                  ? `${current} ${word}`
-                  : word;
-
-
-              if (
-                ctx.measureText(test)
-                  .width >
-                  maxWidth &&
-                current
-              ) {
-
-                result.push(
-                  current
-                );
-
-
-                current =
-                  word;
-
-              } else {
-
-                current =
-                  test;
-
-              }
-
+              return;
             }
-          );
 
 
-          result.push(
-            current
-          );
+            let current =
+              '';
 
-        }
-      );
+
+            paragraph
+              .split(/\s+/)
+              .forEach(
+                word => {
+
+                  const test =
+                    current
+                      ? `${current} ${word}`
+                      : word;
+
+
+                  if (
+                    ctx.measureText(
+                      test
+                    ).width >
+                      maxWidth &&
+                    current
+                  ) {
+
+                    result.push(
+                      current
+                    );
+
+
+                    current =
+                      word;
+
+                  } else {
+
+                    current =
+                      test;
+                  }
+                }
+              );
+
+
+            result.push(
+              current
+            );
+          }
+        );
 
 
       return result;
-
     }
 
 
@@ -5718,39 +5651,37 @@
           y
         );
 
-
         return;
-
       }
 
 
-      const characters =
+      const chars =
         [...text];
 
 
       const widths =
-        characters.map(
-          character =>
+        chars.map(
+          char =>
             ctx.measureText(
-              character
+              char
             ).width
         );
 
 
-      const totalWidth =
+      const total =
         widths.reduce(
           (
             sum,
-            current
+            value
           ) =>
             sum +
-            current,
+            value,
           0
         ) +
         spacing *
         Math.max(
           0,
-          characters.length -
+          chars.length -
           1
         );
 
@@ -5760,41 +5691,40 @@
 
 
       if (
-        align === "center"
+        align ===
+        'center'
       ) {
 
         cursor -=
-          totalWidth / 2;
+          total /
+          2;
 
-      }
-
-
-      if (
-        align === "right"
+      } else if (
+        align ===
+        'right'
       ) {
 
         cursor -=
-          totalWidth;
-
+          total;
       }
 
 
-      const oldAlignment =
+      const oldAlign =
         ctx.textAlign;
 
 
       ctx.textAlign =
-        "left";
+        'left';
 
 
-      characters.forEach(
+      chars.forEach(
         (
-          character,
+          char,
           index
         ) => {
 
           ctx.fillText(
-            character,
+            char,
             cursor,
             y
           );
@@ -5803,19 +5733,17 @@
           cursor +=
             widths[index] +
             spacing;
-
         }
       );
 
 
       ctx.textAlign =
-        oldAlignment;
-
+        oldAlign;
     }
 
 
     /* ========================================================
-       SELECTION
+       SELECTION / HIT TEST
     ======================================================== */
 
     getSelected() {
@@ -5828,7 +5756,6 @@
         ) ||
         null
       );
-
     }
 
 
@@ -5877,14 +5804,11 @@
         ) {
 
           return layer;
-
         }
-
       }
 
 
       return null;
-
     }
 
 
@@ -5918,15 +5842,9 @@
             this.canvas.height /
             rect.height
           )
-
       };
-
     }
 
-
-    /* ========================================================
-       POINTER DOWN
-    ======================================================== */
 
     onPointerDown(
       event
@@ -5951,14 +5869,13 @@
           null;
 
 
-        this.render();
+        this.safeRender();
 
 
         this.renderInspector();
 
 
         return;
-
       }
 
 
@@ -5981,7 +5898,6 @@
 
         originalY:
           layer.y
-
       };
 
 
@@ -5992,17 +5908,12 @@
         );
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
-
     }
 
-
-    /* ========================================================
-       POINTER MOVE
-    ======================================================== */
 
     onPointerMove(
       event
@@ -6021,26 +5932,22 @@
         );
 
 
-      const dx =
-        point.x -
-        this.dragState.startX;
-
-
-      const dy =
-        point.y -
-        this.dragState.startY;
-
-
-      let newX =
+      let x =
         this.dragState.originalX +
-        dx /
+        (
+          point.x -
+          this.dragState.startX
+        ) /
         this.state.width *
         100;
 
 
-      let newY =
+      let y =
         this.dragState.originalY +
-        dy /
+        (
+          point.y -
+          this.dragState.startY
+        ) /
         this.state.height *
         100;
 
@@ -6049,25 +5956,24 @@
         this.state.snap
       ) {
 
-        newX =
+        x =
           Math.round(
-            newX * 2
+            x * 2
           ) /
           2;
 
 
-        newY =
+        y =
           Math.round(
-            newY * 2
+            y * 2
           ) /
           2;
-
       }
 
 
       this.dragState.layer.x =
         clamp(
-          newX,
+          x,
           0,
           100
         );
@@ -6075,23 +5981,18 @@
 
       this.dragState.layer.y =
         clamp(
-          newY,
+          y,
           0,
           100
         );
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspectorValues();
-
     }
 
-
-    /* ========================================================
-       POINTER UP
-    ======================================================== */
 
     onPointerUp() {
 
@@ -6107,33 +6008,28 @@
 
 
       this.commit();
-
     }
 
 
     /* ========================================================
-       MEDIA IMPORT
+       MEDIA
     ======================================================== */
 
     async importImages(
       files
     ) {
 
-      const fileList =
-        Array.from(
-          files || []
-        );
-
-
       for (
         const file of
-        fileList
+        Array.from(
+          files || []
+        )
       ) {
 
         if (
           !file.type
             .startsWith(
-              "image/"
+              'image/'
             )
         ) {
           continue;
@@ -6154,62 +6050,51 @@
           url;
 
 
-        try {
+        await new Promise(
+          (
+            resolve,
+            reject
+          ) => {
 
-          await image.decode();
-
-        } catch {
-
-          await new Promise(
-            (
-              resolve,
-              reject
-            ) => {
-
-              image.onload =
-                resolve;
+            image.onload =
+              resolve;
 
 
-              image.onerror =
-                reject;
-
-            }
-          );
-
-        }
+            image.onerror =
+              reject;
+          }
+        );
 
 
         const id =
-          uid("asset");
+          uid('asset');
 
 
         this.assets.set(
           id,
           {
+
             id,
+
             name:
               file.name,
+
             url,
+
             image
           }
         );
-
       }
 
 
       this.renderAssets();
-
     }
 
-
-    /* ========================================================
-       ASSET GRID
-    ======================================================== */
 
     renderAssets() {
 
       const grid =
-        $("#posterAssetGrid");
+        $('#posterAssetGrid');
 
 
       if (!grid) {
@@ -6241,9 +6126,7 @@
           </div>
         `;
 
-
         return;
-
       }
 
 
@@ -6266,9 +6149,8 @@
 
                 </div>
 
-
                 <strong>
-                  ${escapeHtml(
+                  ${esc(
                     asset.name
                   )}
                 </strong>
@@ -6276,37 +6158,27 @@
               </button>
             `
           )
-          .join("");
+          .join('');
 
 
-      grid
-        .querySelectorAll(
-          "[data-poster-asset]"
-        )
-        .forEach(
-          button => {
+      $$(
+        '[data-poster-asset]',
+        grid
+      ).forEach(
+        button => {
 
-            button.addEventListener(
-              "click",
-              () => {
-
-                this.addImageLayer(
-                  button.dataset
-                    .posterAsset
-                );
-
-              }
-            );
-
-          }
-        );
-
+          button.addEventListener(
+            'click',
+            () =>
+              this.addImageLayer(
+                button.dataset
+                  .posterAsset
+              )
+          );
+        }
+      );
     }
 
-
-    /* ========================================================
-       ADD IMAGE
-    ======================================================== */
 
     addImageLayer(
       assetId
@@ -6326,13 +6198,13 @@
       const layer = {
 
         id:
-          uid("image"),
+          uid('image'),
 
         type:
-          "image",
+          'image',
 
         role:
-          "user",
+          'user',
 
         name:
           asset.name,
@@ -6374,7 +6246,6 @@
 
         locked:
           false
-
       };
 
 
@@ -6387,14 +6258,13 @@
         layer.id;
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
 
@@ -6408,29 +6278,29 @@
 
       const headline =
         type ===
-        "headline";
+        'headline';
 
 
       const layer = {
 
         id:
-          uid("text"),
+          uid('text'),
 
         type:
-          "text",
+          'text',
 
         role:
-          "user",
+          'user',
 
         name:
           headline
-            ? "Custom Headline"
-            : "Custom Subtitle",
+            ? 'Custom Headline'
+            : 'Custom Subtitle',
 
         text:
           headline
-            ? "YOUR HEADLINE"
-            : "Add supporting text",
+            ? 'YOUR HEADLINE'
+            : 'Add supporting text',
 
         x:
           10,
@@ -6457,14 +6327,14 @@
 
         font:
           headline
-            ? "Montserrat"
-            : "DM Sans",
+            ? 'Montserrat'
+            : 'DM Sans',
 
         color:
-          "#ffffff",
+          '#ffffff',
 
         align:
-          "left",
+          'left',
 
         opacity:
           1,
@@ -6482,7 +6352,6 @@
 
         locked:
           false
-
       };
 
 
@@ -6495,19 +6364,18 @@
         layer.id;
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
 
     /* ========================================================
-       ADD CRICKET ELEMENT
+       ADD GRAPHIC
     ======================================================== */
 
     addElement(
@@ -6517,42 +6385,41 @@
       const names = {
 
         ball:
-          "Cricket Ball",
+          'Cricket Ball',
 
         wickets:
-          "Wickets",
+          'Wickets',
 
         vs:
-          "VS Badge",
+          'VS Badge',
 
         score:
-          "Score Graphic",
+          'Score Graphic',
 
         trophy:
-          "Trophy",
+          'Trophy',
 
         frame:
-          "Frame"
-
+          'Frame'
       };
 
 
       const layer = {
 
         id:
-          uid("element"),
+          uid('element'),
 
         type:
-          "element",
+          'element',
 
         role:
-          "user",
+          'user',
 
         kind,
 
         name:
           names[kind] ||
-          "Element",
+          'Element',
 
         x:
           72,
@@ -6577,7 +6444,6 @@
 
         locked:
           false
-
       };
 
 
@@ -6590,25 +6456,24 @@
         layer.id;
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
 
     /* ========================================================
-       PROPERTIES INSPECTOR
+       INSPECTOR
     ======================================================== */
 
     renderInspector() {
 
       const container =
-        $("#posterInspector");
+        $('#posterInspector');
 
 
       if (!container) {
@@ -6622,14 +6487,14 @@
 
       if (!layer) {
 
-        $("#posterInspectorTitle")
+        $('#posterInspectorTitle')
           .textContent =
-          "Edit Design";
+          'Edit Design';
 
 
-        $("#posterInspectorType")
+        $('#posterInspectorType')
           .textContent =
-          "CANVAS";
+          'CANVAS';
 
 
         container.innerHTML = `
@@ -6645,13 +6510,12 @@
 
 
             ${this.rangeHtml(
-              "posterTextureStrength",
-              "Texture Strength",
+              'posterTextureStrength',
+              'Texture Strength',
               0,
               100,
-              this.state
-                .textureStrength,
-              "%"
+              this.state.textureStrength,
+              '%'
             )}
 
 
@@ -6689,8 +6553,8 @@
                 type="checkbox"
                 ${
                   this.state.showLogo
-                    ? "checked"
-                    : ""
+                    ? 'checked'
+                    : ''
                 }
               >
 
@@ -6720,6 +6584,7 @@
 
 
           <div class="inspector-help">
+
             Select a text layer, photo or cricket element
             from the canvas or Layers panel.
 
@@ -6727,6 +6592,7 @@
             Use Properties for typography, positioning,
             scale, opacity, photo adjustments, ordering
             and layer management.
+
           </div>
         `;
 
@@ -6738,24 +6604,24 @@
 
 
         return;
-
       }
 
 
-      $("#posterInspectorTitle")
+      $('#posterInspectorTitle')
         .textContent =
         layer.name ||
-        "Selected Layer";
+        'Selected Layer';
 
 
-      $("#posterInspectorType")
+      $('#posterInspectorType')
         .textContent =
-        layer.type.toUpperCase();
+        layer.type
+          .toUpperCase();
 
 
       if (
         layer.type ===
-        "text"
+        'text'
       ) {
 
         container.innerHTML =
@@ -6768,12 +6634,9 @@
           layer
         );
 
-      }
-
-
-      if (
+      } else if (
         layer.type ===
-        "image"
+        'image'
       ) {
 
         container.innerHTML =
@@ -6786,13 +6649,7 @@
           layer
         );
 
-      }
-
-
-      if (
-        layer.type ===
-        "element"
-      ) {
+      } else {
 
         container.innerHTML =
           this.elementInspectorHtml(
@@ -6803,51 +6660,46 @@
         this.bindElementInspector(
           layer
         );
-
       }
-
     }
 
-
-    /* ========================================================
-       DEFAULT CANVAS INSPECTOR BINDING
-    ======================================================== */
 
     bindCanvasInspector() {
 
       this.bindRange(
-        "#posterTextureStrength",
+        '#posterTextureStrength',
         value => {
 
           this.state.textureStrength =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindInput(
-        "#insCanvasAccent",
-        "input",
+        '#insCanvasAccent',
+        'input',
         event => {
 
           this.state.accent =
             event.target.value;
 
 
-          this.render();
+          this.syncBrandUI();
 
+
+          this.safeRender();
         },
         true
       );
 
 
-      $("#insCanvasLogo")
+      $('#insCanvasLogo')
         ?.addEventListener(
-          "change",
+          'change',
           event => {
 
             this.state.showLogo =
@@ -6857,46 +6709,37 @@
             this.syncBrandUI();
 
 
-            this.render();
+            this.safeRender();
 
 
             this.commit();
-
           }
         );
-
     }
 
 
     /* ========================================================
-       LAYER LIST
+       LAYERS
     ======================================================== */
 
     layersHtml() {
 
-      const typeInfo = {
+      const info = {
 
-        text: {
-          icon:
-            "T",
-          label:
-            "TEXT"
-        },
+        text: [
+          'T',
+          'TEXT'
+        ],
 
-        image: {
-          icon:
-            "▧",
-          label:
-            "PHOTO"
-        },
+        image: [
+          '▧',
+          'PHOTO'
+        ],
 
-        element: {
-          icon:
-            "◇",
-          label:
-            "ELEMENT"
-        }
-
+        element: [
+          '◇',
+          'ELEMENT'
+        ]
       };
 
 
@@ -6909,19 +6752,17 @@
             .map(
               layer => {
 
-                const info =
-                  typeInfo[
+                const meta =
+                  info[
                     layer.type
-                  ] || {
-                    icon:
-                      "◇",
-                    label:
-                      String(
-                        layer.type ||
-                        "LAYER"
-                      )
-                        .toUpperCase()
-                  };
+                  ] ||
+                  [
+                    '◇',
+                    String(
+                      layer.type ||
+                      'LAYER'
+                    ).toUpperCase()
+                  ];
 
 
                 const active =
@@ -6938,8 +6779,8 @@
                   <div
                     class="layer-row ${
                       active
-                        ? "active"
-                        : ""
+                        ? 'active'
+                        : ''
                     }"
                     data-layer-row="${layer.id}"
                   >
@@ -6949,19 +6790,14 @@
                       type="button"
                       title="${
                         visible
-                          ? "Hide layer"
-                          : "Show layer"
-                      }"
-                      aria-label="${
-                        visible
-                          ? "Hide layer"
-                          : "Show layer"
-                      }"
+                          ? 'Hide'
+                          : 'Show'
+                      } layer"
                     >
                       ${
                         visible
-                          ? "●"
-                          : "○"
+                          ? '●'
+                          : '○'
                       }
                     </button>
 
@@ -6973,14 +6809,14 @@
                     >
 
                       <span class="layer-icon">
-                        ${info.icon}
+                        ${meta[0]}
                       </span>
 
 
                       <span>
 
                         <strong>
-                          ${escapeHtml(
+                          ${esc(
                             layer.name ||
                             layer.type
                           )}
@@ -6988,11 +6824,11 @@
 
                         <small>
                           ${
-                            info.label
+                            meta[1]
                           }${
                             layer.locked
-                              ? " • LOCKED"
-                              : ""
+                              ? ' • LOCKED'
+                              : ''
                           }
                         </small>
 
@@ -7006,32 +6842,25 @@
                       type="button"
                       title="${
                         layer.locked
-                          ? "Unlock layer"
-                          : "Lock layer"
-                      }"
-                      aria-label="${
-                        layer.locked
-                          ? "Unlock layer"
-                          : "Lock layer"
-                      }"
+                          ? 'Unlock'
+                          : 'Lock'
+                      } layer"
                     >
                       ${
                         layer.locked
-                          ? "■"
-                          : "□"
+                          ? '■'
+                          : '□'
                       }
                     </button>
 
                   </div>
                 `;
-
               }
             )
-            .join("")}
+            .join('')}
 
         </div>
       `;
-
     }
 
 
@@ -7063,7 +6892,7 @@
 
             <textarea
               id="insText"
-            >${escapeHtml(
+            >${esc(
               layer.text
             )}</textarea>
 
@@ -7094,11 +6923,11 @@
               <select id="insFont">
 
                 ${[
-                  "Montserrat",
-                  "Bebas Neue",
-                  "DM Sans",
-                  "Poppins",
-                  "Playfair Display"
+                  'Montserrat',
+                  'Bebas Neue',
+                  'DM Sans',
+                  'Poppins',
+                  'Playfair Display'
                 ]
                   .map(
                     font => `
@@ -7107,15 +6936,15 @@
                         ${
                           layer.font ===
                           font
-                            ? "selected"
-                            : ""
+                            ? 'selected'
+                            : ''
                         }
                       >
                         ${font}
                       </option>
                     `
                   )
-                  .join("")}
+                  .join('')}
 
               </select>
 
@@ -7147,15 +6976,15 @@
                             layer.weight
                           ) ===
                           weight
-                            ? "selected"
-                            : ""
+                            ? 'selected'
+                            : ''
                         }
                       >
                         ${weight}
                       </option>
                     `
                   )
-                  .join("")}
+                  .join('')}
 
               </select>
 
@@ -7165,39 +6994,39 @@
 
 
           ${this.rangeHtml(
-            "insSize",
-            "Font Size",
+            'insSize',
+            'Font Size',
             12,
             280,
             layer.size,
-            ""
+            ''
           )}
 
 
           ${this.rangeHtml(
-            "insTextWidth",
-            "Text Width",
+            'insTextWidth',
+            'Text Width',
             15,
             95,
             layer.width,
-            "%"
+            '%'
           )}
 
 
           ${this.rangeHtml(
-            "insLetterSpacing",
-            "Letter Spacing",
+            'insLetterSpacing',
+            'Letter Spacing',
             -5,
             30,
             layer.letterSpacing ||
             0,
-            ""
+            ''
           )}
 
 
           ${this.rangeHtml(
-            "insLineHeight",
-            "Line Height",
+            'insLineHeight',
+            'Line Height',
             60,
             180,
             (
@@ -7205,7 +7034,7 @@
               1
             ) *
             100,
-            "%"
+            '%'
           )}
 
 
@@ -7221,9 +7050,9 @@
               value="${
                 String(
                   layer.color
-                ).startsWith("#")
+                ).startsWith('#')
                   ? layer.color
-                  : "#ffffff"
+                  : '#ffffff'
               }"
             >
 
@@ -7233,9 +7062,9 @@
           <div class="segmented">
 
             ${[
-              "left",
-              "center",
-              "right"
+              'left',
+              'center',
+              'right'
             ]
               .map(
                 align => `
@@ -7243,8 +7072,8 @@
                     class="${
                       layer.align ===
                       align
-                        ? "active"
-                        : ""
+                        ? 'active'
+                        : ''
                     }"
                     data-text-align="${align}"
                     type="button"
@@ -7253,7 +7082,7 @@
                   </button>
                 `
               )
-              .join("")}
+              .join('')}
 
           </div>
 
@@ -7267,7 +7096,6 @@
 
         ${this.layerActionsHtml()}
       `;
-
     }
 
 
@@ -7287,25 +7115,25 @@
           </div>
 
           <h3>
-            ${escapeHtml(
+            ${esc(
               layer.name
             )}
           </h3>
 
 
           ${this.rangeHtml(
-            "insImageWidth",
-            "Photo Width",
+            'insImageWidth',
+            'Photo Width',
             10,
             120,
             layer.width,
-            "%"
+            '%'
           )}
 
 
           ${this.rangeHtml(
-            "insImageScale",
-            "Scale",
+            'insImageScale',
+            'Scale',
             20,
             300,
             (
@@ -7313,7 +7141,7 @@
               1
             ) *
             100,
-            "%"
+            '%'
           )}
 
         </div>
@@ -7336,46 +7164,46 @@
 
 
           ${this.rangeHtml(
-            "insBrightness",
-            "Brightness",
+            'insBrightness',
+            'Brightness',
             -100,
             100,
             layer.brightness ||
             0,
-            ""
+            ''
           )}
 
 
           ${this.rangeHtml(
-            "insContrast",
-            "Contrast",
+            'insContrast',
+            'Contrast',
             -100,
             100,
             layer.contrast ||
             0,
-            ""
+            ''
           )}
 
 
           ${this.rangeHtml(
-            "insSaturation",
-            "Saturation",
+            'insSaturation',
+            'Saturation',
             -100,
             100,
             layer.saturation ||
             0,
-            ""
+            ''
           )}
 
 
           ${this.rangeHtml(
-            "insBlur",
-            "Blur",
+            'insBlur',
+            'Blur',
             0,
             20,
             layer.blur ||
             0,
-            ""
+            ''
           )}
 
         </div>
@@ -7383,7 +7211,6 @@
 
         ${this.layerActionsHtml()}
       `;
-
     }
 
 
@@ -7403,7 +7230,7 @@
           </div>
 
           <h3>
-            ${escapeHtml(
+            ${esc(
               layer.name
             )}
           </h3>
@@ -7436,12 +7263,11 @@
 
         ${this.layerActionsHtml()}
       `;
-
     }
 
 
     /* ========================================================
-       TRANSFORM INSPECTOR
+       TRANSFORM
     ======================================================== */
 
     transformInspectorHtml(
@@ -7461,31 +7287,31 @@
 
 
           ${this.rangeHtml(
-            "insX",
-            "Horizontal",
+            'insX',
+            'Horizontal',
             0,
             100,
             layer.x,
-            "%"
+            '%'
           )}
 
 
           ${this.rangeHtml(
-            "insY",
-            "Vertical",
+            'insY',
+            'Vertical',
             0,
             100,
             layer.y,
-            "%"
+            '%'
           )}
 
 
           ${
             layer.type ===
-            "element"
+            'element'
               ? this.rangeHtml(
-                  "insScale",
-                  "Scale",
+                  'insScale',
+                  'Scale',
                   20,
                   300,
                   (
@@ -7493,31 +7319,31 @@
                     1
                   ) *
                   100,
-                  "%"
+                  '%'
                 )
-              : ""
+              : ''
           }
 
 
           ${
             layer.type !==
-            "text"
+            'text'
               ? this.rangeHtml(
-                  "insRotation",
-                  "Rotation",
+                  'insRotation',
+                  'Rotation',
                   -180,
                   180,
                   layer.rotation ||
                   0,
-                  "°"
+                  '°'
                 )
-              : ""
+              : ''
           }
 
 
           ${this.rangeHtml(
-            "insOpacity",
-            "Opacity",
+            'insOpacity',
+            'Opacity',
             0,
             100,
             (
@@ -7525,17 +7351,16 @@
               1
             ) *
             100,
-            "%"
+            '%'
           )}
 
         </div>
       `;
-
     }
 
 
     /* ========================================================
-       LAYER ACTIONS
+       ARRANGE
     ======================================================== */
 
     layerActionsHtml() {
@@ -7608,13 +7433,8 @@
 
         </div>
       `;
-
     }
 
-
-    /* ========================================================
-       RANGE HTML
-    ======================================================== */
 
     rangeHtml(
       id,
@@ -7656,12 +7476,11 @@
 
         </label>
       `;
-
     }
 
 
     /* ========================================================
-       TEXT INSPECTOR BINDINGS
+       INSPECTOR BINDINGS
     ======================================================== */
 
     bindTextInspector(
@@ -7669,42 +7488,40 @@
     ) {
 
       this.bindInput(
-        "#insText",
-        "input",
+        '#insText',
+        'input',
         event => {
 
           layer.text =
             event.target.value;
 
 
-          this.render();
-
+          this.safeRender();
         },
         true
       );
 
 
       this.bindInput(
-        "#insFont",
-        "change",
+        '#insFont',
+        'change',
         event => {
 
           layer.font =
             event.target.value;
 
 
-          this.render();
+          this.safeRender();
 
 
           this.commit();
-
         }
       );
 
 
       this.bindInput(
-        "#insWeight",
-        "change",
+        '#insWeight',
+        'change',
         event => {
 
           layer.weight =
@@ -7713,59 +7530,55 @@
             );
 
 
-          this.render();
+          this.safeRender();
 
 
           this.commit();
-
         }
       );
 
 
       this.bindRange(
-        "#insSize",
+        '#insSize',
         value => {
 
           layer.size =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insTextWidth",
+        '#insTextWidth',
         value => {
 
           layer.width =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insLetterSpacing",
+        '#insLetterSpacing',
         value => {
 
           layer.letterSpacing =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insLineHeight",
+        '#insLineHeight',
         value => {
 
           layer.lineHeight =
@@ -7773,35 +7586,33 @@
             100;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindInput(
-        "#insTextColor",
-        "input",
+        '#insTextColor',
+        'input',
         event => {
 
           layer.color =
             event.target.value;
 
 
-          this.render();
-
+          this.safeRender();
         },
         true
       );
 
 
       $$(
-        "[data-text-align]"
+        '[data-text-align]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
+            'click',
             () => {
 
               layer.align =
@@ -7809,17 +7620,15 @@
                   .textAlign;
 
 
-              this.render();
+              this.safeRender();
 
 
               this.renderInspector();
 
 
               this.commit();
-
             }
           );
-
         }
       );
 
@@ -7833,34 +7642,28 @@
 
 
       this.bindLayerRows();
-
     }
 
-
-    /* ========================================================
-       IMAGE INSPECTOR BINDINGS
-    ======================================================== */
 
     bindImageInspector(
       layer
     ) {
 
       this.bindRange(
-        "#insImageWidth",
+        '#insImageWidth',
         value => {
 
           layer.width =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insImageScale",
+        '#insImageScale',
         value => {
 
           layer.scale =
@@ -7868,64 +7671,59 @@
             100;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insBrightness",
+        '#insBrightness',
         value => {
 
           layer.brightness =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insContrast",
+        '#insContrast',
         value => {
 
           layer.contrast =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insSaturation",
+        '#insSaturation',
         value => {
 
           layer.saturation =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insBlur",
+        '#insBlur',
         value => {
 
           layer.blur =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
@@ -7939,29 +7737,23 @@
 
 
       this.bindLayerRows();
-
     }
 
-
-    /* ========================================================
-       ELEMENT INSPECTOR BINDINGS
-    ======================================================== */
 
     bindElementInspector(
       layer
     ) {
 
       this.bindInput(
-        "#insElementColor",
-        "input",
+        '#insElementColor',
+        'input',
         event => {
 
           layer.color =
             event.target.value;
 
 
-          this.render();
-
+          this.safeRender();
         },
         true
       );
@@ -7976,52 +7768,45 @@
 
 
       this.bindLayerRows();
-
     }
 
-
-    /* ========================================================
-       TRANSFORM BINDINGS
-    ======================================================== */
 
     bindTransformInspector(
       layer
     ) {
 
       this.bindRange(
-        "#insX",
+        '#insX',
         value => {
 
           layer.x =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       this.bindRange(
-        "#insY",
+        '#insY',
         value => {
 
           layer.y =
             value;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
 
 
       if (
-        $("#insScale")
+        $('#insScale')
       ) {
 
         this.bindRange(
-          "#insScale",
+          '#insScale',
           value => {
 
             layer.scale =
@@ -8029,36 +7814,32 @@
               100;
 
 
-            this.render();
-
+            this.safeRender();
           }
         );
-
       }
 
 
       if (
-        $("#insRotation")
+        $('#insRotation')
       ) {
 
         this.bindRange(
-          "#insRotation",
+          '#insRotation',
           value => {
 
             layer.rotation =
               value;
 
 
-            this.render();
-
+            this.safeRender();
           }
         );
-
       }
 
 
       this.bindRange(
-        "#insOpacity",
+        '#insOpacity',
         value => {
 
           layer.opacity =
@@ -8066,39 +7847,33 @@
             100;
 
 
-          this.render();
-
+          this.safeRender();
         }
       );
-
     }
 
 
-    /* ========================================================
-       LAYER ACTION BINDINGS
-    ======================================================== */
-
     bindLayerActions() {
 
-      $("#insDuplicate")
+      $('#insDuplicate')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.duplicateSelected()
         );
 
 
-      $("#insDelete")
+      $('#insDelete')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.deleteSelected()
         );
 
 
-      $("#insBringForward")
+      $('#insBringForward')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.moveSelected(
               1
@@ -8106,31 +7881,26 @@
         );
 
 
-      $("#insSendBackward")
+      $('#insSendBackward')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.moveSelected(
               -1
             )
         );
-
     }
 
-
-    /* ========================================================
-       LAYER ROW BINDINGS
-    ======================================================== */
 
     bindLayerRows() {
 
       $$(
-        "[data-layer-select]"
+        '[data-layer-select]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
+            'click',
             () => {
 
               this.state.selectedId =
@@ -8138,25 +7908,23 @@
                   .layerSelect;
 
 
-              this.render();
+              this.safeRender();
 
 
               this.renderInspector();
-
             }
           );
-
         }
       );
 
 
       $$(
-        "[data-layer-visible]"
+        '[data-layer-visible]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
+            'click',
             event => {
 
               event.stopPropagation();
@@ -8181,28 +7949,26 @@
                 false;
 
 
-              this.render();
+              this.safeRender();
 
 
               this.renderInspector();
 
 
               this.commit();
-
             }
           );
-
         }
       );
 
 
       $$(
-        "[data-layer-lock]"
+        '[data-layer-lock]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
+            'click',
             event => {
 
               event.stopPropagation();
@@ -8226,94 +7992,82 @@
                 !layer.locked;
 
 
-              this.render();
+              this.safeRender();
 
 
               this.renderInspector();
 
 
               this.commit();
-
             }
           );
-
         }
       );
-
     }
 
 
-    /* ========================================================
-       UPDATE INSPECTOR AFTER DRAG
-    ======================================================== */
-
     renderInspectorValues() {
 
-      const selected =
+      const layer =
         this.getSelected();
 
 
-      if (!selected) {
+      if (!layer) {
         return;
       }
 
 
       const x =
-        $("#insX");
+        $('#insX');
 
 
       const y =
-        $("#insY");
+        $('#insY');
 
 
       if (x) {
 
         x.value =
-          selected.x;
+          layer.x;
 
 
-        const label =
-          $("#insXValue");
+        const value =
+          $('#insXValue');
 
 
-        if (label) {
+        if (value) {
 
-          label.textContent =
+          value.textContent =
             `${Math.round(
-              selected.x
+              layer.x
             )}%`;
-
         }
-
       }
 
 
       if (y) {
 
         y.value =
-          selected.y;
+          layer.y;
 
 
-        const label =
-          $("#insYValue");
+        const value =
+          $('#insYValue');
 
 
-        if (label) {
+        if (value) {
 
-          label.textContent =
+          value.textContent =
             `${Math.round(
-              selected.y
+              layer.y
             )}%`;
-
         }
-
       }
-
     }
 
 
     /* ========================================================
-       DUPLICATE
+       LAYER COMMANDS
     ======================================================== */
 
     duplicateSelected() {
@@ -8328,7 +8082,7 @@
 
 
       const copy =
-        cloneSerializable(
+        clone(
           layer
         );
 
@@ -8373,20 +8127,15 @@
         copy.id;
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
-
-    /* ========================================================
-       DELETE
-    ======================================================== */
 
     deleteSelected() {
 
@@ -8402,7 +8151,8 @@
       this.state.layers =
         this.state.layers.filter(
           layer =>
-            layer.id !== id
+            layer.id !==
+            id
         );
 
 
@@ -8410,34 +8160,26 @@
         null;
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
-
-    /* ========================================================
-       MOVE LAYER
-    ======================================================== */
 
     moveSelected(
       direction
     ) {
 
-      const id =
-        this.state.selectedId;
-
-
       const index =
         this.state.layers
           .findIndex(
             layer =>
-              layer.id === id
+              layer.id ===
+              this.state.selectedId
           );
 
 
@@ -8485,14 +8227,13 @@
         );
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
 
@@ -8507,24 +8248,22 @@
         ...this.state,
 
         layers:
-          this.state.layers.map(
-            layer => {
+          this.state.layers
+            .map(
+              layer => {
 
-              const copy = {
-                ...layer
-              };
-
-
-              delete copy._bounds;
+                const copy = {
+                  ...layer
+                };
 
 
-              return copy;
+                delete copy._bounds;
 
-            }
-          )
 
+                return copy;
+              }
+            )
       });
-
     }
 
 
@@ -8537,7 +8276,8 @@
       if (
         this.history[
           this.historyIndex
-        ] === snapshot
+        ] ===
+        snapshot
       ) {
         return;
       }
@@ -8562,14 +8302,12 @@
       ) {
 
         this.history.shift();
-
       }
 
 
       this.historyIndex =
         this.history.length -
         1;
-
     }
 
 
@@ -8586,14 +8324,13 @@
       this.syncAllUI();
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
-      this.renderTemplates();
-
+      this.safeRenderTemplates();
     }
 
 
@@ -8615,7 +8352,6 @@
           this.historyIndex
         ]
       );
-
     }
 
 
@@ -8638,12 +8374,11 @@
           this.historyIndex
         ]
       );
-
     }
 
 
     /* ========================================================
-       FORMAT
+       FORMAT / ZOOM
     ======================================================== */
 
     changeFormat(
@@ -8674,7 +8409,7 @@
 
 
       const dimensions =
-        $("#posterDimensions");
+        $('#posterDimensions');
 
 
       if (dimensions) {
@@ -8685,29 +8420,23 @@
           } × ${
             definition.height
           }`;
-
       }
 
 
-      this.render();
+      this.safeRender();
 
 
       this.fitCanvas();
 
 
       this.commit();
-
     }
 
-
-    /* ========================================================
-       FIT CANVAS
-    ======================================================== */
 
     fitCanvas() {
 
       const stage =
-        $("#posterStage");
+        $('#posterStage');
 
 
       if (!stage) {
@@ -8731,33 +8460,24 @@
         );
 
 
-      const zoom =
-        Math.min(
-          availableWidth /
-            this.state.width,
-
-          availableHeight /
-            this.state.height,
-
-          1
-        );
-
-
       this.state.zoom =
         Math.max(
           .10,
-          zoom
+          Math.min(
+            availableWidth /
+              this.state.width,
+
+            availableHeight /
+              this.state.height,
+
+            1
+          )
         );
 
 
       this.applyZoom();
-
     }
 
-
-    /* ========================================================
-       APPLY ZOOM
-    ======================================================== */
 
     applyZoom() {
 
@@ -8780,7 +8500,7 @@
 
 
       const label =
-        $("#posterZoomValue");
+        $('#posterZoomValue');
 
 
       if (label) {
@@ -8792,34 +8512,32 @@
               100
             )
           }%`;
-
       }
-
     }
 
 
     /* ========================================================
-       EXPORT MODAL
+       EXPORT
     ======================================================== */
 
     openExport() {
 
-      $("#posterExportBackdrop")
+      $('#posterExportBackdrop')
         ?.remove();
 
 
       const modal =
         document.createElement(
-          "div"
+          'div'
         );
 
 
       modal.id =
-        "posterExportBackdrop";
+        'posterExportBackdrop';
 
 
       modal.className =
-        "export-backdrop";
+        'export-backdrop';
 
 
       modal.innerHTML = `
@@ -8845,13 +8563,11 @@
 
 
           <p>
-            Export your design at full
-            ${
+            Export at full ${
               this.state.width
             } × ${
               this.state.height
-            }
-            resolution.
+            } resolution.
           </p>
 
 
@@ -8868,7 +8584,7 @@
               </strong>
 
               <span>
-                Maximum quality with crisp graphics
+                Maximum quality
               </span>
 
             </button>
@@ -8885,7 +8601,7 @@
               </strong>
 
               <span>
-                Optimized social-media image
+                Optimized social image
               </span>
 
             </button>
@@ -8901,16 +8617,16 @@
       );
 
 
-      $("#posterExportClose")
+      $('#posterExportClose')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             modal.remove()
         );
 
 
       modal.addEventListener(
-        "click",
+        'click',
         event => {
 
           if (
@@ -8919,44 +8635,34 @@
           ) {
 
             modal.remove();
-
           }
-
         }
       );
 
 
-      modal
-        .querySelectorAll(
-          "[data-poster-export]"
-        )
-        .forEach(
-          button => {
+      $$(
+        '[data-poster-export]',
+        modal
+      ).forEach(
+        button => {
 
-            button.addEventListener(
-              "click",
-              () => {
+          button.addEventListener(
+            'click',
+            () => {
 
-                this.download(
-                  button.dataset
-                    .posterExport
-                );
+              this.download(
+                button.dataset
+                  .posterExport
+              );
 
 
-                modal.remove();
-
-              }
-            );
-
-          }
-        );
-
+              modal.remove();
+            }
+          );
+        }
+      );
     }
 
-
-    /* ========================================================
-       DOWNLOAD
-    ======================================================== */
 
     download(
       format
@@ -8969,14 +8675,14 @@
 
       const mime =
         format ===
-        "jpg"
-          ? "image/jpeg"
-          : "image/png";
+        'jpg'
+          ? 'image/jpeg'
+          : 'image/png';
 
 
       const quality =
         format ===
-        "jpg"
+        'jpg'
           ? .95
           : undefined;
 
@@ -8986,10 +8692,9 @@
 
           if (!blob) {
 
-            this.render();
+            this.safeRender();
 
             return;
-
           }
 
 
@@ -9001,25 +8706,25 @@
 
           const link =
             document.createElement(
-              "a"
+              'a'
             );
 
 
-          const projectName =
+          const project =
             (
-              $("#projectName")
+              $('#projectName')
                 ?.value ||
-              "fwcwl"
+              'fwcwl'
             )
               .trim()
               .toLowerCase()
               .replace(
                 /[^a-z0-9]+/g,
-                "-"
+                '-'
               )
               .replace(
                 /^-|-$/g,
-                ""
+                ''
               );
 
 
@@ -9029,21 +8734,22 @@
 
           link.download =
             `${
-              projectName ||
-              "fwcwl"
+              project ||
+              'fwcwl'
             }-${
               this.state.templateId
             }.${
               format ===
-              "jpg"
-                ? "jpg"
-                : "png"
+              'jpg'
+                ? 'jpg'
+                : 'png'
             }`;
 
 
-          document.body.appendChild(
-            link
-          );
+          document.body
+            .appendChild(
+              link
+            );
 
 
           link.click();
@@ -9061,13 +8767,11 @@
           );
 
 
-          this.render();
-
+          this.safeRender();
         },
         mime,
         quality
       );
-
     }
 
 
@@ -9077,13 +8781,11 @@
 
     reset() {
 
-      const confirmed =
-        window.confirm(
-          "Reset the current poster design?"
-        );
-
-
-      if (!confirmed) {
+      if (
+        !window.confirm(
+          'Reset the current poster design?'
+        )
+      ) {
         return;
       }
 
@@ -9101,79 +8803,72 @@
 
 
       this.applyTemplate(
-        "match-day",
+        'match-day',
         false
       );
-
-
-      this.state.selectedId =
-        null;
 
 
       this.syncAllUI();
 
 
-      this.render();
+      this.safeRender();
 
 
       this.renderInspector();
 
 
       this.commit();
-
     }
 
 
     /* ========================================================
-       GLOBAL UI BINDINGS
+       GLOBAL UI
     ======================================================== */
 
     bindUI() {
 
-      /* ------------------------------------------------------
-         LEFT PANEL TABS
-      ------------------------------------------------------ */
+      /* tabs */
 
       $$(
-        "[data-poster-tab]"
+        '[data-poster-tab]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
+            'click',
             () => {
 
+              const name =
+                button.dataset
+                  .posterTab;
+
+
               $$(
-                "[data-poster-tab]"
+                '[data-poster-tab]'
               ).forEach(
                 item =>
                   item.classList
                     .remove(
-                      "active"
+                      'active'
                     )
               );
 
 
               button.classList
                 .add(
-                  "active"
+                  'active'
                 );
 
 
               $$(
-                ".poster-left-panel"
+                '.poster-left-panel'
               ).forEach(
                 panel =>
                   panel.classList
                     .remove(
-                      "active"
+                      'active'
                     )
               );
-
-
-              const name =
-                button.dataset
-                  .posterTab;
 
 
               const id =
@@ -9188,62 +8883,55 @@
               $(id)
                 ?.classList
                 .add(
-                  "active"
+                  'active'
                 );
-
             }
           );
-
         }
       );
 
 
-      /* ------------------------------------------------------
-         SEARCH
-      ------------------------------------------------------ */
+      /* template search */
 
-      $("#posterTemplateSearch")
+      $('#posterTemplateSearch')
         ?.addEventListener(
-          "input",
+          'input',
           event => {
 
             this.searchTerm =
               event.target.value;
 
 
-            this.renderTemplates();
-
+            this.safeRenderTemplates();
           }
         );
 
 
-      /* ------------------------------------------------------
-         FILTERS
-      ------------------------------------------------------ */
+      /* template filters */
 
       $$(
-        "[data-filter]"
+        '[data-filter]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
+            'click',
             () => {
 
               $$(
-                "[data-filter]"
+                '[data-filter]'
               ).forEach(
                 item =>
                   item.classList
                     .remove(
-                      "active"
+                      'active'
                     )
               );
 
 
               button.classList
                 .add(
-                  "active"
+                  'active'
                 );
 
 
@@ -9252,119 +8940,112 @@
                   .filter;
 
 
-              this.renderTemplates();
-
+              this.safeRenderTemplates();
             }
           );
-
         }
       );
 
 
-      /* ------------------------------------------------------
-         MEDIA UPLOAD
-      ------------------------------------------------------ */
+      /* media */
 
-      $("#posterUploadMediaBtn")
+      $('#posterUploadMediaBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
-            $("#posterMediaInput")
+            $('#posterMediaInput')
               ?.click()
         );
 
 
-      $("#posterMediaInput")
+      $('#posterMediaInput')
         ?.addEventListener(
-          "change",
+          'change',
           async event => {
 
-            await this.importImages(
-              event.target.files
-            );
+            try {
+
+              await this.importImages(
+                event.target.files
+              );
+
+            } catch (
+              error
+            ) {
+
+              console.error(
+                '[FWCWL Poster Upload]',
+                error
+              );
+
+
+              alert(
+                'Could not load that image. Try PNG, JPG or WEBP.'
+              );
+            }
 
 
             event.target.value =
-              "";
-
+              '';
           }
         );
 
 
-      /* ------------------------------------------------------
-         ADD TEXT
-      ------------------------------------------------------ */
+      /* add text */
 
       $$(
-        "[data-add-poster-text]"
+        '[data-add-poster-text]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
-            () => {
-
+            'click',
+            () =>
               this.addText(
                 button.dataset
                   .addPosterText
-              );
-
-            }
+              )
           );
-
         }
       );
 
 
-      /* ------------------------------------------------------
-         ADD ELEMENT
-      ------------------------------------------------------ */
+      /* add cricket elements */
 
       $$(
-        "[data-add-poster-element]"
+        '[data-add-poster-element]'
       ).forEach(
         button => {
 
           button.addEventListener(
-            "click",
-            () => {
-
+            'click',
+            () =>
               this.addElement(
                 button.dataset
                   .addPosterElement
-              );
-
-            }
+              )
           );
-
         }
       );
 
 
-      /* ------------------------------------------------------
-         FORMAT
-      ------------------------------------------------------ */
+      /* format */
 
-      $("#posterCanvasSize")
+      $('#posterCanvasSize')
         ?.addEventListener(
-          "change",
-          event => {
-
+          'change',
+          event =>
             this.changeFormat(
               event.target.value
-            );
-
-          }
+            )
         );
 
 
-      /* ------------------------------------------------------
-         SAFE AREA
-      ------------------------------------------------------ */
+      /* safe zone */
 
-      $("#posterSafeZoneBtn")
+      $('#posterSafeZoneBtn')
         ?.addEventListener(
-          "click",
+          'click',
           event => {
 
             this.state.safeZone =
@@ -9374,27 +9055,24 @@
             event.currentTarget
               .classList
               .toggle(
-                "active",
+                'active',
                 this.state.safeZone
               );
 
 
-            this.render();
+            this.safeRender();
 
 
             this.commit();
-
           }
         );
 
 
-      /* ------------------------------------------------------
-         SNAP
-      ------------------------------------------------------ */
+      /* snap */
 
-      $("#posterSnapBtn")
+      $('#posterSnapBtn')
         ?.addEventListener(
-          "click",
+          'click',
           event => {
 
             this.state.snap =
@@ -9404,36 +9082,31 @@
             event.currentTarget
               .classList
               .toggle(
-                "active",
+                'active',
                 this.state.snap
               );
 
 
             this.commit();
-
           }
         );
 
 
-      /* ------------------------------------------------------
-         FIT
-      ------------------------------------------------------ */
+      /* fit */
 
-      $("#posterFitBtn")
+      $('#posterFitBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.fitCanvas()
         );
 
 
-      /* ------------------------------------------------------
-         ZOOM
-      ------------------------------------------------------ */
+      /* zoom */
 
-      $("#posterZoomInBtn")
+      $('#posterZoomInBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () => {
 
             this.state.zoom =
@@ -9446,14 +9119,13 @@
 
 
             this.applyZoom();
-
           }
         );
 
 
-      $("#posterZoomOutBtn")
+      $('#posterZoomOutBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () => {
 
             this.state.zoom =
@@ -9466,37 +9138,29 @@
 
 
             this.applyZoom();
-
           }
         );
 
 
-      /* ------------------------------------------------------
-         BRAND NAME
-      ------------------------------------------------------ */
+      /* brand */
 
-      $("#posterBrandName")
+      $('#posterBrandName')
         ?.addEventListener(
-          "input",
+          'input',
           event => {
 
             this.state.brandName =
               event.target.value;
 
 
-            this.render();
-
+            this.safeRender();
           }
         );
 
 
-      /* ------------------------------------------------------
-         ACCENT
-      ------------------------------------------------------ */
-
-      $("#posterAccentColor")
+      $('#posterAccentColor')
         ?.addEventListener(
-          "input",
+          'input',
           event => {
 
             this.state.accent =
@@ -9504,7 +9168,7 @@
 
 
             const text =
-              $("#posterAccentText");
+              $('#posterAccentText');
 
 
             if (text) {
@@ -9512,19 +9176,17 @@
               text.value =
                 event.target.value
                   .toUpperCase();
-
             }
 
 
-            this.render();
-
+            this.safeRender();
           }
         );
 
 
-      $("#posterAccentText")
+      $('#posterAccentText')
         ?.addEventListener(
-          "change",
+          'change',
           event => {
 
             const color =
@@ -9538,7 +9200,6 @@
               this.syncBrandUI();
 
               return;
-
             }
 
 
@@ -9549,22 +9210,17 @@
             this.syncBrandUI();
 
 
-            this.render();
+            this.safeRender();
 
 
             this.commit();
-
           }
         );
 
 
-      /* ------------------------------------------------------
-         BACKGROUND BRAND SETTING
-      ------------------------------------------------------ */
-
-      $("#posterBackgroundColor")
+      $('#posterBackgroundColor')
         ?.addEventListener(
-          "input",
+          'input',
           event => {
 
             this.state.background =
@@ -9572,7 +9228,7 @@
 
 
             const text =
-              $("#posterBackgroundText");
+              $('#posterBackgroundText');
 
 
             if (text) {
@@ -9580,16 +9236,17 @@
               text.value =
                 event.target.value
                   .toUpperCase();
-
             }
 
+
+            this.safeRender();
           }
         );
 
 
-      $("#posterBackgroundText")
+      $('#posterBackgroundText')
         ?.addEventListener(
-          "change",
+          'change',
           event => {
 
             const color =
@@ -9603,7 +9260,6 @@
               this.syncBrandUI();
 
               return;
-
             }
 
 
@@ -9614,146 +9270,144 @@
             this.syncBrandUI();
 
 
-            this.commit();
+            this.safeRender();
 
+
+            this.commit();
           }
         );
 
 
-      /* ------------------------------------------------------
-         LOGO
-      ------------------------------------------------------ */
-
-      $("#posterLogoToggle")
+      $('#posterLogoToggle')
         ?.addEventListener(
-          "change",
+          'change',
           event => {
 
             this.state.showLogo =
               event.target.checked;
 
 
-            this.render();
+            this.safeRender();
 
 
             this.renderInspector();
 
 
             this.commit();
-
           }
         );
 
 
-      /* ------------------------------------------------------
-         CANVAS POINTER
-      ------------------------------------------------------ */
+      /* pointer */
 
-      this.canvas.addEventListener(
-        "pointerdown",
-        event =>
-          this.onPointerDown(
-            event
-          )
-      );
+      this.canvas
+        .addEventListener(
+          'pointerdown',
+          event =>
+            this.onPointerDown(
+              event
+            )
+        );
 
 
-      this.canvas.addEventListener(
-        "pointermove",
-        event =>
-          this.onPointerMove(
-            event
-          )
-      );
+      this.canvas
+        .addEventListener(
+          'pointermove',
+          event =>
+            this.onPointerMove(
+              event
+            )
+        );
 
 
       window.addEventListener(
-        "pointerup",
+        'pointerup',
         () =>
           this.onPointerUp()
       );
 
 
-      /* ------------------------------------------------------
-         HISTORY
-      ------------------------------------------------------ */
+      /* history */
 
-      $("#undoBtn")
+      $('#undoBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.undo()
         );
 
 
-      $("#redoBtn")
+      $('#redoBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.redo()
         );
 
 
-      /* ------------------------------------------------------
-         RESET
-      ------------------------------------------------------ */
+      /* reset */
 
-      $("#resetBtn")
+      $('#resetBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.reset()
         );
 
 
-      /* ------------------------------------------------------
-         EXPORT
-      ------------------------------------------------------ */
+      /* export */
 
-      $("#exportTopBtn")
+      $('#exportTopBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.openExport()
         );
 
 
-      $("#downloadPosterBtn")
+      $('#downloadPosterBtn')
         ?.addEventListener(
-          "click",
+          'click',
           () =>
             this.openExport()
         );
 
 
-      /* ------------------------------------------------------
-         RESIZE
-      ------------------------------------------------------ */
+      /* resize */
 
       window.addEventListener(
-        "resize",
-        () =>
-          this.fitCanvas()
+        'resize',
+        () => {
+
+          clearTimeout(
+            this.resizeTimer
+          );
+
+
+          this.resizeTimer =
+            setTimeout(
+              () =>
+                this.fitCanvas(),
+              80
+            );
+        }
       );
 
 
-      /* ------------------------------------------------------
-         KEYBOARD
-      ------------------------------------------------------ */
+      /* keyboard */
 
       document.addEventListener(
-        "keydown",
+        'keydown',
         event =>
           this.handleKeyboard(
             event
           )
       );
-
     }
 
 
     /* ========================================================
-       KEYBOARD SHORTCUTS
+       KEYBOARD
     ======================================================== */
 
     handleKeyboard(
@@ -9761,13 +9415,13 @@
     ) {
 
       const workspace =
-        $("#posterWorkspace");
+        $('#posterWorkspace');
 
 
       if (
         workspace &&
         workspace.style.display ===
-        "none"
+        'none'
       ) {
         return;
       }
@@ -9798,27 +9452,18 @@
         command &&
         event.key
           .toLowerCase() ===
-          "z"
+          'z'
       ) {
 
         event.preventDefault();
 
 
-        if (
-          event.shiftKey
-        ) {
-
-          this.redo();
-
-        } else {
-
-          this.undo();
-
-        }
+        event.shiftKey
+          ? this.redo()
+          : this.undo();
 
 
         return;
-
       }
 
 
@@ -9826,7 +9471,7 @@
         command &&
         event.key
           .toLowerCase() ===
-          "y"
+          'y'
       ) {
 
         event.preventDefault();
@@ -9836,7 +9481,6 @@
 
 
         return;
-
       }
 
 
@@ -9844,7 +9488,7 @@
         command &&
         event.key
           .toLowerCase() ===
-          "d"
+          'd'
       ) {
 
         event.preventDefault();
@@ -9854,32 +9498,33 @@
 
 
         return;
-
       }
 
 
       if (
         event.key ===
-          "Delete" ||
+          'Delete' ||
         event.key ===
-          "Backspace"
+          'Backspace'
       ) {
+
+        event.preventDefault();
+
 
         this.deleteSelected();
 
 
         return;
-
       }
 
 
-      const selected =
+      const layer =
         this.getSelected();
 
 
       if (
-        !selected ||
-        selected.locked
+        !layer ||
+        layer.locked
       ) {
         return;
       }
@@ -9897,12 +9542,12 @@
 
       if (
         event.key ===
-        "ArrowLeft"
+        'ArrowLeft'
       ) {
 
-        selected.x =
+        layer.x =
           clamp(
-            selected.x -
+            layer.x -
             step,
             0,
             100
@@ -9911,18 +9556,17 @@
 
         changed =
           true;
-
       }
 
 
       if (
         event.key ===
-        "ArrowRight"
+        'ArrowRight'
       ) {
 
-        selected.x =
+        layer.x =
           clamp(
-            selected.x +
+            layer.x +
             step,
             0,
             100
@@ -9931,18 +9575,17 @@
 
         changed =
           true;
-
       }
 
 
       if (
         event.key ===
-        "ArrowUp"
+        'ArrowUp'
       ) {
 
-        selected.y =
+        layer.y =
           clamp(
-            selected.y -
+            layer.y -
             step,
             0,
             100
@@ -9951,18 +9594,17 @@
 
         changed =
           true;
-
       }
 
 
       if (
         event.key ===
-        "ArrowDown"
+        'ArrowDown'
       ) {
 
-        selected.y =
+        layer.y =
           clamp(
-            selected.y +
+            layer.y +
             step,
             0,
             100
@@ -9971,7 +9613,6 @@
 
         changed =
           true;
-
       }
 
 
@@ -9980,21 +9621,19 @@
         event.preventDefault();
 
 
-        this.render();
+        this.safeRender();
 
 
         this.renderInspectorValues();
 
 
         this.commit();
-
       }
-
     }
 
 
     /* ========================================================
-       GENERIC INPUT BINDER
+       GENERIC BINDERS
     ======================================================== */
 
     bindInput(
@@ -10022,23 +9661,17 @@
       if (
         commitOnChange &&
         eventName !==
-        "change"
+        'change'
       ) {
 
         element.addEventListener(
-          "change",
+          'change',
           () =>
             this.commit()
         );
-
       }
-
     }
 
-
-    /* ========================================================
-       RANGE BINDER
-    ======================================================== */
 
     bindRange(
       selector,
@@ -10054,14 +9687,14 @@
       }
 
 
-      const valueLabel =
+      const label =
         $(
           `${selector}Value`
         );
 
 
       input.addEventListener(
-        "input",
+        'input',
         () => {
 
           const value =
@@ -10075,152 +9708,133 @@
           );
 
 
-          if (
-            valueLabel
-          ) {
+          if (label) {
 
             const suffix =
-              valueLabel.dataset
+              label.dataset
                 .suffix ||
-              "";
+              '';
 
 
-            valueLabel.textContent =
+            label.textContent =
               `${Math.round(
                 value
               )}${suffix}`;
-
           }
-
         }
       );
 
 
       input.addEventListener(
-        "change",
+        'change',
         () =>
           this.commit()
       );
-
     }
 
 
     /* ========================================================
-       SYNC BRAND UI
+       UI SYNC
     ======================================================== */
 
     syncBrandUI() {
 
       if (
-        $("#posterBrandName")
+        $('#posterBrandName')
       ) {
 
-        $("#posterBrandName")
+        $('#posterBrandName')
           .value =
           this.state.brandName;
-
       }
 
 
       if (
-        $("#posterAccentColor")
+        $('#posterAccentColor')
       ) {
 
-        $("#posterAccentColor")
+        $('#posterAccentColor')
           .value =
           this.state.accent;
-
       }
 
 
       if (
-        $("#posterAccentText")
+        $('#posterAccentText')
       ) {
 
-        $("#posterAccentText")
+        $('#posterAccentText')
           .value =
           this.state.accent
             .toUpperCase();
-
       }
 
 
       if (
-        $("#posterBackgroundColor")
+        $('#posterBackgroundColor')
       ) {
 
-        $("#posterBackgroundColor")
+        $('#posterBackgroundColor')
           .value =
           this.state.background;
-
       }
 
 
       if (
-        $("#posterBackgroundText")
+        $('#posterBackgroundText')
       ) {
 
-        $("#posterBackgroundText")
+        $('#posterBackgroundText')
           .value =
           this.state.background
             .toUpperCase();
-
       }
 
 
       if (
-        $("#posterLogoToggle")
+        $('#posterLogoToggle')
       ) {
 
-        $("#posterLogoToggle")
+        $('#posterLogoToggle')
           .checked =
           this.state.showLogo;
-
       }
-
     }
 
-
-    /* ========================================================
-       SYNC ALL UI
-    ======================================================== */
 
     syncAllUI() {
 
       if (
-        $("#posterCanvasSize")
+        $('#posterCanvasSize')
       ) {
 
-        $("#posterCanvasSize")
+        $('#posterCanvasSize')
           .value =
           this.state.format;
-
       }
 
 
-      $("#posterSafeZoneBtn")
+      $('#posterSafeZoneBtn')
         ?.classList
         .toggle(
-          "active",
+          'active',
           this.state.safeZone
         );
 
 
-      $("#posterSnapBtn")
+      $('#posterSnapBtn')
         ?.classList
         .toggle(
-          "active",
+          'active',
           this.state.snap
         );
 
 
       const dimensions =
-        $("#posterDimensions");
+        $('#posterDimensions');
 
 
-      if (
-        dimensions
-      ) {
+      if (dimensions) {
 
         dimensions.textContent =
           `${
@@ -10228,7 +9842,6 @@
           } × ${
             this.state.height
           }`;
-
       }
 
 
@@ -10236,37 +9849,120 @@
 
 
       this.applyZoom();
-
     }
 
   }
 
 
-  /* ==========================================================
-     INITIALIZE
-  ========================================================== */
+  /* ============================================================
+     BOOT
+  ============================================================ */
+
+  function boot() {
+
+    if (
+      window.__FWCWL_POSTER_BOOTING__
+    ) {
+      return;
+    }
+
+
+    window.__FWCWL_POSTER_BOOTING__ =
+      true;
+
+
+    setBootState(
+      'booting'
+    );
+
+
+    try {
+
+      const editor =
+        new PosterEditor();
+
+
+      window.FWCWLPosterEditor =
+        editor;
+
+    } catch (
+      error
+    ) {
+
+      showBootError(
+        error &&
+        error.message
+          ? error.message
+          : 'Unknown initialization error.',
+        error
+      );
+
+    } finally {
+
+      window.__FWCWL_POSTER_BOOTING__ =
+        false;
+    }
+  }
+
+
+  /* ============================================================
+     ERROR MONITOR
+  ============================================================ */
 
   window.addEventListener(
-    "DOMContentLoaded",
-    () => {
+    'error',
+    event => {
 
-      try {
-
-        window.FWCWLPosterEditor =
-          new PosterEditor();
-
-      } catch (
-        error
+      if (
+        event.filename &&
+        event.filename.includes(
+          'poster-editor'
+        )
       ) {
 
-        console.error(
-          "FWCWL Poster Editor failed to initialize:",
-          error
+        showBootError(
+          `JavaScript error: ${
+            event.message ||
+            'unknown error'
+          }`
         );
-
       }
-
     }
   );
+
+
+  window.addEventListener(
+    'unhandledrejection',
+    event => {
+
+      console.error(
+        '[FWCWL Poster unhandled promise]',
+        event.reason
+      );
+    }
+  );
+
+
+  /* ============================================================
+     START ONCE
+  ============================================================ */
+
+  if (
+    document.readyState ===
+    'loading'
+  ) {
+
+    document.addEventListener(
+      'DOMContentLoaded',
+      boot,
+      {
+        once: true
+      }
+    );
+
+  } else {
+
+    boot();
+  }
 
 })();
