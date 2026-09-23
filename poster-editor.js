@@ -2,7 +2,7 @@
   'use strict';
 
   const WATCHDOG_VERSION = '10.0.0';
-  const BUILD_VERSION = '15.0.0-cricket-backgrounds';
+  const BUILD_VERSION = '16.0.0-mobile-studio';
   const LOGO_PATH = 'assets/fwcwl-logo.jpeg';
   const REQUIRED_IDS = [
     'posterWorkspace','posterCanvas','posterTemplateGrid','posterTemplateCount',
@@ -266,6 +266,11 @@
       this.guideY = null;
       this.inlineTextEditor = null;
       this.pendingReplaceLayerId = null;
+      this.mobileDock = null;
+      this.mobileScrim = null;
+      this.mobileSelectionBar = null;
+      this.touchPoints = new Map();
+      this.pinchState = null;
       this.layerClipboard = null;
 
       this.state = {
@@ -1833,6 +1838,408 @@ getLayerImage(layer) {
           }
         }
 
+
+
+        /* ======================================================
+           MOBILE CREATIVE STUDIO
+           Lightroom-style adjustments + CapCut-style bottom dock
+           Desktop behavior stays unchanged.
+        ====================================================== */
+
+        #posterMobileDock,
+        #posterMobileScrim,
+        #posterMobileSelectionBar,
+        .poster-mobile-sheet-head {
+          display: none;
+        }
+
+        @media (max-width: 900px) {
+          html,
+          body {
+            overscroll-behavior: none;
+          }
+
+          body {
+            overflow: hidden !important;
+            background: #05080b !important;
+          }
+
+          #globalTopbar {
+            height: 58px !important;
+            min-height: 58px !important;
+            grid-template-columns: minmax(0,1fr) auto !important;
+            gap: 8px !important;
+            padding: 0 10px !important;
+            border-bottom: 1px solid rgba(255,255,255,.07) !important;
+            background: rgba(5,8,11,.98) !important;
+          }
+
+          #globalTopbar .brand {
+            min-width: 0 !important;
+            gap: 8px !important;
+          }
+
+          #globalTopbar .brand-mark {
+            width: 38px !important;
+            height: 38px !important;
+            flex: 0 0 38px !important;
+            padding: 3px !important;
+            border-radius: 10px !important;
+          }
+
+          #globalTopbar .brand-mark img {
+            filter: brightness(1.42) contrast(1.18) saturate(1.1) drop-shadow(0 0 10px rgba(241,195,77,.24)) !important;
+          }
+
+          #globalTopbar .brand-copy strong {
+            font-size: 13px !important;
+          }
+
+          #globalTopbar .brand-copy span,
+          #globalTopbar .topbar-center,
+          #globalTopbar .topbar-divider,
+          #globalTopbar #resetBtn {
+            display: none !important;
+          }
+
+          #globalTopbar .topbar-actions {
+            gap: 5px !important;
+          }
+
+          #globalTopbar .top-icon,
+          #globalTopbar .top-secondary,
+          #globalTopbar .top-export {
+            min-width: 38px !important;
+            width: 38px !important;
+            height: 38px !important;
+            min-height: 38px !important;
+            padding: 0 !important;
+            display: grid !important;
+            place-items: center !important;
+            border-radius: 10px !important;
+            font-size: 0 !important;
+          }
+
+          #globalTopbar #undoBtn::after { content: '↶'; font-size: 18px; }
+          #globalTopbar #redoBtn::after { content: '↷'; font-size: 18px; }
+
+          #globalTopbar #exportTopBtn {
+            width: auto !important;
+            min-width: 72px !important;
+            padding: 0 13px !important;
+            display: flex !important;
+            gap: 6px !important;
+            font-size: 9px !important;
+          }
+
+          #globalTopbar #exportTopBtn span { font-size: 12px !important; }
+
+          #posterWorkspace {
+            position: relative !important;
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            grid-template-rows: 52px minmax(0,1fr) !important;
+            height: calc(100dvh - 58px) !important;
+            min-height: 0 !important;
+            overflow: hidden !important;
+            background: #05080b !important;
+          }
+
+          #posterWorkspace .poster-center {
+            grid-column: 1 !important;
+            grid-row: 1 / span 2 !important;
+            min-width: 0 !important;
+            height: 100% !important;
+            padding-bottom: 72px !important;
+            background: radial-gradient(circle at 50% 36%, rgba(55,91,105,.11), transparent 38%), #05080b !important;
+          }
+
+          #posterWorkspace .poster-toolbar {
+            position: relative !important;
+            z-index: 25 !important;
+            min-height: 52px !important;
+            height: 52px !important;
+            padding: 6px 8px !important;
+            gap: 6px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            scrollbar-width: none !important;
+            white-space: nowrap !important;
+            background: rgba(7,11,14,.96) !important;
+            border-bottom: 1px solid rgba(255,255,255,.07) !important;
+          }
+
+          #posterWorkspace .poster-toolbar::-webkit-scrollbar { display: none !important; }
+
+          #posterWorkspace .poster-toolbar-left,
+          #posterWorkspace .poster-toolbar-right {
+            flex: 0 0 auto !important;
+            gap: 6px !important;
+          }
+
+          #posterWorkspace .poster-toolbar-left > .micro-label { display: none !important; }
+
+          #posterWorkspace .poster-toolbar select {
+            min-width: 172px !important;
+            width: 172px !important;
+            height: 40px !important;
+            font-size: 9px !important;
+          }
+
+          #posterWorkspace .toolbar-button,
+          #posterWorkspace .zoom-control {
+            min-height: 40px !important;
+            height: 40px !important;
+          }
+
+          #posterWorkspace .poster-stage {
+            position: relative !important;
+            min-height: 0 !important;
+            height: calc(100dvh - 58px - 52px - 72px) !important;
+            padding: 18px 14px 22px !important;
+            overflow: auto !important;
+            overscroll-behavior: contain !important;
+            touch-action: pan-x pan-y !important;
+            scroll-behavior: smooth !important;
+          }
+
+          #posterWorkspace .poster-canvas-frame {
+            margin: auto !important;
+            box-shadow: 0 18px 50px rgba(0,0,0,.44), 0 0 0 1px rgba(255,255,255,.055) !important;
+          }
+
+          #posterWorkspace #posterCanvas { touch-action: none !important; }
+          #posterWorkspace .poster-status { display: none !important; }
+
+          #posterWorkspace .poster-left,
+          #posterWorkspace .poster-right {
+            position: fixed !important;
+            left: 0 !important;
+            right: 0 !important;
+            bottom: 0 !important;
+            z-index: 85 !important;
+            width: 100% !important;
+            min-width: 0 !important;
+            max-width: none !important;
+            height: min(74dvh, 680px) !important;
+            max-height: min(74dvh, 680px) !important;
+            transform: translateY(calc(100% + 16px)) !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transition: transform .28s cubic-bezier(.2,.8,.2,1), opacity .2s ease, visibility .2s ease !important;
+            border: 1px solid rgba(255,255,255,.08) !important;
+            border-bottom: 0 !important;
+            border-radius: 22px 22px 0 0 !important;
+            overflow: hidden !important;
+            background: linear-gradient(180deg, rgba(13,18,22,.99), rgba(7,11,14,.995)) !important;
+            box-shadow: 0 -26px 70px rgba(0,0,0,.55) !important;
+            backdrop-filter: blur(22px) !important;
+          }
+
+          #posterWorkspace .poster-left.mobile-sheet-open,
+          #posterWorkspace .poster-right.mobile-sheet-open {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+          }
+
+          #posterWorkspace .poster-left {
+            display: grid !important;
+            grid-template-rows: auto auto minmax(0,1fr) !important;
+          }
+
+          #posterWorkspace .poster-right {
+            display: grid !important;
+            grid-template-rows: auto auto minmax(0,1fr) auto !important;
+          }
+
+          #posterWorkspace .poster-mobile-sheet-head {
+            display: grid !important;
+            grid-template-columns: 42px minmax(0,1fr) 42px !important;
+            align-items: center !important;
+            gap: 8px !important;
+            min-height: 48px !important;
+            padding: 6px 10px !important;
+            border-bottom: 1px solid rgba(255,255,255,.06) !important;
+            background: rgba(8,12,15,.98) !important;
+          }
+
+          #posterWorkspace .poster-mobile-sheet-head::before {
+            content: '';
+            width: 34px;
+            height: 4px;
+            justify-self: center;
+            grid-column: 2;
+            grid-row: 1;
+            border-radius: 99px;
+            background: rgba(255,255,255,.20);
+          }
+
+          #posterWorkspace .poster-mobile-sheet-title {
+            grid-column: 2;
+            grid-row: 1;
+            justify-self: center;
+            margin-top: 17px;
+            color: #e9edf0;
+            font-size: 10px;
+            font-weight: 850;
+          }
+
+          #posterWorkspace .poster-mobile-sheet-close {
+            grid-column: 3;
+            grid-row: 1;
+            width: 34px;
+            height: 34px;
+            justify-self: end;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 10px;
+            color: #9ca7ae;
+            background: #0b1115;
+            font-size: 18px;
+          }
+
+          #posterWorkspace .left-tabs { min-height: 54px !important; padding: 7px 8px !important; }
+          #posterWorkspace .left-tab { min-height: 40px !important; font-size: 9px !important; }
+          #posterWorkspace .left-panel-scroll { min-height: 0 !important; padding-bottom: 24px !important; }
+          #posterWorkspace .poster-left-panel { padding: 12px 12px 24px !important; }
+          #posterWorkspace .panel-heading-row h2,
+          #posterWorkspace .panel-heading h2 { font-size: 19px !important; }
+          #posterWorkspace .panel-heading-row p,
+          #posterWorkspace .panel-heading p { font-size: 10px !important; }
+          #posterWorkspace .search-control { min-height: 46px !important; }
+          #posterWorkspace .template-filter { min-height: 34px !important; font-size: 8px !important; }
+          #posterWorkspace .template-grid { grid-template-columns: repeat(2, minmax(0,1fr)) !important; gap: 12px !important; }
+          #posterWorkspace .template-meta strong { font-size: 10px !important; }
+          #posterWorkspace .template-meta small { font-size: 7px !important; }
+
+          #posterWorkspace .inspector-heading { min-height: 56px !important; padding: 8px 14px !important; }
+          #posterWorkspace .inspector-heading strong { font-size: 14px !important; }
+          #posterWorkspace .poster-inspector { min-height: 0 !important; overflow-y: auto !important; overscroll-behavior: contain !important; padding-bottom: 34px !important; }
+          #posterWorkspace .inspector-quickbar { padding: 9px 10px !important; gap: 7px !important; }
+          #posterWorkspace .inspector-quickbar button { height: 44px !important; font-size: 10px !important; }
+          #posterWorkspace .inspector-section { padding: 17px 14px 20px !important; }
+          #posterWorkspace .inspector-section h3 { font-size: 14px !important; }
+          #posterWorkspace .inspector-section-description { font-size: 9px !important; }
+          #posterWorkspace .poster-inspector .field > span,
+          #posterWorkspace .poster-inspector .range-field > div > span { font-size: 10px !important; }
+          #posterWorkspace .poster-inspector input[type='text'],
+          #posterWorkspace .poster-inspector input[type='number'],
+          #posterWorkspace .poster-inspector select,
+          #posterWorkspace .poster-inspector textarea { min-height: 48px !important; font-size: 12px !important; }
+          #posterWorkspace .poster-inspector textarea { min-height: 106px !important; }
+          #posterWorkspace .poster-inspector input[type='color'] { min-height: 48px !important; height: 48px !important; }
+          #posterWorkspace .poster-inspector input[type='range'] { height: 8px !important; }
+          #posterWorkspace .poster-inspector input[type='range']::-webkit-slider-thumb { width: 22px !important; height: 22px !important; }
+          #posterWorkspace .poster-inspector .segmented button,
+          #posterWorkspace .poster-inspector .action-grid button,
+          #posterWorkspace .poster-inspector .align-grid button,
+          #posterWorkspace .poster-inspector .flip-grid button { min-height: 46px !important; font-size: 9px !important; }
+          #posterWorkspace .layer-row { min-height: 62px !important; }
+          #posterWorkspace .poster-right-footer { display: none !important; }
+
+          #posterMobileScrim {
+            position: fixed;
+            inset: 58px 0 72px;
+            z-index: 75;
+            display: block;
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            background: rgba(0,0,0,.52);
+            backdrop-filter: blur(3px);
+            transition: opacity .2s ease, visibility .2s ease;
+          }
+
+          #posterMobileScrim.visible {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+          }
+
+          #posterMobileDock {
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 100;
+            display: flex;
+            align-items: stretch;
+            gap: 4px;
+            height: calc(72px + env(safe-area-inset-bottom));
+            padding: 7px 7px calc(7px + env(safe-area-inset-bottom));
+            overflow-x: auto;
+            overflow-y: hidden;
+            scrollbar-width: none;
+            border-top: 1px solid rgba(255,255,255,.075);
+            background: rgba(6,10,13,.98);
+            box-shadow: 0 -14px 38px rgba(0,0,0,.34);
+            backdrop-filter: blur(18px);
+          }
+
+          #posterMobileDock::-webkit-scrollbar { display: none; }
+
+          #posterMobileDock button {
+            flex: 0 0 66px;
+            min-width: 66px;
+            height: 56px;
+            display: grid;
+            place-items: center;
+            align-content: center;
+            gap: 4px;
+            padding: 0 6px;
+            border: 0;
+            border-radius: 12px;
+            color: #8e9aa3;
+            background: transparent;
+          }
+
+          #posterMobileDock button .mobile-tool-icon { font-size: 18px; line-height: 1; }
+          #posterMobileDock button .mobile-tool-label { font-size: 8px; font-weight: 760; white-space: nowrap; }
+          #posterMobileDock button.active,
+          #posterMobileDock button:hover { color: var(--poster-ui-gold); background: rgba(241,195,77,.08); }
+          #posterMobileDock button.mobile-export-tool { color: #171109; background: linear-gradient(180deg,#ffd86b,#f1c34d); }
+
+          #posterMobileSelectionBar {
+            position: fixed;
+            left: 10px;
+            right: 10px;
+            bottom: calc(76px + env(safe-area-inset-bottom));
+            z-index: 70;
+            display: none;
+            align-items: center;
+            gap: 7px;
+            min-height: 52px;
+            padding: 7px;
+            border: 1px solid rgba(255,255,255,.08);
+            border-radius: 14px;
+            background: rgba(10,15,19,.96);
+            box-shadow: 0 14px 34px rgba(0,0,0,.32);
+            backdrop-filter: blur(16px);
+          }
+
+          #posterMobileSelectionBar.visible { display: flex; }
+          #posterMobileSelectionBar .mobile-selection-name { min-width: 0; flex: 1; padding: 0 7px; overflow: hidden; color: #dce2e5; font-size: 9px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+          #posterMobileSelectionBar button { min-width: 44px; height: 38px; padding: 0 10px; border: 1px solid rgba(255,255,255,.08); border-radius: 10px; color: #aab4ba; background: #0c1216; font-size: 9px; font-weight: 800; }
+          #posterMobileSelectionBar button.mobile-edit-selection { color: #171109; border-color: transparent; background: linear-gradient(180deg,#ffd86b,#f1c34d); }
+
+          #posterWorkspace .poster-context-toolbar { display: none !important; }
+
+          .poster-inline-text-editor {
+            left: 12px !important;
+            right: 12px !important;
+            bottom: calc(82px + env(safe-area-inset-bottom)) !important;
+            top: auto !important;
+            width: auto !important;
+            min-height: 112px !important;
+            max-height: 38dvh !important;
+            padding: 15px 16px !important;
+            border-radius: 16px !important;
+            font-size: 18px !important;
+          }
+        }
+
         @media (max-height: 760px) {
           #posterWorkspace .inspector-heading {
             min-height: 62px !important;
@@ -1902,9 +2309,200 @@ getLayerImage(layer) {
         stage.appendChild(y);
       }
 
+
+
+      if (!$('#posterMobileScrim')) {
+        const scrim = document.createElement('button');
+        scrim.id = 'posterMobileScrim';
+        scrim.type = 'button';
+        scrim.setAttribute('aria-label', 'Close editing panel');
+        scrim.addEventListener('click', () => this.closeMobileSheets());
+        document.body.appendChild(scrim);
+      }
+
+      if (!$('#posterMobileDock')) {
+        const dock = document.createElement('nav');
+        dock.id = 'posterMobileDock';
+        dock.setAttribute('aria-label', 'Poster tools');
+        dock.innerHTML = `
+          <button type="button" data-mobile-tool="templates"><span class="mobile-tool-icon">▦</span><span class="mobile-tool-label">Templates</span></button>
+          <button type="button" data-mobile-tool="media"><span class="mobile-tool-icon">▧</span><span class="mobile-tool-label">Media</span></button>
+          <button type="button" data-mobile-tool="text"><span class="mobile-tool-icon">T</span><span class="mobile-tool-label">Text</span></button>
+          <button type="button" data-mobile-tool="elements"><span class="mobile-tool-icon">◇</span><span class="mobile-tool-label">Elements</span></button>
+          <button type="button" data-mobile-tool="adjust"><span class="mobile-tool-icon">☷</span><span class="mobile-tool-label">Adjust</span></button>
+          <button type="button" data-mobile-tool="effects"><span class="mobile-tool-icon">✦</span><span class="mobile-tool-label">Effects</span></button>
+          <button type="button" data-mobile-tool="layers"><span class="mobile-tool-icon">▱</span><span class="mobile-tool-label">Layers</span></button>
+          <button type="button" class="mobile-export-tool" data-mobile-tool="export"><span class="mobile-tool-icon">⇩</span><span class="mobile-tool-label">Export</span></button>
+        `;
+        document.body.appendChild(dock);
+        $$('[data-mobile-tool]', dock).forEach(button => {
+          button.addEventListener('click', () => this.handleMobileTool(button.dataset.mobileTool, button));
+        });
+      }
+
+      if (!$('#posterMobileSelectionBar')) {
+        const bar = document.createElement('div');
+        bar.id = 'posterMobileSelectionBar';
+        bar.innerHTML = `
+          <span class="mobile-selection-name">Selected layer</span>
+          <button type="button" class="mobile-edit-selection" data-mobile-selection="edit">Edit</button>
+          <button type="button" data-mobile-selection="duplicate">Copy</button>
+          <button type="button" data-mobile-selection="delete">Delete</button>
+        `;
+        document.body.appendChild(bar);
+        $('[data-mobile-selection="edit"]', bar)?.addEventListener('click', () => this.openMobileInspector('properties'));
+        $('[data-mobile-selection="duplicate"]', bar)?.addEventListener('click', () => this.duplicateSelected());
+        $('[data-mobile-selection="delete"]', bar)?.addEventListener('click', () => this.deleteSelected());
+      }
+
+      [
+        ['#posterLeftSidebar', 'Create'],
+        ['#posterRightSidebar', 'Edit']
+      ].forEach(([selector, title]) => {
+        const panel = $(selector);
+        if (!panel || $('.poster-mobile-sheet-head', panel)) return;
+        const head = document.createElement('div');
+        head.className = 'poster-mobile-sheet-head';
+        head.innerHTML = `
+          <span class="poster-mobile-sheet-title">${title}</span>
+          <button type="button" class="poster-mobile-sheet-close" aria-label="Close">×</button>
+        `;
+        head.querySelector('.poster-mobile-sheet-close')?.addEventListener('click', () => this.closeMobileSheets());
+        panel.insertBefore(head, panel.firstChild);
+      });
+
       this.contextToolbar = $('#posterContextToolbar');
       this.guideX = $('#posterGuideX');
       this.guideY = $('#posterGuideY');
+      this.mobileDock = $('#posterMobileDock');
+      this.mobileScrim = $('#posterMobileScrim');
+      this.mobileSelectionBar = $('#posterMobileSelectionBar');
+    }
+
+
+    isMobileStudio() {
+      return window.matchMedia?.('(max-width: 900px)').matches === true;
+    }
+
+    closeMobileSheets() {
+      $('#posterLeftSidebar')?.classList.remove('mobile-sheet-open');
+      $('#posterRightSidebar')?.classList.remove('mobile-sheet-open');
+      this.mobileScrim?.classList.remove('visible');
+      $$('[data-mobile-tool]', this.mobileDock || document).forEach(button => button.classList.remove('active'));
+    }
+
+    openMobileLeftPanel(tab = 'templates', dockButton = null) {
+      if (!this.isMobileStudio()) return;
+      this.closeMobileSheets();
+      const tabButton = $(`[data-poster-tab="${tab}"]`);
+      tabButton?.click();
+      $('#posterLeftSidebar')?.classList.add('mobile-sheet-open');
+      this.mobileScrim?.classList.add('visible');
+      dockButton?.classList.add('active');
+    }
+
+    findInspectorSection(labels = []) {
+      const normalized = labels.map(label => String(label).trim().toUpperCase());
+      return $$('.inspector-section', $('#posterInspector')).find(section => {
+        const label = $('.micro-label', section)?.textContent?.trim().toUpperCase();
+        return normalized.includes(label);
+      }) || null;
+    }
+
+    openMobileInspector(mode = 'properties', dockButton = null) {
+      if (!this.isMobileStudio()) return;
+      this.closeMobileSheets();
+      this.renderInspector();
+      $('#posterRightSidebar')?.classList.add('mobile-sheet-open');
+      this.mobileScrim?.classList.add('visible');
+      dockButton?.classList.add('active');
+
+      requestAnimationFrame(() => {
+        let target = null;
+        if (mode === 'adjust') target = this.findInspectorSection(['ADJUST', 'PHOTO', 'CANVAS']);
+        else if (mode === 'effects') target = this.findInspectorSection(['TEXT FX', 'TEXT BACKGROUND', 'APPEARANCE', 'MASK & FRAME', 'CUTOUT']);
+        else if (mode === 'layers') target = this.findInspectorSection(['LAYERS']);
+        else target = $('#posterInspector')?.firstElementChild;
+        target?.scrollIntoView?.({ behavior: 'smooth', block: 'start' });
+      });
+    }
+
+    handleMobileTool(tool, button) {
+      if (!this.isMobileStudio()) return;
+      if (tool === 'templates') return this.openMobileLeftPanel('templates', button);
+      if (tool === 'media') return this.openMobileLeftPanel('media', button);
+      if (tool === 'text') {
+        this.closeMobileSheets();
+        this.addText('headline');
+        return this.openMobileInspector('properties', button);
+      }
+      if (tool === 'elements') {
+        this.openMobileLeftPanel('media', button);
+        requestAnimationFrame(() => $('[data-add-poster-element]')?.scrollIntoView?.({ behavior: 'smooth', block: 'center' }));
+        return;
+      }
+      if (tool === 'adjust') return this.openMobileInspector('adjust', button);
+      if (tool === 'effects') return this.openMobileInspector('effects', button);
+      if (tool === 'layers') return this.openMobileInspector('layers', button);
+      if (tool === 'export') {
+        this.closeMobileSheets();
+        return this.openExport();
+      }
+    }
+
+    updateMobileSelectionBar() {
+      if (!this.mobileSelectionBar) return;
+      const selected = this.getSelected();
+      const shouldShow = this.isMobileStudio() && !!selected;
+      this.mobileSelectionBar.classList.toggle('visible', shouldShow);
+      if (shouldShow) {
+        const name = $('.mobile-selection-name', this.mobileSelectionBar);
+        if (name) name.textContent = selected.name || selected.type || 'Selected layer';
+      }
+    }
+
+    handleCanvasPointerDown(event) {
+      if (event.pointerType !== 'mouse') {
+        this.touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+        if (this.touchPoints.size >= 2) {
+          const points = Array.from(this.touchPoints.values()).slice(0, 2);
+          const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+          this.pinchState = { distance: Math.max(1, distance), zoom: this.state.zoom };
+          this.dragState = null;
+          this.hideGuides();
+          return;
+        }
+      }
+      this.onPointerDown(event);
+      this.updateMobileSelectionBar();
+    }
+
+    handleCanvasPointerMove(event) {
+      if (event.pointerType !== 'mouse' && this.touchPoints.has(event.pointerId)) {
+        this.touchPoints.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      }
+      if (this.pinchState && this.touchPoints.size >= 2) {
+        event.preventDefault();
+        const points = Array.from(this.touchPoints.values()).slice(0, 2);
+        const distance = Math.hypot(points[1].x - points[0].x, points[1].y - points[0].y);
+        const ratio = distance / Math.max(1, this.pinchState.distance);
+        this.state.zoom = clamp(this.pinchState.zoom * ratio, .10, 1.50);
+        this.applyZoom();
+        return;
+      }
+      this.onPointerMove(event);
+    }
+
+    handleCanvasPointerUp(event) {
+      if (event.pointerType !== 'mouse') this.touchPoints.delete(event.pointerId);
+      const wasPinching = !!this.pinchState;
+      if (this.touchPoints.size < 2) this.pinchState = null;
+      if (!wasPinching) this.onPointerUp();
+      else {
+        this.dragState = null;
+        this.hideGuides();
+      }
+      this.updateMobileSelectionBar();
     }
 
     updateContextToolbar() {
@@ -2300,6 +2898,7 @@ closeInlineTextEditor(shouldCommit = true) {
       this.bindAdvancedInspector(layer);
       this.bindLayerRows();
       this.updateContextToolbar();
+      this.updateMobileSelectionBar();
     }
 
     inspectorQuickbarHtml(layer) {
@@ -3087,9 +3686,10 @@ closeInlineTextEditor(shouldCommit = true) {
       });
       $('#posterLogoToggle')?.addEventListener('change',event => { this.state.showLogo = event.target.checked; this.safeRender(); this.renderInspector(); this.commit(); });
 
-      this.canvas.addEventListener('pointerdown',event => this.onPointerDown(event));
-      this.canvas.addEventListener('pointermove',event => this.onPointerMove(event));
-      window.addEventListener('pointerup',() => this.onPointerUp());
+      this.canvas.addEventListener('pointerdown',event => this.handleCanvasPointerDown(event));
+      this.canvas.addEventListener('pointermove',event => this.handleCanvasPointerMove(event));
+      window.addEventListener('pointerup',event => this.handleCanvasPointerUp(event));
+      window.addEventListener('pointercancel',event => this.handleCanvasPointerUp(event));
       this.canvas.addEventListener('dblclick',event => {
         const point = this.pointerCoordinates(event);
         const layer = this.hitTest(point.x, point.y);
@@ -3108,7 +3708,11 @@ closeInlineTextEditor(shouldCommit = true) {
 
       window.addEventListener('resize',() => {
         clearTimeout(this.resizeTimer);
-        this.resizeTimer = setTimeout(() => this.fitCanvas(), 80);
+        this.resizeTimer = setTimeout(() => {
+          this.fitCanvas();
+          if (!this.isMobileStudio()) this.closeMobileSheets();
+          this.updateMobileSelectionBar();
+        }, 80);
       });
       $('#posterStage')?.addEventListener('scroll',() => this.updateContextToolbar(), { passive: true });
       document.addEventListener('keydown',event => this.handleKeyboard(event));

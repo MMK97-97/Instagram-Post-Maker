@@ -1,25 +1,28 @@
-MK97 CREATIVE STUDIO — CRICKET BACKGROUND TEMPLATE UPDATE
-=========================================================
+MK97 CREATIVE STUDIO — MOBILE STUDIO V16
+=========================================
 
-Upload / replace these files in your repository root:
+This update keeps the existing Poster Editor features/templates and changes the
+mobile editing experience to a professional touch-first workflow inspired by
+modern mobile creative apps.
 
-index.html
-poster-editor.html
-poster-editor.js
-video-editor.html
-video-editor.js
-styles.css
+Upload/replace:
+- poster-editor.js
+- poster-editor.html
 
-Keep your existing assets folder:
-- assets/MK97.png
-- assets/fwcwl-logo.jpeg
+Everything else in this package is included unchanged for convenience.
 
-This update preserves the existing poster-editor skills and adds more premium
-cricket-background templates to the template library.
+Mobile workflow added:
+- Full-screen canvas-first editor
+- CapCut-style horizontal bottom tool dock
+- Templates / Media / Text / Elements / Adjust / Effects / Layers / Export
+- Lightroom-style bottom-sheet adjustment panels
+- Larger mobile sliders and controls
+- Tap poster objects to select
+- Direct selected-layer quick bar above the bottom dock
+- Edit / Copy / Delete quick actions
+- Pinch-to-zoom canvas
+- Mobile bottom sheets with dimmed backdrop
+- Existing direct text editing, picture upload, background remover, masks,
+  filters, templates, layers, undo/redo, snap, safe area and export preserved
 
-Highlights:
-- Added a new Cricket Background Expansion collection
-- More stadium, pavilion, boundary, cinematic, scorebook, clubhouse, blueprint
-  and editorial cricket-themed backgrounds
-- Existing editor operations preserved
-- Existing direct text editing, image upload, replace image, and background remover preserved
+Desktop layout remains unchanged.
