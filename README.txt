@@ -1,28 +1,60 @@
-MK97 CREATIVE STUDIO — MOBILE STUDIO V16
-=========================================
+MK97 CREATIVE STUDIO — INDIVIDUAL PAGES PRO V17
+================================================
 
-This update keeps the existing Poster Editor features/templates and changes the
-mobile editing experience to a professional touch-first workflow inspired by
-modern mobile creative apps.
+Built from the uploaded Premium Functional App Preview as the navigation/content reference.
 
-Upload/replace:
-- poster-editor.js
+INDIVIDUAL PAGES
+- welcome.html
+- index.html (Home)
+- templates.html
+- template-detail.html
 - poster-editor.html
+- media.html
+- brand.html
+- video-editor.html
+- poster-export.html
+- video-export.html
+- share.html
+- projects.html
+- more.html
 
-Everything else in this package is included unchanged for convenience.
+SHARED FILES
+- studio.css
+- studio-data.js
+- studio.js
+- styles.css
+- poster-editor.js
+- video-editor.js
+- assets/MK97.png
+- assets/fwcwl-logo.jpeg
 
-Mobile workflow added:
-- Full-screen canvas-first editor
-- CapCut-style horizontal bottom tool dock
-- Templates / Media / Text / Elements / Adjust / Effects / Layers / Export
-- Lightroom-style bottom-sheet adjustment panels
-- Larger mobile sliders and controls
-- Tap poster objects to select
-- Direct selected-layer quick bar above the bottom dock
-- Edit / Copy / Delete quick actions
-- Pinch-to-zoom canvas
-- Mobile bottom sheets with dimmed backdrop
-- Existing direct text editing, picture upload, background remover, masks,
-  filters, templates, layers, undo/redo, snap, safe area and export preserved
+POSTER STUDIO V17
+- 119 cricket templates
+- direct layer selection and double-click text editing
+- Lightroom-style Light controls: exposure, contrast, highlights, shadows, whites, blacks
+- Color controls: temperature, tint, vibrance, saturation, hue, B&W, sepia
+- Presence: clarity, dehaze, vignette, blur
+- Detail: sharpen, noise reduction, grain
+- Smart Enhance based on image luminance/saturation sampling
+- Crop left/right/top/bottom
+- Skew X/Y geometry controls
+- Background remover + restore original
+- Masks, border, corner radius, blend modes
+- Text gradient, stroke, shadow, background plates and presets
+- Smart guides, snapping, layers, drag reorder, copy/paste, undo/redo
+- Touch-first mobile bottom dock and bottom sheets
+- Pinch zoom and full-resolution PNG/JPG export
 
-Desktop layout remains unchanged.
+VIDEO STUDIO
+- multi-track timeline
+- video/image/audio upload
+- clip dragging and trim handles
+- split/duplicate/delete
+- keyframes and transform motion
+- transitions and text motion
+- speed, volume, mute, audio fades
+- timeline zoom
+- browser WebM render with best-effort audio
+
+NOTE
+The goal is a combined pro workflow inspired by leading mobile creative editors. Some features such as cloud AI generative fill or commercial codec export require external services/licensing and are not faked in this static browser build.

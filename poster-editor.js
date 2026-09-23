@@ -2,7 +2,7 @@
   'use strict';
 
   const WATCHDOG_VERSION = '10.0.0';
-  const BUILD_VERSION = '16.0.0-mobile-studio';
+  const BUILD_VERSION = '17.0.0-pro-studio';
   const LOGO_PATH = 'assets/fwcwl-logo.jpeg';
   const REQUIRED_IDS = [
     'posterWorkspace','posterCanvas','posterTemplateGrid','posterTemplateCount',
@@ -290,7 +290,17 @@
       this.injectPremiumVisibilityStyles();
       this.ensureRuntimeGeneratedUI();
       this.bindUI();
-      this.applyTemplate('match-day', false);
+      const deepLinkTemplate = new URLSearchParams(location.search).get('template');
+      this.applyTemplate(TEMPLATES.some(item => item.id === deepLinkTemplate) ? deepLinkTemplate : 'match-day', false);
+      try {
+        const brand = JSON.parse(localStorage.getItem('mk97BrandProfile') || 'null');
+        if (brand) {
+          if (brand.name) this.state.brandName = brand.name;
+          if (normalizeHex(brand.accent)) this.state.accent = normalizeHex(brand.accent);
+          if (typeof brand.showLogo === 'boolean') this.state.showLogo = brand.showLogo;
+        }
+      } catch {}
+      this.syncBrandUI();
       this.commit();
       this.renderAssets();
       this.renderInspector();
@@ -824,10 +834,22 @@ getLayerImage(layer) {
 
       const image = this.getLayerImage(layer);
       if (!image) return;
+
+      const iw = image.naturalWidth || image.width;
+      const ih = image.naturalHeight || image.height;
+      const left = clamp(layer.cropLeft || 0, 0, 45) / 100;
+      const right = clamp(layer.cropRight || 0, 0, 45) / 100;
+      const top = clamp(layer.cropTop || 0, 0, 45) / 100;
+      const bottom = clamp(layer.cropBottom || 0, 0, 45) / 100;
+      const sx = iw * left;
+      const sy = ih * top;
+      const sw = Math.max(1, iw * (1 - left - right));
+      const sh = Math.max(1, ih * (1 - top - bottom));
+
       const centerX = width * (layer.x / 100);
       const centerY = height * (layer.y / 100);
       const boxWidth = width * ((layer.width || 45) / 100) * (layer.scale || 1);
-      const boxHeight = boxWidth * (image.naturalHeight / image.naturalWidth);
+      const boxHeight = boxWidth * (sh / sw);
       const halfW = boxWidth / 2;
       const halfH = boxHeight / 2;
       const uiScale = width / 1080;
@@ -835,72 +857,75 @@ getLayerImage(layer) {
       ctx.save();
       ctx.translate(centerX, centerY);
       ctx.rotate(((layer.rotation || 0) * Math.PI) / 180);
+      const skewX = Math.tan(((layer.skewX || 0) * Math.PI) / 180);
+      const skewY = Math.tan(((layer.skewY || 0) * Math.PI) / 180);
+      ctx.transform(1, skewY, skewX, 1, 0, 0);
       ctx.scale(layer.flipX ? -1 : 1, layer.flipY ? -1 : 1);
       ctx.globalAlpha = layer.opacity ?? 1;
       ctx.globalCompositeOperation = layer.blendMode || 'source-over';
 
       const makeMaskPath = () => {
         const shape = layer.maskShape || 'none';
-
         if (shape === 'ellipse') {
-          ctx.beginPath();
-          ctx.ellipse(0, 0, halfW, halfH, 0, 0, Math.PI * 2);
-          ctx.closePath();
-          return;
+          ctx.beginPath(); ctx.ellipse(0, 0, halfW, halfH, 0, 0, Math.PI * 2); ctx.closePath(); return;
         }
-
         if (shape === 'hexagon') {
           ctx.beginPath();
-          ctx.moveTo(0, -halfH);
-          ctx.lineTo(halfW, -halfH * .48);
-          ctx.lineTo(halfW, halfH * .48);
-          ctx.lineTo(0, halfH);
-          ctx.lineTo(-halfW, halfH * .48);
-          ctx.lineTo(-halfW, -halfH * .48);
-          ctx.closePath();
-          return;
+          ctx.moveTo(0, -halfH); ctx.lineTo(halfW, -halfH * .48); ctx.lineTo(halfW, halfH * .48);
+          ctx.lineTo(0, halfH); ctx.lineTo(-halfW, halfH * .48); ctx.lineTo(-halfW, -halfH * .48); ctx.closePath(); return;
         }
-
         if (shape === 'rounded' || (layer.cornerRadius || 0) > 0) {
-          const radius = clamp(
-            (layer.cornerRadius || (shape === 'rounded' ? 36 : 0)) * uiScale,
-            0,
-            Math.min(boxWidth, boxHeight) / 2
-          );
-          roundRectPath(ctx, -halfW, -halfH, boxWidth, boxHeight, radius);
-          return;
+          const radius = clamp((layer.cornerRadius || (shape === 'rounded' ? 36 : 0)) * uiScale, 0, Math.min(boxWidth, boxHeight) / 2);
+          roundRectPath(ctx, -halfW, -halfH, boxWidth, boxHeight, radius); return;
         }
-
-        ctx.beginPath();
-        ctx.rect(-halfW, -halfH, boxWidth, boxHeight);
-        ctx.closePath();
+        ctx.beginPath(); ctx.rect(-halfW, -halfH, boxWidth, boxHeight); ctx.closePath();
       };
 
-      if ((layer.maskShape || 'none') !== 'none' || (layer.cornerRadius || 0) > 0) {
-        makeMaskPath();
-        ctx.clip();
-      }
+      makeMaskPath();
+      ctx.clip();
+
+      const smartBrightness = (layer.brightness || 0) + (layer.exposure || 0) * .45 + (layer.whites || 0) * .10 + (layer.shadows || 0) * .06 - (layer.highlights || 0) * .025 - (layer.blacks || 0) * .05;
+      const smartContrast = (layer.contrast || 0) + (layer.clarity || 0) * .18 + (layer.dehaze || 0) * .22 + (layer.sharpen || 0) * .06;
+      const smartSaturation = (layer.saturation || 0) + (layer.vibrance || 0) * .42 + (layer.dehaze || 0) * .08;
+      const smartBlur = Math.max(0, (layer.blur || 0) + (layer.noiseReduction || 0) * .012);
 
       ctx.filter = [
-        `brightness(${100 + (layer.brightness || 0) + (layer.exposure || 0) * .45}%)`,
-        `contrast(${100 + (layer.contrast || 0)}%)`,
-        `saturate(${100 + (layer.saturation || 0)}%)`,
+        `brightness(${clamp(100 + smartBrightness, 5, 300)}%)`,
+        `contrast(${clamp(100 + smartContrast, 5, 300)}%)`,
+        `saturate(${clamp(100 + smartSaturation, 0, 350)}%)`,
         `hue-rotate(${layer.hue || 0}deg)`,
         `grayscale(${layer.grayscale || 0}%)`,
         `sepia(${layer.sepia || 0}%)`,
-        `blur(${layer.blur || 0}px)`
+        `blur(${smartBlur}px)`
       ].join(' ');
 
-      ctx.drawImage(image, -halfW, -halfH, boxWidth, boxHeight);
+      ctx.drawImage(image, sx, sy, sw, sh, -halfW, -halfH, boxWidth, boxHeight);
       ctx.filter = 'none';
+
+      const temperature = clamp(layer.temperature || 0, -100, 100) / 100;
+      if (temperature !== 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.globalAlpha = Math.abs(temperature) * .28;
+        ctx.fillStyle = temperature > 0 ? '#ff8f3f' : '#4f8fff';
+        ctx.fillRect(-halfW, -halfH, boxWidth, boxHeight);
+        ctx.restore();
+      }
+
+      const tint = clamp(layer.tint || 0, -100, 100) / 100;
+      if (tint !== 0) {
+        ctx.save();
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.globalAlpha = Math.abs(tint) * .20;
+        ctx.fillStyle = tint > 0 ? '#e653c2' : '#50c884';
+        ctx.fillRect(-halfW, -halfH, boxWidth, boxHeight);
+        ctx.restore();
+      }
 
       if ((layer.vignette || 0) > 0) {
         const vignetteAlpha = clamp(layer.vignette, 0, 100) / 100;
         const radius = Math.max(boxWidth, boxHeight) * .72;
-        const vignette = ctx.createRadialGradient(
-          0, 0, Math.min(boxWidth, boxHeight) * .12,
-          0, 0, radius
-        );
+        const vignette = ctx.createRadialGradient(0, 0, Math.min(boxWidth, boxHeight) * .12, 0, 0, radius);
         vignette.addColorStop(0, 'rgba(0,0,0,0)');
         vignette.addColorStop(.60, `rgba(0,0,0,${vignetteAlpha * .08})`);
         vignette.addColorStop(1, `rgba(0,0,0,${vignetteAlpha * .72})`);
@@ -908,23 +933,31 @@ getLayerImage(layer) {
         ctx.fillRect(-halfW, -halfH, boxWidth, boxHeight);
       }
 
+      if ((layer.grain || 0) > 0) {
+        const grain = clamp(layer.grain, 0, 100) / 100;
+        const dots = Math.round(120 + grain * 520);
+        ctx.save();
+        ctx.globalCompositeOperation = 'soft-light';
+        ctx.globalAlpha = .04 + grain * .14;
+        for (let i = 0; i < dots; i++) {
+          const px = -halfW + Math.abs(Math.sin(i * 91.73)) * boxWidth;
+          const py = -halfH + Math.abs(Math.cos(i * 47.19)) * boxHeight;
+          const s = 1 + Math.abs(Math.sin(i * 13.3)) * 2.4 * uiScale;
+          ctx.fillStyle = i % 2 ? '#ffffff' : '#000000';
+          ctx.fillRect(px, py, s, s);
+        }
+        ctx.restore();
+      }
+
       if ((layer.borderWidth || 0) > 0) {
         ctx.save();
         ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = layer.borderColor || this.state.accent;
         ctx.lineWidth = Math.max(1, (layer.borderWidth || 0) * uiScale);
-        makeMaskPath();
-        ctx.stroke();
-        ctx.restore();
+        makeMaskPath(); ctx.stroke(); ctx.restore();
       }
 
-      layer._bounds = {
-        x: centerX - halfW,
-        y: centerY - halfH,
-        width: boxWidth,
-        height: boxHeight
-      };
-
+      layer._bounds = { x: centerX - halfW, y: centerY - halfH, width: boxWidth, height: boxHeight };
       ctx.restore();
     }
 
@@ -2829,7 +2862,11 @@ closeInlineTextEditor(shouldCommit = true) {
       const layer = {
         id: uid('image'), type: 'image', role: 'user', name: asset.name, assetId,
         x: 68, y: 45, width: 45, scale: 1, rotation: 0, opacity: 1,
-        brightness: 0, contrast: 0, saturation: 0, exposure: 0, grayscale: 0, sepia: 0, blur: 0, hue: 0, vignette: 0,
+        brightness: 0, contrast: 0, saturation: 0, exposure: 0,
+        highlights: 0, shadows: 0, whites: 0, blacks: 0,
+        temperature: 0, tint: 0, vibrance: 0, clarity: 0, dehaze: 0, sharpen: 0, grain: 0, noiseReduction: 0,
+        cropLeft: 0, cropRight: 0, cropTop: 0, cropBottom: 0, skewX: 0, skewY: 0,
+        grayscale: 0, sepia: 0, blur: 0, hue: 0, vignette: 0,
         maskShape: 'none', cornerRadius: 0, borderWidth: 0, borderColor: '#f1c34d',
         flipX: false, flipY: false, blendMode: 'source-over', visible: true, locked: false
       };
@@ -3034,6 +3071,24 @@ closeInlineTextEditor(shouldCommit = true) {
 
     normalizeImageAdvanced(layer) {
       if (layer.exposure == null) layer.exposure = 0;
+      if (layer.highlights == null) layer.highlights = 0;
+      if (layer.shadows == null) layer.shadows = 0;
+      if (layer.whites == null) layer.whites = 0;
+      if (layer.blacks == null) layer.blacks = 0;
+      if (layer.temperature == null) layer.temperature = 0;
+      if (layer.tint == null) layer.tint = 0;
+      if (layer.vibrance == null) layer.vibrance = 0;
+      if (layer.clarity == null) layer.clarity = 0;
+      if (layer.dehaze == null) layer.dehaze = 0;
+      if (layer.sharpen == null) layer.sharpen = 0;
+      if (layer.grain == null) layer.grain = 0;
+      if (layer.noiseReduction == null) layer.noiseReduction = 0;
+      if (layer.cropLeft == null) layer.cropLeft = 0;
+      if (layer.cropRight == null) layer.cropRight = 0;
+      if (layer.cropTop == null) layer.cropTop = 0;
+      if (layer.cropBottom == null) layer.cropBottom = 0;
+      if (layer.skewX == null) layer.skewX = 0;
+      if (layer.skewY == null) layer.skewY = 0;
       if (layer.grayscale == null) layer.grayscale = 0;
       if (layer.sepia == null) layer.sepia = 0;
       if (layer.hue == null) layer.hue = 0;
@@ -3060,35 +3115,78 @@ closeInlineTextEditor(shouldCommit = true) {
           ${this.rangeHtml('insImageWidth','Width',5,160,layer.width,'%')}
           ${this.rangeHtml('insImageScale','Scale',10,400,(layer.scale || 1) * 100,'%')}
           <div class="flip-grid"><button id="insFlipX" type="button">Flip H</button><button id="insFlipY" type="button">Flip V</button></div>
+          <div class="action-grid"><button id="insAutoEnhance" type="button">✦ Smart Enhance</button><button id="insFitPhoto" type="button">Fit Photo</button></div>
+          <div class="action-grid"><button id="insReplacePhoto" type="button">Replace Photo</button><button id="insUploadPhoto" type="button">Upload New Photo</button></div>
         </div>
+
         <div class="inspector-section">
-          <div class="micro-label">ADJUST</div><h3>Professional Photo Adjustments</h3>
-          ${this.rangeHtml('insBrightness','Brightness',-100,100,layer.brightness || 0,'')}
-          ${this.rangeHtml('insContrast','Contrast',-100,100,layer.contrast || 0,'')}
-          ${this.rangeHtml('insSaturation','Saturation',-100,100,layer.saturation || 0,'')}
+          <div class="micro-label">LIGHT</div><h3>Light & Tone</h3>
           ${this.rangeHtml('insExposure','Exposure',-100,100,layer.exposure || 0,'')}
+          ${this.rangeHtml('insContrast','Contrast',-100,100,layer.contrast || 0,'')}
+          ${this.rangeHtml('insHighlights','Highlights',-100,100,layer.highlights || 0,'')}
+          ${this.rangeHtml('insShadows','Shadows',-100,100,layer.shadows || 0,'')}
+          ${this.rangeHtml('insWhites','Whites',-100,100,layer.whites || 0,'')}
+          ${this.rangeHtml('insBlacks','Blacks',-100,100,layer.blacks || 0,'')}
+          ${this.rangeHtml('insBrightness','Brightness',-100,100,layer.brightness || 0,'')}
+        </div>
+
+        <div class="inspector-section">
+          <div class="micro-label">COLOR</div><h3>Color Mixer</h3>
+          ${this.rangeHtml('insTemperature','Temperature',-100,100,layer.temperature || 0,'')}
+          ${this.rangeHtml('insTint','Tint',-100,100,layer.tint || 0,'')}
+          ${this.rangeHtml('insVibrance','Vibrance',-100,100,layer.vibrance || 0,'')}
+          ${this.rangeHtml('insSaturation','Saturation',-100,100,layer.saturation || 0,'')}
+          ${this.rangeHtml('insHue','Hue',-180,180,layer.hue || 0,'°')}
           ${this.rangeHtml('insGrayscale','B&W',0,100,layer.grayscale || 0,'%')}
           ${this.rangeHtml('insSepia','Warm / Sepia',0,100,layer.sepia || 0,'%')}
-          ${this.rangeHtml('insHue','Hue',-180,180,layer.hue || 0,'°')}
+        </div>
+
+        <div class="inspector-section">
+          <div class="micro-label">PRESENCE</div><h3>Clarity & Atmosphere</h3>
+          ${this.rangeHtml('insClarity','Clarity',-100,100,layer.clarity || 0,'')}
+          ${this.rangeHtml('insDehaze','Dehaze',-100,100,layer.dehaze || 0,'')}
           ${this.rangeHtml('insVignette','Vignette',0,100,layer.vignette || 0,'%')}
           ${this.rangeHtml('insBlur','Blur',0,30,layer.blur || 0,'')}
+        </div>
+
+        <div class="inspector-section">
+          <div class="micro-label">DETAIL</div><h3>Detail & Texture</h3>
+          ${this.rangeHtml('insSharpen','Sharpen',0,100,layer.sharpen || 0,'%')}
+          ${this.rangeHtml('insNoiseReduction','Noise Reduction',0,100,layer.noiseReduction || 0,'%')}
+          ${this.rangeHtml('insGrain','Film Grain',0,100,layer.grain || 0,'%')}
+        </div>
+
+        <div class="inspector-section">
+          <div class="micro-label">LOOKS</div><h3>One-Tap Pro Looks</h3>
           <div class="action-grid">
             <button data-photo-preset="stadium" type="button">Stadium Pop</button>
             <button data-photo-preset="cinematic" type="button">Cinematic</button>
             <button data-photo-preset="vintage" type="button">Vintage</button>
             <button data-photo-preset="mono" type="button">Mono</button>
           </div>
-          <div class="action-grid"><button id="insResetPhoto" type="button">Reset Photo FX</button><button id="insFitPhoto" type="button">Fit Photo</button></div>
-          <div class="action-grid"><button id="insReplacePhoto" type="button">Replace Photo</button><button id="insUploadPhoto" type="button">Upload New Photo</button></div>
+          <div class="action-grid"><button data-photo-preset="cricket-gold" type="button">Cricket Gold</button><button data-photo-preset="night-pro" type="button">Night Pro</button></div>
+          <div class="action-grid"><button id="insResetPhoto" type="button">Reset Photo FX</button><button id="insResetCrop" type="button">Reset Crop</button></div>
         </div>
+
+        <div class="inspector-section">
+          <div class="micro-label">CROP & GEOMETRY</div><h3>Precision Framing</h3>
+          ${this.rangeHtml('insCropLeft','Crop Left',0,45,layer.cropLeft || 0,'%')}
+          ${this.rangeHtml('insCropRight','Crop Right',0,45,layer.cropRight || 0,'%')}
+          ${this.rangeHtml('insCropTop','Crop Top',0,45,layer.cropTop || 0,'%')}
+          ${this.rangeHtml('insCropBottom','Crop Bottom',0,45,layer.cropBottom || 0,'%')}
+          ${this.rangeHtml('insSkewX','Skew X',-35,35,layer.skewX || 0,'°')}
+          ${this.rangeHtml('insSkewY','Skew Y',-35,35,layer.skewY || 0,'°')}
+        </div>
+
         <div class="inspector-section">
           <div class="micro-label">CUTOUT</div><h3>Background Remover</h3>
-          <div class="inspector-section-description">Create a quick transparent cutout for the selected image.</div>
+          <div class="inspector-section-description">Create a fast transparent cutout for the selected image.</div>
           ${this.rangeHtml('insBgRemoveThreshold','Detection',5,120,layer.bgRemovalThreshold || 36,'')}
           ${this.rangeHtml('insBgRemoveFeather','Edge Softness',0,100,layer.bgRemovalFeather || 18,'')}
           <div class="action-grid"><button id="insRemoveBg" type="button">Remove Background</button><button id="insRestoreBg" type="button">Restore Original</button></div>
-          <div class="inspector-inline-note">${layer.bgRemoved ? 'Background removed for this selected photo.' : 'Uses a fast local remover best for logos, player cutouts and simple backgrounds.'}</div>
+          <div class="inspector-inline-note">${layer.bgRemoved ? 'Background removed for this selected photo.' : 'Runs locally in your browser; strongest on simple backgrounds and clean player cutouts.'}</div>
         </div>
+
         <div class="inspector-section">
           <div class="micro-label">MASK & FRAME</div><h3>Photo Shape</h3>
           <label class="field"><span>Mask</span><select id="insImageMask"><option value="none" ${layer.maskShape === 'none' ? 'selected' : ''}>None</option><option value="rounded" ${layer.maskShape === 'rounded' ? 'selected' : ''}>Rounded</option><option value="ellipse" ${layer.maskShape === 'ellipse' ? 'selected' : ''}>Ellipse</option><option value="hexagon" ${layer.maskShape === 'hexagon' ? 'selected' : ''}>Hexagon</option></select></label>
@@ -3185,6 +3283,42 @@ closeInlineTextEditor(shouldCommit = true) {
       }).join('')}</div>`;
     }
 
+    autoEnhanceSelectedPhoto(layer) {
+      if (!layer || layer.type !== 'image') return;
+      const image = this.getLayerImage(layer);
+      if (!image) return;
+      const sample = document.createElement('canvas');
+      sample.width = 48; sample.height = 48;
+      const sctx = sample.getContext('2d', { willReadFrequently: true });
+      if (!sctx) return;
+      sctx.drawImage(image, 0, 0, 48, 48);
+      const data = sctx.getImageData(0, 0, 48, 48).data;
+      let luminance = 0, saturation = 0, count = 0;
+      for (let i = 0; i < data.length; i += 16) {
+        const r = data[i] / 255, g = data[i + 1] / 255, b = data[i + 2] / 255;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        luminance += .2126 * r + .7152 * g + .0722 * b;
+        saturation += max === 0 ? 0 : (max - min) / max;
+        count++;
+      }
+      const lum = luminance / Math.max(1, count);
+      const sat = saturation / Math.max(1, count);
+      layer.exposure = clamp((.52 - lum) * 90, -24, 24);
+      layer.contrast = 14;
+      layer.highlights = lum > .62 ? -18 : -6;
+      layer.shadows = lum < .42 ? 24 : 10;
+      layer.whites = 8;
+      layer.blacks = -10;
+      layer.vibrance = clamp((.42 - sat) * 90, 4, 30);
+      layer.clarity = 18;
+      layer.dehaze = 10;
+      layer.sharpen = 24;
+      layer.vignette = 10;
+      this.safeRender();
+      this.renderInspector();
+      this.commit();
+    }
+
     bindAdvancedInspector(layer) {
       const on = (selector, event, callback) => {
         const element = $(selector);
@@ -3269,6 +3403,25 @@ closeInlineTextEditor(shouldCommit = true) {
 
       this.bindRange('#insImageWidth',value => { layer.width = value; this.safeRender(); });
       this.bindRange('#insImageScale',value => { layer.scale = value / 100; this.safeRender(); });
+      on('#insAutoEnhance','click',() => this.autoEnhanceSelectedPhoto(layer));
+      this.bindRange('#insHighlights',value => { layer.highlights = value; this.safeRender(); });
+      this.bindRange('#insShadows',value => { layer.shadows = value; this.safeRender(); });
+      this.bindRange('#insWhites',value => { layer.whites = value; this.safeRender(); });
+      this.bindRange('#insBlacks',value => { layer.blacks = value; this.safeRender(); });
+      this.bindRange('#insTemperature',value => { layer.temperature = value; this.safeRender(); });
+      this.bindRange('#insTint',value => { layer.tint = value; this.safeRender(); });
+      this.bindRange('#insVibrance',value => { layer.vibrance = value; this.safeRender(); });
+      this.bindRange('#insClarity',value => { layer.clarity = value; this.safeRender(); });
+      this.bindRange('#insDehaze',value => { layer.dehaze = value; this.safeRender(); });
+      this.bindRange('#insSharpen',value => { layer.sharpen = value; this.safeRender(); });
+      this.bindRange('#insGrain',value => { layer.grain = value; this.safeRender(); });
+      this.bindRange('#insNoiseReduction',value => { layer.noiseReduction = value; this.safeRender(); });
+      this.bindRange('#insCropLeft',value => { layer.cropLeft = Math.min(value, 45 - (layer.cropRight || 0)); this.safeRender(); });
+      this.bindRange('#insCropRight',value => { layer.cropRight = Math.min(value, 45 - (layer.cropLeft || 0)); this.safeRender(); });
+      this.bindRange('#insCropTop',value => { layer.cropTop = Math.min(value, 45 - (layer.cropBottom || 0)); this.safeRender(); });
+      this.bindRange('#insCropBottom',value => { layer.cropBottom = Math.min(value, 45 - (layer.cropTop || 0)); this.safeRender(); });
+      this.bindRange('#insSkewX',value => { layer.skewX = value; this.safeRender(); });
+      this.bindRange('#insSkewY',value => { layer.skewY = value; this.safeRender(); });
       this.bindRange('#insBrightness',value => { layer.brightness = value; this.safeRender(); });
       this.bindRange('#insContrast',value => { layer.contrast = value; this.safeRender(); });
       this.bindRange('#insSaturation',value => { layer.saturation = value; this.safeRender(); });
@@ -3293,13 +3446,26 @@ closeInlineTextEditor(shouldCommit = true) {
           layer.brightness = 2; layer.contrast = 12; layer.saturation = -18; layer.exposure = 2; layer.hue = -12; layer.sepia = 38; layer.grayscale = 0; layer.vignette = 28;
         } else if (preset === 'mono') {
           layer.brightness = 0; layer.contrast = 24; layer.saturation = -100; layer.exposure = 2; layer.hue = 0; layer.sepia = 0; layer.grayscale = 100; layer.vignette = 35;
+        } else if (preset === 'cricket-gold') {
+          layer.exposure = 5; layer.contrast = 20; layer.highlights = -12; layer.shadows = 18; layer.temperature = 20; layer.tint = 4; layer.vibrance = 18; layer.saturation = 8; layer.clarity = 20; layer.dehaze = 8; layer.sharpen = 22; layer.vignette = 22; layer.grain = 10;
+        } else if (preset === 'night-pro') {
+          layer.exposure = -5; layer.contrast = 30; layer.highlights = -28; layer.shadows = 18; layer.temperature = -12; layer.tint = 8; layer.vibrance = 14; layer.saturation = -4; layer.clarity = 28; layer.dehaze = 24; layer.sharpen = 28; layer.vignette = 38; layer.grain = 6;
         }
         this.safeRender(); this.renderInspector(); this.commit();
       }));
       on('#insFlipX','click',() => { layer.flipX = !layer.flipX; this.safeRender(); this.commit(); });
       on('#insFlipY','click',() => { layer.flipY = !layer.flipY; this.safeRender(); this.commit(); });
       on('#insResetPhoto','click',() => {
-        layer.brightness = 0; layer.contrast = 0; layer.saturation = 0; layer.exposure = 0; layer.grayscale = 0; layer.sepia = 0; layer.hue = 0; layer.vignette = 0; layer.blur = 0; layer.flipX = false; layer.flipY = false;
+        layer.brightness = 0; layer.contrast = 0; layer.saturation = 0; layer.exposure = 0;
+        layer.highlights = 0; layer.shadows = 0; layer.whites = 0; layer.blacks = 0;
+        layer.temperature = 0; layer.tint = 0; layer.vibrance = 0; layer.clarity = 0; layer.dehaze = 0;
+        layer.sharpen = 0; layer.grain = 0; layer.noiseReduction = 0;
+        layer.grayscale = 0; layer.sepia = 0; layer.hue = 0; layer.vignette = 0; layer.blur = 0;
+        layer.flipX = false; layer.flipY = false;
+        this.safeRender(); this.renderInspector(); this.commit();
+      });
+      on('#insResetCrop','click',() => {
+        layer.cropLeft = 0; layer.cropRight = 0; layer.cropTop = 0; layer.cropBottom = 0; layer.skewX = 0; layer.skewY = 0;
         this.safeRender(); this.renderInspector(); this.commit();
       });
       on('#insFitPhoto','click',() => { layer.width = 70; layer.scale = 1; layer.x = 65; layer.y = 45; this.safeRender(); this.renderInspector(); this.commit(); });
