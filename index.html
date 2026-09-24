@@ -1,26 +1,43 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05080c"><title>Creative Home — MK97 Creative Studio</title><link rel="stylesheet" href="app.css?v=24"></head><body data-nav="home"><div class="page"><header class="topbar">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#050608"><meta name="mk97-build" content="25.1"><title>MK97 Creative Studio</title><link rel="stylesheet" href="app.css?v=25"></head><body data-nav="home"><div class="page">
+<header class="topbar">
 <a class="brand" href="index.html"><span class="brand-logo"><img src="assets/MK97.png" alt="MK97"></span><span class="brand-copy"><b>MK97</b><small>CREATIVE STUDIO</small></span></a>
-<div class="page-title">Creative Home<small>CRICKET CREATOR ECOSYSTEM</small></div>
-<div class="top-actions"><a class="icon-btn" href="more.html" aria-label="More">☷</a></div>
-</header><main class="shell main">
+<div class="page-title">Create<small>POSTER • VIDEO • SOCIAL</small></div>
+<div class="top-actions"><a class="icon-btn" href="projects.html">▧</a><a class="icon-btn" href="more.html">☷</a></div>
+</header>
+<main class="shell main">
 <div class="logo-transition"><div class="ring"></div><img src="assets/MK97.png" alt="MK97"></div>
 <section class="hero">
-  <div class="eyebrow">CREATE • EDIT • DESIGN • SHARE</div>
-  <h1>Build premium cricket content.</h1>
-  <p>One clean mobile-first studio for templates, posters, videos, media, brand assets, smart tools, projects and export.</p>
-  <div class="hero-actions"><a class="gold-btn" href="templates.html">Browse Templates →</a><a class="ghost-btn" href="poster-editor.html">Open Poster Studio</a></div>
-</section>
-<div class="section-head"><div><h2>Creative hub</h2><p>Start from the workflow you need.</p></div><a href="more.html">See all →</a></div>
-<div class="tool-grid">
-<a class="tool-card" href="templates.html"><span class="tool-ico">▦</span><b>Templates</b><small>120 cricket templates from your existing library.</small></a>
-<a class="tool-card" href="poster-editor.html"><span class="tool-ico">✎</span><b>Poster Studio</b><small>Canvas, layers, typography, image tools, effects and export.</small></a>
-<a class="tool-card" href="video-editor.html"><span class="tool-ico">▷</span><b>Video Studio</b><small>Timeline, clips, text, motion, transitions and WebM render.</small></a>
-<a class="tool-card" href="ai-tools.html"><span class="tool-ico">✦</span><b>Smart Tools</b><small>Browser-local cutout and creator assistance.</small></a>
-<a class="tool-card" href="media.html"><span class="tool-ico">▣</span><b>Media</b><small>Upload and prepare images for creative work.</small></a>
-<a class="tool-card" href="brand.html"><span class="tool-ico">◇</span><b>Brand Kit</b><small>Logo, palette and brand identity settings.</small></a>
-<a class="tool-card" href="projects.html"><span class="tool-ico">▧</span><b>Projects</b><small>Saved poster and video project entries.</small></a>
-<a class="tool-card" href="analytics.html"><span class="tool-ico">⌁</span><b>Analytics</b><small>Local usage and studio activity metrics.</small></a>
+<div class="eyebrow">MK97 CREATIVE STUDIO</div>
+<h1>Create like a mobile pro editor.</h1>
+<p>A fast, clean creator workflow with projects, templates, poster editing, video timelines, effects, media, text, brand tools and export.</p>
+<div class="hero-actions"><a class="gold-btn" href="video-editor.html">＋ New Video Project</a><a class="ghost-btn" href="poster-editor.html">＋ New Poster</a></div>
+<div class="creator-row">
+  <a class="new-project" href="video-editor.html"><div><div class="eyebrow">VIDEO EDITOR</div><h3>Start a new video</h3><p>Import clips, trim, split, add text, motion, effects and render.</p></div><span class="gold-btn" style="align-self:flex-start">Create video →</span></a>
+  <div class="quick-stack">
+    <a class="quick-card" href="poster-editor.html"><span class="ico">✎</span><span><b>Poster Studio</b><small>Templates, layers, cutouts and export</small></span></a>
+    <a class="quick-card" href="templates.html"><span class="ico">▦</span><span><b>Templates</b><small>Browse 120 cricket designs</small></span></a>
+  </div>
 </div>
-<div class="section-head"><div><h2>Featured templates</h2><p>Use the same 120-template cricket library.</p></div><a href="templates.html">See all →</a></div>
+</section>
+
+<div class="section-head"><div><h2>Quick tools</h2><p>Creator shortcuts, like a mobile editing app.</p></div></div>
+<div class="tool-grid">
+<a class="tool-card" href="media.html"><span class="tool-ico">▣</span><b>Media</b><small>Upload images and assets.</small></a>
+<a class="tool-card" href="ai-tools.html"><span class="tool-ico">✦</span><b>Cutout</b><small>Remove simple backgrounds locally.</small></a>
+<a class="tool-card" href="brand.html"><span class="tool-ico">◇</span><b>Brand Kit</b><small>Colors, identity and logo settings.</small></a>
+<a class="tool-card" href="projects.html"><span class="tool-ico">▧</span><b>Projects</b><small>Return to recent work.</small></a>
+</div>
+
+<div class="section-head"><div><h2>Templates for you</h2><p>Cricket graphics ready to edit.</p></div><a href="templates.html">See all →</a></div>
 <div class="template-grid" id="trendingTemplates"></div>
-</main><div data-bottomnav></div></div><script src="templates-data.js?v=24"></script><script src="app.js?v=24"></script></body></html>
+</main><div data-bottomnav></div></div><script src="templates-data.js?v=25"></script><script src="app.js?v=25"></script>
+<script>
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./sw.js", { updateViaCache: "none" }).catch(() => {});
+}
+window.addEventListener("load", () => {
+  navigator.serviceWorker?.getRegistrations?.().then(regs => {
+    regs.forEach(r => r.update?.());
+  }).catch(() => {});
+});
+</script></body></html>

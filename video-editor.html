@@ -1,23 +1,43 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#05080c"><title>Video Studio — MK97 Creative Studio</title><link rel="stylesheet" href="app.css?v=24"><link rel="stylesheet" href="editor.css?v=24"></head><body class="editor-page"><div class="editor-shell">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#030405"><title>Video Studio — MK97</title><link rel="stylesheet" href="app.css?v=25"><link rel="stylesheet" href="editor.css?v=25"></head><body class="editor-page"><div class="editor-shell">
 <header class="editor-topbar">
-<a class="brand" href="index.html"><span class="brand-logo"><img src="assets/MK97.png" alt="MK97"></span><span class="brand-copy"><b>MK97</b><small>VIDEO STUDIO</small></span></a>
-<label class="editor-project"><i></i><input id="videoProjectName" value="MK97 Reel" aria-label="Project name"></label>
-<div class="editor-actions"><button id="videoUndo" class="editor-btn">↶</button><button id="videoRedo" class="editor-btn">↷</button><button id="videoSave" class="editor-btn desktop-only">Save</button><button id="videoExport" class="editor-btn gold">Render</button></div>
+<a class="editor-back" href="index.html" aria-label="Back">‹</a>
+<div class="editor-title"><input id="videoProjectName" value="MK97 Reel" aria-label="Project name"></div>
+<div class="editor-actions"><button id="videoUndo" class="editor-btn">↶</button><button id="videoRedo" class="editor-btn">↷</button><button id="videoExport" class="editor-btn primary">Export</button></div>
 </header>
-<div class="editor-body" style="grid-template-columns:260px minmax(0,1fr) 310px">
-<aside id="videoLeft" class="editor-panel sidebar"><nav class="tabs"><button class="tab active" data-vtab="media">Media</button><button class="tab" data-vtab="text">Text</button><button class="tab" data-vtab="effects">Effects</button></nav><div class="sidebar-scroll">
-<section data-vpanel="media"><div class="panel-title"><div><small>MEDIA</small><h2>Import</h2></div></div><div class="asset-buttons"><button id="videoUploadBtn" class="asset-button"><span><b>＋</b>Video / image</span></button><button id="audioUploadBtn" class="asset-button"><span><b>♫</b>Audio</span></button></div><input id="videoMediaInput" type="file" accept="video/*,image/*" hidden><input id="audioInput" type="file" accept="audio/*" hidden><div id="videoAssetList" class="layer-list" style="margin-top:10px"></div></section>
-<section data-vpanel="text" class="hidden"><div class="panel-title"><div><small>TEXT</small><h2>Titles</h2></div></div><button id="addVideoText" class="gold-btn" style="width:100%">＋ Add Text Clip</button></section>
-<section data-vpanel="effects" class="hidden"><div class="panel-title"><div><small>EFFECTS</small><h2>Look & Motion</h2></div></div><div class="asset-buttons"><button class="asset-button" data-effect="cinematic"><span><b>✦</b>Cinematic</span></button><button class="asset-button" data-effect="mono"><span><b>◐</b>Mono</span></button><button class="asset-button" data-effect="warm"><span><b>☀</b>Warm</span></button><button class="asset-button" data-effect="none"><span><b>○</b>Reset</span></button></div></section>
-</div></aside>
-<section class="editor-panel center">
-<div class="canvas-toolbar"><div class="toolbar-group"><select id="videoFormat"><option value="story">Reel / Story · 1080×1920</option><option value="landscape">Landscape · 1920×1080</option><option value="square">Square · 1080×1080</option></select><button id="playBtn">▶ Play</button><button id="splitBtn">Split</button></div><div class="toolbar-group"><button id="timelineZoomOut">−</button><button id="timelineZoomLabel">100%</button><button id="timelineZoomIn">＋</button></div></div>
+<main class="editor-main video-layout">
+<section class="video-preview-wrap">
+<div class="preview-toolbar"><div class="group"><select id="videoFormat"><option value="story">9:16</option><option value="landscape">16:9</option><option value="square">1:1</option></select></div><div class="group"><button id="timelineZoomOut">−</button><button id="timelineZoomLabel">100%</button><button id="timelineZoomIn">＋</button></div></div>
 <div id="videoStage" class="stage"><div class="canvas-frame"><canvas id="videoCanvas" width="1080" height="1920"></canvas></div></div>
-<div class="status"><span id="timeLabel">00:00.0 / 00:15.0</span><span>Drag clips • trim handles • split at playhead</span><strong>MK97 VIDEO ENGINE</strong></div>
-<div class="video-timeline"><div class="timeline-toolbar"><button id="addVideoClip">＋ Media</button><button id="addTextClip">＋ Text</button><button id="duplicateClip">Duplicate</button><button id="deleteClip">Delete</button></div><div id="timelineScroll" class="timeline-scroll"><div id="ruler" class="ruler"></div><div id="tracks"></div><div id="playhead" class="playhead"></div></div></div>
+<div class="transport"><button id="stepBack">‹</button><button id="playBtn" class="play">▶</button><span id="timeLabel">00:00.0 / 00:15.0</span><button id="stepForward">›</button></div>
 </section>
-<aside id="videoRight" class="editor-panel sidebar inspector"><div class="inspector-head"><small>CLIP PROPERTIES</small><h3 id="clipTitle">Timeline</h3></div><div id="videoInspector" class="inspector-scroll"></div></aside>
-</div>
+
+<section class="timeline-panel">
+<div class="timeline-top"><div class="group"><button id="splitBtn">Split</button><button id="duplicateClip">Duplicate</button><button id="deleteClip">Delete</button></div><div class="group"><button id="addVideoClip">＋ Add clip</button></div></div>
+<div id="timelineScroll" class="timeline-scroll"><div id="ruler" class="ruler"></div><div id="tracks"></div><div id="playhead" class="playhead"></div></div>
+</section>
+
+<nav class="video-bottom-tools">
+  <button class="tool-btn" data-vtool="media"><span>＋</span>Media</button>
+  <button class="tool-btn" data-vtool="audio"><span>♫</span>Audio</button>
+  <button class="tool-btn" id="addTextClip"><span>T</span>Text</button>
+  <button class="tool-btn" data-vtool="effects"><span>✦</span>Effects</button>
+  <button class="tool-btn" data-vtool="edit"><span>⚙</span>Edit</button>
+  <button class="tool-btn" id="mobileSplit"><span>✂</span>Split</button>
+  <button class="tool-btn primary" id="mobileRender"><span>↓</span>Export</button>
+</nav>
+</main>
+
 <div id="videoBackdrop" class="sheet-backdrop"></div>
-<nav class="mobile-dock"><button data-vopen="left"><span>＋</span>Media</button><button id="mobileText"><span>T</span>Text</button><button id="mobileSplit"><span>✂</span>Split</button><button data-vopen="right"><span>⚙</span>Edit</button><button id="mobileRender" class="primary"><span>↓</span>Render</button></nav>
-</div><script src="video-editor.js?v=24"></script></body></html>
+<section id="videoAssetSheet" class="bottom-sheet">
+<div class="sheet-handle"></div><div class="sheet-head"><b>Media</b><button class="sheet-close" data-vclose>×</button></div>
+<div class="sheet-content">
+<div class="sheet-tabs"><button class="sheet-tab active" data-vtab="media">Media</button><button class="sheet-tab" data-vtab="audio">Audio</button><button class="sheet-tab" data-vtab="effects">Effects</button></div>
+<section data-vpanel="media"><div class="asset-grid-editor"><button id="videoUploadBtn" class="asset-action"><span><b>＋</b>Video / image</span></button><button id="addVideoText" class="asset-action"><span><b>T</b>Text clip</span></button></div><input id="videoMediaInput" type="file" accept="video/*,image/*" hidden><div id="videoAssetList" class="layer-list" style="margin-top:10px"></div></section>
+<section data-vpanel="audio" class="hidden"><div class="asset-grid-editor"><button id="audioUploadBtn" class="asset-action"><span><b>♫</b>Upload audio</span></button></div><input id="audioInput" type="file" accept="audio/*" hidden></section>
+<section data-vpanel="effects" class="hidden"><div class="asset-grid-editor"><button class="asset-action" data-effect="cinematic"><span><b>✦</b>Cinematic</span></button><button class="asset-action" data-effect="mono"><span><b>◐</b>Mono</span></button><button class="asset-action" data-effect="warm"><span><b>☀</b>Warm</span></button><button class="asset-action" data-effect="none"><span><b>○</b>Reset</span></button></div></section>
+</div></section>
+
+<section id="videoEditSheet" class="bottom-sheet">
+<div class="sheet-handle"></div><div class="sheet-head"><b id="clipTitle">Edit clip</b><button class="sheet-close" data-vclose>×</button></div><div id="videoInspector" class="sheet-content"></div>
+</section>
+</div><script src="video-editor.js?v=25"></script></body></html>

@@ -1,71 +1,56 @@
-MK97 CREATIVE STUDIO — V24 COMPLETE REWRITE
-===========================================
+MK97 CREATIVE STUDIO — V25.1 CLEAN DEPLOY
+==========================================
 
-This package rewrites the application code from scratch while preserving:
-- MK97 branding assets
-- FWCWL creative logo
-- the 120 existing cricket template definitions
+THIS IS THE CLEAN GITHUB PAGES DEPLOYMENT PACKAGE.
 
-MAIN PAGES
-- welcome.html
+Important:
+1. Delete old/legacy files from the repository root first.
+2. Upload the CONTENTS of this folder directly into the repository root.
+3. Do not upload the outer V25.1 folder.
+4. GitHub Pages should publish from main / (root).
+5. sw.js is intentionally included as a one-time stale-cache cleanup worker.
+6. build.json should report build 25.1 after deployment.
+
+CORE RUNTIME
 - index.html
+- welcome.html
+- app.css
+- app.js
+- editor.css
+- poster-editor.html
+- poster-editor.js
+- video-editor.html
+- video-editor.js
+- templates-data.js
+- templates.json
+- assets/MK97.png
+- assets/fwcwl-logo.jpeg
+
+APP PAGES
 - templates.html
 - template-detail.html
-- poster-editor.html
-- video-editor.html
 - media.html
 - brand.html
 - ai-tools.html
 - projects.html
 - analytics.html
-- schedule-export.html
-- share.html
+- layers.html
+- text-editing.html
+- motion-effects.html
+- audio-tools.html
 - poster-export.html
 - video-export.html
+- schedule-export.html
+- share.html
 - more.html
+- 404.html
 
-CORE FILES
-- app.css
-- app.js
-- editor.css
-- poster-editor.js
-- video-editor.js
-- templates-data.js
-- templates.json
+BUILD VERIFICATION
+Open:
+https://mmk97-97.github.io/Instagram-Post-Maker/build.json
 
-POSTER STUDIO
-- 120 templates
-- canvas-based layered editor
-- text, images and shapes
-- direct canvas selection/drag
-- layer visibility/locking
-- inspector editing
-- typography, rotation, opacity
-- image brightness/contrast/saturation/hue/blur/sepia
-- browser-local background removal for simple backgrounds
-- undo/redo
-- zoom/grid
-- portrait/square/story formats
-- PNG export
-- local project entry saving
-- mobile bottom dock + bottom-sheet panels
+Expected:
+"build": "25.1"
 
-VIDEO STUDIO
-- vertical, landscape and square formats
-- image/video/audio import
-- multi-track timeline
-- draggable clips
-- trim handles
-- split, duplicate and delete
-- text clips
-- transform controls
-- volume/speed controls
-- basic global looks
-- playback and playhead
-- timeline zoom
-- browser-native visual WebM render
-- mobile bottom dock + bottom-sheet panels
-
-DEPLOYMENT
-Upload the CONTENTS of this folder directly into the repository root used by GitHub Pages.
-Do not upload this outer folder as a nested directory.
+The home page should say:
+"Create like a mobile pro editor."

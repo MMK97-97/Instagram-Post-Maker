@@ -1,24 +1,49 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#05080c"><title>Poster Studio — MK97 Creative Studio</title><link rel="stylesheet" href="app.css?v=24"><link rel="stylesheet" href="editor.css?v=24"></head><body class="editor-page"><div class="editor-shell">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#030405"><title>Poster Studio — MK97</title><link rel="stylesheet" href="app.css?v=25"><link rel="stylesheet" href="editor.css?v=25"></head><body class="editor-page"><div class="editor-shell">
 <header class="editor-topbar">
-<a class="brand" href="index.html"><span class="brand-logo"><img src="assets/MK97.png" alt="MK97"></span><span class="brand-copy"><b>MK97</b><small>POSTER STUDIO</small></span></a>
-<label class="editor-project"><i></i><input id="projectName" value="MK97 Campaign" aria-label="Project name"></label>
-<div class="editor-actions"><button id="undoBtn" class="editor-btn" title="Undo">↶</button><button id="redoBtn" class="editor-btn" title="Redo">↷</button><button id="saveProjectBtn" class="editor-btn desktop-only">Save</button><button id="exportBtn" class="editor-btn gold">Export</button></div>
+<a class="editor-back" href="index.html" aria-label="Back">‹</a>
+<div class="editor-title"><input id="projectName" value="MK97 Poster" aria-label="Project name"></div>
+<div class="editor-actions"><button id="undoBtn" class="editor-btn">↶</button><button id="redoBtn" class="editor-btn">↷</button><button id="exportBtn" class="editor-btn primary">Export</button></div>
 </header>
-<div class="editor-body">
-<aside id="leftPanel" class="editor-panel sidebar">
-<nav class="tabs"><button class="tab active" data-tab="templates">Templates</button><button class="tab" data-tab="media">Media</button><button class="tab" data-tab="layers">Layers</button></nav>
-<div class="sidebar-scroll">
-<section data-panel="templates"><div class="panel-title"><div><small>MK97 DESIGN LIBRARY</small><h2>Cricket Templates</h2></div><span id="editorTemplateCount" class="chip active"></span></div><div class="editor-search"><input id="editorTemplateSearch" placeholder="Search templates..."></div><div id="editorTemplateGrid" class="template-mini-grid"></div></section>
-<section data-panel="media" class="hidden"><div class="panel-title"><div><small>MEDIA</small><h2>Add content</h2></div></div><div class="asset-buttons"><button id="uploadImageBtn" class="asset-button"><span><b>＋</b>Upload image</span></button><button id="addTextBtn" class="asset-button"><span><b>T</b>Add text</span></button><button id="addShapeBtn" class="asset-button"><span><b>◆</b>Add shape</span></button><button id="removeBgBtn" class="asset-button"><span><b>✂</b>Remove BG</span></button></div><input id="imageInput" type="file" accept="image/*" hidden></section>
-<section data-panel="layers" class="hidden"><div class="panel-title"><div><small>LAYERS</small><h2>Design stack</h2></div></div><div id="layerList" class="layer-list"></div></section>
-</div></aside>
-<section class="editor-panel center">
-<div class="canvas-toolbar"><div class="toolbar-group"><select id="canvasSize"><option value="portrait">Portrait · 1080×1350</option><option value="square">Square · 1080×1080</option><option value="story">Story · 1080×1920</option></select><button id="fitBtn">Fit</button><button id="gridBtn">Grid</button></div><div class="toolbar-group"><button id="zoomOut">−</button><button id="zoomLabel">100%</button><button id="zoomIn">＋</button></div></div>
-<div id="stage" class="stage"><div id="canvasFrame" class="canvas-frame"><canvas id="posterCanvas" width="1080" height="1350"></canvas></div></div>
-<div class="status"><span>MK97 POSTER ENGINE</span><span>Tap or drag a layer on canvas</span><strong id="posterDimensions">1080 × 1350</strong></div>
-</section>
-<aside id="rightPanel" class="editor-panel sidebar inspector"><div class="inspector-head"><small>PROPERTIES</small><h3 id="inspectorTitle">Canvas</h3></div><div id="inspector" class="inspector-scroll"></div><div class="inspector-footer"><button id="duplicateBtn" class="small-btn">Duplicate</button><button id="deleteBtn" class="small-btn danger">Delete</button></div></aside>
+<main class="editor-main">
+<section class="preview-area">
+<div class="preview-toolbar">
+  <div class="group"><select id="canvasSize"><option value="portrait">4:5</option><option value="square">1:1</option><option value="story">9:16</option></select><button id="fitBtn">Fit</button><button id="gridBtn">Grid</button></div>
+  <div class="group"><button id="zoomOut">−</button><button id="zoomLabel">100%</button><button id="zoomIn">＋</button></div>
 </div>
+<div id="stage" class="stage"><div id="canvasFrame" class="canvas-frame"><canvas id="posterCanvas" width="1080" height="1350"></canvas></div></div>
+<div class="preview-status"><span>Tap an object to edit</span><strong id="posterDimensions">1080 × 1350</strong></div>
+</section>
+
+<nav class="poster-bottom-tools" aria-label="Poster tools">
+  <button class="tool-btn" data-tool="templates"><span>▦</span>Templates</button>
+  <button class="tool-btn" data-tool="media"><span>＋</span>Media</button>
+  <button class="tool-btn" id="addTextBtn"><span>T</span>Text</button>
+  <button class="tool-btn" id="addShapeBtn"><span>◆</span>Shape</button>
+  <button class="tool-btn" data-tool="adjust"><span>☼</span>Adjust</button>
+  <button class="tool-btn" data-tool="layers"><span>☷</span>Layers</button>
+  <button class="tool-btn" id="removeBgBtn"><span>✂</span>Cutout</button>
+  <button class="tool-btn" data-tool="canvas"><span>▣</span>Canvas</button>
+  <button class="tool-btn primary" id="mobileExport"><span>↓</span>Export</button>
+</nav>
+</main>
+
 <div id="sheetBackdrop" class="sheet-backdrop"></div>
-<nav class="mobile-dock"><button data-open="left" data-tab-open="templates"><span>▦</span>Templates</button><button data-open="left" data-tab-open="media"><span>＋</span>Add</button><button data-open="left" data-tab-open="layers"><span>☷</span>Layers</button><button data-open="right"><span>⚙</span>Edit</button><button id="mobileExport" class="primary"><span>↓</span>Export</button></nav>
-</div><script src="templates-data.js?v=24"></script><script src="poster-editor.js?v=24"></script></body></html>
+
+<section id="assetSheet" class="bottom-sheet" aria-label="Assets">
+<div class="sheet-handle"></div><div class="sheet-head"><b>Creative tools</b><button class="sheet-close" data-close>×</button></div>
+<div class="sheet-content">
+  <div class="sheet-tabs"><button class="sheet-tab active" data-tab="templates">Templates</button><button class="sheet-tab" data-tab="media">Media</button><button class="sheet-tab" data-tab="layers">Layers</button></div>
+  <section data-panel="templates"><div class="editor-search"><input id="editorTemplateSearch" placeholder="Search templates..."></div><div id="editorTemplateCount" style="font-size:8px;color:#777;margin-bottom:8px"></div><div id="editorTemplateGrid" class="template-mini-grid"></div></section>
+  <section data-panel="media" class="hidden"><div class="asset-grid-editor"><button id="uploadImageBtn" class="asset-action"><span><b>＋</b>Upload image</span></button><button class="asset-action" onclick="location.href='media.html'"><span><b>▣</b>Media browser</span></button><button class="asset-action" onclick="location.href='brand.html'"><span><b>◇</b>Brand kit</span></button><button class="asset-action" id="mediaAddText"><span><b>T</b>Add text</span></button></div><input id="imageInput" type="file" accept="image/*" hidden></section>
+  <section data-panel="layers" class="hidden"><div id="layerList" class="layer-list"></div></section>
+</div>
+</section>
+
+<section id="editSheet" class="bottom-sheet" aria-label="Edit properties">
+<div class="sheet-handle"></div><div class="sheet-head"><b id="inspectorTitle">Edit</b><button class="sheet-close" data-close>×</button></div>
+<div class="sheet-content"><div id="inspector"></div><div class="sheet-footer"><button id="duplicateBtn" class="small-btn">Duplicate</button><button id="deleteBtn" class="small-btn danger">Delete</button></div></div>
+</section>
+
+<div id="quickSelected" class="quick-selected"><button id="quickEdit">Edit</button><button id="quickDuplicate">Duplicate</button><button id="quickDelete" class="danger">Delete</button></div>
+
+</div><script src="templates-data.js?v=25"></script><script src="poster-editor.js?v=25"></script></body></html>
