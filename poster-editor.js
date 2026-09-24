@@ -2,7 +2,7 @@
   'use strict';
 
   const WATCHDOG_VERSION = '10.0.0';
-  const BUILD_VERSION = '22.0.0-premium-interactions';
+  const BUILD_VERSION = '23.0.0-full-rewrite';
   const LOGO_PATH = 'assets/fwcwl-logo.jpeg';
   const REQUIRED_IDS = [
     'posterWorkspace','posterCanvas','posterTemplateGrid','posterTemplateCount',

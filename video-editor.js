@@ -43,7 +43,7 @@ No external JavaScript dependency is required.
 (() => {
   "use strict";
 
-  const BUILD_VERSION = "22.0.0-pro-mobile-timeline";
+  const BUILD_VERSION = "23.0.0-full-rewrite";
   const STATUS_KEY = "__FWCWL_VIDEO_STATUS__";
   const ROOT_ID = "fwcwlVideoStudio";
   const STYLE_ID = "fwcwlVideoStudioStyleV22";

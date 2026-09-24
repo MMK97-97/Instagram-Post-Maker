@@ -4273,15 +4273,3 @@ input[type="range"]::-webkit-slider-thumb {
   }
 
 }
-
-
-/* MK97 V19 reference navigation helpers */
-.mk97-ref-rail,.mk97-video-links{display:none}
-@media(max-width:900px){
-  .mk97-ref-rail{position:fixed;left:8px;top:50%;transform:translateY(-50%);z-index:999;display:grid;gap:7px;padding:7px;border:1px solid rgba(255,255,255,.08);border-radius:14px;background:rgba(6,10,14,.88);backdrop-filter:blur(16px);box-shadow:0 18px 45px rgba(0,0,0,.32)}
-  .mk97-ref-rail a{width:48px;min-height:47px;display:grid;place-items:center;border:1px solid transparent;border-radius:10px;color:#98a2ab;text-decoration:none;font:700 7px/1.1 system-ui}
-  .mk97-ref-rail a span{display:block;color:#f1c34d;font-size:15px}
-  .mk97-ref-rail a:hover{border-color:rgba(241,195,77,.28);background:rgba(241,195,77,.06);color:#fff}
-  .mk97-video-links{position:fixed;right:10px;bottom:88px;z-index:999;display:flex;gap:6px}
-  .mk97-video-links a{padding:9px 11px;border:1px solid rgba(241,195,77,.22);border-radius:999px;background:rgba(7,11,15,.9);color:#f1c34d;text-decoration:none;font:800 8px system-ui;backdrop-filter:blur(14px)}
-}

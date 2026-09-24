@@ -1,11 +1,15 @@
 (()=>{
 'use strict';
 const get=(k,d=null)=>{try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}};
-function boot(){const e=window.FWCWLPosterEditor;if(!e){setTimeout(boot,120);return}
- const tid=get('mk97.selectedTemplate'); if(tid&&typeof e.applyTemplate==='function'){try{e.applyTemplate(tid,false)}catch{}}
- const brand=get('mk97.brand'); if(brand){e.state.brandName=brand.name||e.state.brandName;e.state.accent=brand.accent||e.state.accent;e.state.showLogo=brand.showLogo!==false;}
- const style=get('mk97.textStyle'); if(style){const h=e.state.layers?.find(x=>x.type==='text'&&(x.name==='Headline'||x.name==='Custom Headline'));if(h){h.font=style.font||h.font;h.size=style.size||h.size;h.letterSpacing=Number(style.spacing??h.letterSpacing);h.lineHeight=Number(style.lineHeight??h.lineHeight);h.weight=Number(style.weight??h.weight);h.align=style.align||h.align;h.shadowEnabled=!!style.shadow;if(style.glow){h.shadowEnabled=true;h.shadowColor=e.state.accent;h.shadowBlur=34;}}}
- const pending=get('mk97.pendingImage'); if(pending&&!sessionStorage.getItem('mk97.pendingImageApplied')){const img=new Image();img.onload=()=>{const id='asset-'+Date.now().toString(36);e.assets.set(id,{id,name:'Imported image',url:pending,image:img});e.addImageLayer?.(id);sessionStorage.setItem('mk97.pendingImageApplied','1')};img.src=pending}
- e.syncAllUI?.();e.safeRender?.();e.renderInspector?.();e.safeRenderTemplates?.();}
-boot();
+const set=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
+async function waitPoster(){for(let i=0;i<100;i++){if(window.FWCWLPosterEditor)return window.FWCWLPosterEditor;await new Promise(r=>setTimeout(r,60))}return null}
+async function dataUrlFile(dataUrl,name='mk97-upload.png'){const res=await fetch(dataUrl);const blob=await res.blob();return new File([blob],name,{type:blob.type||'image/png'})}
+window.addEventListener('load',async()=>{const editor=await waitPoster();if(!editor)return;
+ const selected=get('mk97.selectedTemplate');if(selected&&typeof editor.applyTemplate==='function'){try{editor.applyTemplate(selected,false)}catch{}}
+ const brand=get('mk97.brand');if(brand){editor.state.brandName=brand.name||editor.state.brandName;editor.state.accent=brand.accent||editor.state.accent;editor.state.showLogo=brand.showLogo!==false}
+ const style=get('mk97.textStyle');if(style){const headline=editor.state.layers?.find(x=>x.type==='text'&&(x.name==='Headline'||/headline/i.test(x.name||'')));if(headline){Object.assign(headline,{font:style.font||headline.font,size:Number(style.size||headline.size),letterSpacing:Number(style.spacing||headline.letterSpacing),lineHeight:Number(style.lineHeight||headline.lineHeight),weight:Number(style.weight||headline.weight),align:style.align||headline.align,shadowEnabled:!!style.shadow})}}
+ const pending=get('mk97.pendingImage');if(pending&&typeof editor.importImages==='function'){try{const file=await dataUrlFile(pending);const ids=await editor.importImages([file]);if(ids?.length&&typeof editor.addImageLayer==='function')editor.addImageLayer(ids[ids.length-1]);localStorage.removeItem('mk97.pendingImage')}catch(e){console.warn('[MK97 bridge image]',e)}}
+ editor.syncAllUI?.();editor.safeRender?.();editor.renderInspector?.();editor.safeRenderTemplates?.();
+ ['exportTopBtn','downloadPosterBtn'].forEach(id=>document.getElementById(id)?.addEventListener('click',()=>{const a=get('mk97.analytics',{templatesUsed:0,exports:0,projects:0,aiActions:0,videoEdits:0});a.exports=(a.exports||0)+1;set('mk97.analytics',a)}));
+});
 })();

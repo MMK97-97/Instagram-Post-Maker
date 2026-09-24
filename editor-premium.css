@@ -224,11 +224,8 @@ body[data-editor="poster"] .editor-page-label::after{content:"POSTER STUDIO"}
   .mk97-ref-rail a,.mk97-video-links a{flex:1;justify-content:center;min-width:0;padding:0 10px;font-size:11px}
 }
 
-
-/* V22 interaction polish */
-#posterWorkspace button,#fwcwlVideoStudio button{transition:transform .14s ease,border-color .14s ease,background-color .14s ease,color .14s ease,box-shadow .14s ease}
-#posterWorkspace button:active,#fwcwlVideoStudio button:active{transform:scale(.97)}
-#posterWorkspace .poster-inspector input[type="range"],#fwcwlVideoStudio input[type="range"]{accent-color:#f3c95b}
-@media(max-width:900px){
-  body[data-editor="video"] .mk97-video-links{display:none!important}
-}
+/* V23 consistency layer */
+body[data-editor]{--gold:#f3c95b;--gold2:#ffdf86;}
+body[data-editor] .brand-mark img{filter:drop-shadow(0 0 10px rgba(243,201,91,.22));}
+body[data-editor] .editor-page-label{letter-spacing:.14em;font-weight:900;}
+@media(max-width:900px){body[data-editor] .poster-workspace{padding-bottom:84px!important;}body[data-editor] .mk97-ref-rail,body[data-editor] .mk97-video-links{z-index:9000;}}
