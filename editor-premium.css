@@ -223,3 +223,12 @@ body[data-editor="poster"] .editor-page-label::after{content:"POSTER STUDIO"}
   .left-tab{min-width:0 !important;font-size:12px !important}
   .mk97-ref-rail a,.mk97-video-links a{flex:1;justify-content:center;min-width:0;padding:0 10px;font-size:11px}
 }
+
+
+/* V22 interaction polish */
+#posterWorkspace button,#fwcwlVideoStudio button{transition:transform .14s ease,border-color .14s ease,background-color .14s ease,color .14s ease,box-shadow .14s ease}
+#posterWorkspace button:active,#fwcwlVideoStudio button:active{transform:scale(.97)}
+#posterWorkspace .poster-inspector input[type="range"],#fwcwlVideoStudio input[type="range"]{accent-color:#f3c95b}
+@media(max-width:900px){
+  body[data-editor="video"] .mk97-video-links{display:none!important}
+}

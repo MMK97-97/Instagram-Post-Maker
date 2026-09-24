@@ -2,7 +2,7 @@
   'use strict';
 
   const WATCHDOG_VERSION = '10.0.0';
-  const BUILD_VERSION = '16.0.0-mobile-studio';
+  const BUILD_VERSION = '22.0.0-premium-interactions';
   const LOGO_PATH = 'assets/fwcwl-logo.jpeg';
   const REQUIRED_IDS = [
     'posterWorkspace','posterCanvas','posterTemplateGrid','posterTemplateCount',
@@ -3831,4 +3831,230 @@ closeInlineTextEditor(shouldCommit = true) {
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{ once: true });
   else boot();
+})();
+
+
+/* ============================================================
+   MK97 V22 — PREMIUM POSTER INTERACTION LAYER
+   Additive UI behavior only. Core editor operations are preserved.
+============================================================ */
+(() => {
+  'use strict';
+
+  const $ = (s, r = document) => r.querySelector(s);
+  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
+
+  const waitForEditor = () => {
+    const editor = window.FWCWLPosterEditor;
+    if (!editor || !editor.canvas || !document.getElementById('posterWorkspace')) {
+      setTimeout(waitForEditor, 120);
+      return;
+    }
+    if (window.__MK97_POSTER_V22__) return;
+    window.__MK97_POSTER_V22__ = true;
+    install(editor);
+  };
+
+  function install(editor) {
+    const workspace = $('#posterWorkspace');
+    const center = $('#posterCenter');
+    const stage = $('#posterStage');
+    if (!workspace || !center || !stage) return;
+
+    const style = document.createElement('style');
+    style.id = 'mk97PosterV22Style';
+    style.textContent = `
+      #posterWorkspace .mk97-selection-hud{
+        position:absolute;z-index:70;left:50%;top:76px;transform:translate(-50%,-8px);
+        display:flex;align-items:center;gap:6px;max-width:min(680px,calc(100% - 28px));padding:7px;
+        border:1px solid rgba(255,255,255,.08);border-radius:18px;
+        background:rgba(8,13,18,.90);backdrop-filter:blur(18px);
+        box-shadow:0 18px 50px rgba(0,0,0,.34);opacity:0;pointer-events:none;
+        transition:opacity .18s ease,transform .18s ease;
+      }
+      #posterWorkspace .mk97-selection-hud.visible{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+      #posterWorkspace .mk97-selection-hud .mk97-hud-name{
+        min-width:110px;max-width:220px;padding:0 10px;color:#eaf0f4;font-size:10px;font-weight:850;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap
+      }
+      #posterWorkspace .mk97-selection-hud button{
+        min-height:34px;padding:0 11px;border:1px solid rgba(255,255,255,.08);border-radius:11px;
+        color:#b9c4cd;background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+        font-size:9px;font-weight:800;transition:.14s ease
+      }
+      #posterWorkspace .mk97-selection-hud button:hover{color:#fff;border-color:rgba(243,201,91,.24);transform:translateY(-1px)}
+      #posterWorkspace .mk97-selection-hud button.primary{color:#171309;border-color:transparent;background:linear-gradient(180deg,#ffdf86,#f3c95b)}
+      #posterWorkspace .mk97-selection-hud button.danger{color:#ff9da4}
+      #posterWorkspace .poster-canvas-frame.mk97-selection-pulse{animation:mk97SelectionPulse .28s ease}
+      @keyframes mk97SelectionPulse{0%{box-shadow:0 26px 54px rgba(0,0,0,.42),0 0 0 0 rgba(243,201,91,.28)}100%{box-shadow:0 26px 54px rgba(0,0,0,.42),0 0 0 8px rgba(243,201,91,0)}}
+      .mk97-command-backdrop{
+        position:fixed;inset:0;z-index:12000;display:grid;place-items:start center;padding-top:min(18vh,160px);
+        background:rgba(2,5,8,.58);backdrop-filter:blur(12px)
+      }
+      .mk97-command{
+        width:min(620px,calc(100vw - 24px));overflow:hidden;border:1px solid rgba(255,255,255,.10);border-radius:22px;
+        background:linear-gradient(180deg,#0d1620,#091018);box-shadow:0 36px 100px rgba(0,0,0,.55)
+      }
+      .mk97-command-head{display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid rgba(255,255,255,.07)}
+      .mk97-command-head span{color:#f3c95b;font-size:18px}
+      .mk97-command-head input{width:100%;height:42px;border:0;outline:0;background:transparent;color:#fff;font-size:14px}
+      .mk97-command-list{max-height:360px;overflow:auto;padding:8px}
+      .mk97-command-item{
+        width:100%;min-height:48px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;
+        padding:8px 10px;border:1px solid transparent;border-radius:14px;background:transparent;color:#e8edf1;text-align:left
+      }
+      .mk97-command-item:hover,.mk97-command-item.active{border-color:rgba(243,201,91,.18);background:rgba(243,201,91,.055)}
+      .mk97-command-item .icon{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;background:#111d28;color:#f3c95b}
+      .mk97-command-item b{display:block;font-size:11px}.mk97-command-item small{display:block;margin-top:2px;color:#788693;font-size:9px}
+      .mk97-command-item kbd{color:#788693;font:700 9px/1 ui-monospace,monospace}
+      #posterWorkspace .mk97-editor-tip{
+        position:absolute;z-index:55;left:50%;bottom:50px;transform:translateX(-50%);padding:7px 10px;border-radius:999px;
+        border:1px solid rgba(255,255,255,.07);background:rgba(8,13,18,.82);backdrop-filter:blur(10px);
+        color:#8998a6;font-size:8px;font-weight:750;pointer-events:none;opacity:.9
+      }
+      @media(max-width:900px){
+        #posterWorkspace .mk97-selection-hud{display:none}
+        #posterWorkspace .mk97-editor-tip{bottom:126px;max-width:calc(100% - 30px);text-align:center}
+      }
+    `;
+    document.head.appendChild(style);
+
+    center.style.position = 'relative';
+
+    const hud = document.createElement('div');
+    hud.className = 'mk97-selection-hud';
+    hud.innerHTML = `
+      <span class="mk97-hud-name">Selected layer</span>
+      <button class="primary" data-mk97-poster-action="edit">Edit</button>
+      <button data-mk97-poster-action="duplicate">Duplicate</button>
+      <button data-mk97-poster-action="front">Bring Front</button>
+      <button data-mk97-poster-action="lock">Lock</button>
+      <button class="danger" data-mk97-poster-action="delete">Delete</button>
+    `;
+    center.appendChild(hud);
+
+    const tip = document.createElement('div');
+    tip.className = 'mk97-editor-tip';
+    tip.textContent = 'Click any layer to select • Double-click text to edit • ⌘/Ctrl K for quick actions';
+    center.appendChild(tip);
+
+    const runAction = action => {
+      const layer = editor.getSelected?.();
+      if (action === 'edit') {
+        if (!layer) return;
+        if (layer.type === 'text' && editor.openInlineTextEditor) editor.openInlineTextEditor(layer);
+        else if (window.matchMedia('(max-width:900px)').matches && editor.openMobileInspector) editor.openMobileInspector(layer.type === 'image' ? 'adjust' : 'properties');
+        else $('#posterRightSidebar')?.scrollIntoView({behavior:'smooth', block:'nearest'});
+      }
+      if (action === 'duplicate') editor.duplicateSelected?.();
+      if (action === 'front') {
+        if (!layer) return;
+        const index = editor.state.layers.findIndex(x => x.id === layer.id);
+        while (index >= 0 && editor.state.layers.findIndex(x => x.id === layer.id) < editor.state.layers.length - 1) editor.moveSelected?.(1);
+      }
+      if (action === 'lock') {
+        if (!layer) return;
+        layer.locked = !layer.locked;
+        editor.safeRender?.(); editor.renderInspector?.(); editor.commit?.();
+      }
+      if (action === 'delete') editor.deleteSelected?.();
+      syncHud();
+    };
+
+    $$('[data-mk97-poster-action]', hud).forEach(button => button.addEventListener('click', () => runAction(button.dataset.mk97PosterAction)));
+
+    let lastSelected = null;
+    function syncHud() {
+      const layer = editor.getSelected?.();
+      const show = !!layer && window.innerWidth > 900;
+      hud.classList.toggle('visible', show);
+      if (!layer) return;
+      $('.mk97-hud-name', hud).textContent = layer.name || layer.type || 'Selected layer';
+      const lock = $('[data-mk97-poster-action="lock"]', hud);
+      if (lock) lock.textContent = layer.locked ? 'Unlock' : 'Lock';
+      if (lastSelected !== layer.id) {
+        lastSelected = layer.id;
+        const frame = $('#posterCanvasFrame');
+        frame?.classList.remove('mk97-selection-pulse');
+        requestAnimationFrame(() => frame?.classList.add('mk97-selection-pulse'));
+      }
+    }
+
+    const originalRenderInspector = editor.renderInspector?.bind(editor);
+    if (originalRenderInspector) {
+      editor.renderInspector = function(...args) {
+        const result = originalRenderInspector(...args);
+        requestAnimationFrame(syncHud);
+        return result;
+      };
+    }
+
+    stage.addEventListener('wheel', event => {
+      if (!(event.ctrlKey || event.metaKey)) return;
+      event.preventDefault();
+      const delta = event.deltaY > 0 ? -.05 : .05;
+      editor.state.zoom = Math.max(.10, Math.min(1.5, editor.state.zoom + delta));
+      editor.applyZoom?.();
+    }, {passive:false});
+
+    const commands = [
+      ['▦','Templates','Browse cricket templates','T',() => { $('[data-poster-tab="templates"]')?.click(); editor.openMobileSheet?.('templates'); }],
+      ['▧','Media','Upload or add a photo','M',() => { $('[data-poster-tab="media"]')?.click(); editor.openMobileSheet?.('media'); }],
+      ['T','Add headline','Create a new text layer','H',() => editor.addText?.('headline')],
+      ['◇','Add element','Add a cricket graphic','E',() => editor.addElement?.('ball')],
+      ['✦','Effects / Adjust','Open selected layer controls','A',() => window.matchMedia('(max-width:900px)').matches ? editor.openMobileInspector?.('adjust') : $('#posterRightSidebar')?.scrollIntoView({behavior:'smooth',block:'nearest'})],
+      ['▱','Layers','Open layer management','L',() => window.location.href='layers.html'],
+      ['⌗','Toggle grid','Precision layout grid','G',() => { editor.state.gridEnabled=!editor.state.gridEnabled; editor.safeRender?.(); editor.renderInspector?.(); editor.commit?.(); }],
+      ['◎','Fit canvas','Fit design to workspace','F',() => editor.fitCanvas?.()],
+      ['⇩','Export','Export full-resolution poster','X',() => editor.openExport?.()]
+    ];
+
+    function openPalette() {
+      if ($('.mk97-command-backdrop')) return;
+      const backdrop = document.createElement('div');
+      backdrop.className = 'mk97-command-backdrop';
+      backdrop.innerHTML = `<div class="mk97-command"><div class="mk97-command-head"><span>⌘</span><input aria-label="Quick actions" placeholder="Search tools and actions..."></div><div class="mk97-command-list"></div></div>`;
+      document.body.appendChild(backdrop);
+      const input = $('input', backdrop), list = $('.mk97-command-list', backdrop);
+      const render = () => {
+        const q = (input.value || '').trim().toLowerCase();
+        const visible = commands.filter(x => `${x[1]} ${x[2]}`.toLowerCase().includes(q));
+        list.innerHTML = visible.map((x,i)=>`<button class="mk97-command-item ${i===0?'active':''}" data-index="${commands.indexOf(x)}"><span class="icon">${x[0]}</span><span><b>${x[1]}</b><small>${x[2]}</small></span><kbd>${x[3]}</kbd></button>`).join('');
+      };
+      const close = () => backdrop.remove();
+      render();
+      input.addEventListener('input', render);
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Escape') { e.preventDefault(); close(); }
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          const first = $('.mk97-command-item', list);
+          if (first) { commands[Number(first.dataset.index)][4](); close(); }
+        }
+      });
+      list.addEventListener('click', e => {
+        const item = e.target.closest('.mk97-command-item');
+        if (!item) return;
+        commands[Number(item.dataset.index)][4](); close();
+      });
+      backdrop.addEventListener('click', e => { if (e.target === backdrop) close(); });
+      requestAnimationFrame(()=>input.focus());
+    }
+
+    document.addEventListener('keydown', event => {
+      const target = event.target;
+      const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement;
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); openPalette(); return; }
+      if (!typing && event.key === '/') { event.preventDefault(); openPalette(); return; }
+      if (!typing && event.key === 'Escape' && editor.state.selectedId) {
+        editor.state.selectedId = null; editor.safeRender?.(); editor.renderInspector?.(); syncHud();
+      }
+    });
+
+    window.addEventListener('resize', syncHud, {passive:true});
+    syncHud();
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', waitForEditor, {once:true});
+  else waitForEditor();
 })();

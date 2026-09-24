@@ -43,10 +43,10 @@ No external JavaScript dependency is required.
 (() => {
   "use strict";
 
-  const BUILD_VERSION = "12.0.0-pro";
+  const BUILD_VERSION = "22.0.0-pro-mobile-timeline";
   const STATUS_KEY = "__FWCWL_VIDEO_STATUS__";
   const ROOT_ID = "fwcwlVideoStudio";
-  const STYLE_ID = "fwcwlVideoStudioStyleV12";
+  const STYLE_ID = "fwcwlVideoStudioStyleV22";
   const PROJECT_KEY = "fwcwl.video.project.v12";
   const DB_NAME = "fwcwl-video-studio-v12";
   const DB_STORE = "assets";
@@ -221,6 +221,8 @@ No external JavaScript dependency is required.
       this.autosaveTimer = 0;
       this.exporting = false;
       this.exportCancel = false;
+      this.timelineSnap = true;
+      this.timelineSnapTime = null;
       this.audioContext = null;
       this.recordDestination = null;
       this.masterGain = null;
@@ -532,6 +534,7 @@ No external JavaScript dependency is required.
       <button id="vTimelineSplit">✂ Split</button>
       <button id="vTimelineDuplicate">⧉ Duplicate</button>
       <button id="vTimelineDelete">× Delete</button>
+      <button id="vSnapTimeline" class="active">✦ Snap</button>
     </div>
     <div class="v-timeline-head-right">
       <span class="v-kicker">TIMELINE</span>
@@ -548,6 +551,7 @@ No external JavaScript dependency is required.
       <div class="v-inner" id="vTimelineInner">
         <div class="v-ruler" id="vRuler"></div>
         ${TRACKS.map(t => `<div class="v-track-row" data-track="${t.id}"></div>`).join("")}
+        <div class="v-snap-guide" id="vSnapGuide"></div>
         <div class="v-playhead" id="vPlayhead"></div>
       </div>
     </div>
@@ -624,6 +628,11 @@ No external JavaScript dependency is required.
       $("#vZoomIn", this.root).addEventListener("click", () => {
         this.state.timelineZoom = clamp(this.state.timelineZoom + 15, 35, 260);
         this.renderTimeline();
+      });
+      $("#vSnapTimeline", this.root)?.addEventListener("click", event => {
+        this.timelineSnap = !this.timelineSnap;
+        event.currentTarget.classList.toggle("active", this.timelineSnap);
+        this.toast(this.timelineSnap ? "Magnetic snapping on" : "Magnetic snapping off");
       });
 
       $("#vExport", this.root).addEventListener("click", () => this.openExport());
@@ -739,6 +748,35 @@ No external JavaScript dependency is required.
       });
     }
 
+    getTimelineSnap(value, clip, edge = "start") {
+      if (!this.timelineSnap) return { value, snapped: false, target: null };
+      const threshold = Math.max(.035, 10 / Math.max(35, this.state.timelineZoom));
+      const targets = [0, this.state.currentTime, ...(this.state.markers || [])];
+      this.state.clips.forEach(other => {
+        if (!other || other.id === clip?.id || other.visible === false) return;
+        targets.push(other.start, other.start + other.duration);
+      });
+      let best = null;
+      let dist = Infinity;
+      for (const target of targets) {
+        const d = Math.abs(Number(value) - Number(target));
+        if (d < dist && d <= threshold) { dist = d; best = Number(target); }
+      }
+      if (best == null) return { value, snapped: false, target: null };
+      return { value: round(best, 3), snapped: true, target: best };
+    }
+
+    showTimelineSnapGuide(time = null) {
+      const guide = $("#vSnapGuide", this.root);
+      if (!guide) return;
+      if (time == null || Number.isNaN(Number(time))) {
+        guide.classList.remove("show");
+        return;
+      }
+      guide.style.left = `${Number(time) * this.state.timelineZoom}px`;
+      guide.classList.add("show");
+    }
+
     bindTimelinePointerDelegation() {
       this.timelineInner.addEventListener("pointerdown", event => {
         const trim = event.target.closest(".v-trim");
@@ -787,17 +825,28 @@ No external JavaScript dependency is required.
         const c = this.drag.clip;
 
         if (this.drag.mode === "move") {
-          c.start = clamp(round(this.drag.originalStart + delta, 3), 0, Math.max(0, this.state.duration - .1));
+          const raw = clamp(round(this.drag.originalStart + delta, 3), 0, Math.max(0, this.state.duration - .1));
+          const snap = this.getTimelineSnap(raw, c, "start");
+          c.start = clamp(snap.value, 0, Math.max(0, this.state.duration - .1));
+          this.showTimelineSnapGuide(snap.snapped ? snap.target : null);
         } else if (this.drag.mode === "trim-left") {
           const maxDelta = this.drag.originalDuration - .15;
-          const used = clamp(delta, -this.drag.originalStart, maxDelta);
+          let used = clamp(delta, -this.drag.originalStart, maxDelta);
+          const rawStart = round(this.drag.originalStart + used, 3);
+          const snap = this.getTimelineSnap(rawStart, c, "start");
+          if (snap.snapped) used = snap.value - this.drag.originalStart;
           c.start = round(this.drag.originalStart + used, 3);
           c.duration = round(this.drag.originalDuration - used, 3);
+          this.showTimelineSnapGuide(snap.snapped ? snap.target : null);
           if (c.type === "video" || c.type === "audio") {
             c.trimIn = Math.max(0, round(this.drag.originalTrimIn + used * (c.speed || 1), 3));
           }
         } else if (this.drag.mode === "trim-right") {
-          c.duration = clamp(round(this.drag.originalDuration + delta, 3), .15, this.state.duration - c.start);
+          const rawDuration = clamp(round(this.drag.originalDuration + delta, 3), .15, this.state.duration - c.start);
+          const rawEnd = c.start + rawDuration;
+          const snap = this.getTimelineSnap(rawEnd, c, "end");
+          c.duration = snap.snapped ? clamp(round(snap.value - c.start, 3), .15, this.state.duration - c.start) : rawDuration;
+          this.showTimelineSnapGuide(snap.snapped ? snap.target : null);
         }
 
         this.recalculateDuration();
@@ -811,6 +860,7 @@ No external JavaScript dependency is required.
           this.drag = null;
           this.commit();
         }
+        this.showTimelineSnapGuide(null);
         this.scrub = null;
       });
     }
@@ -2373,4 +2423,210 @@ ${isAudio || c.type === "video" ? `
   }else{
     boot();
   }
+})();
+
+
+/* ============================================================
+   MK97 V22 — PRO VIDEO TIMELINE + MOBILE TOOL WORKFLOW
+   Additive UI layer. Existing video engine/render/export is preserved.
+============================================================ */
+(() => {
+  'use strict';
+  const $ = (s,r=document)=>r.querySelector(s);
+  const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+
+  function waitForEditor(){
+    const editor = window.FWCWLVideoEditor;
+    if(!editor || !editor.root){ setTimeout(waitForEditor,120); return; }
+    if(window.__MK97_VIDEO_V22__) return;
+    window.__MK97_VIDEO_V22__ = true;
+    install(editor);
+  }
+
+  function install(editor){
+    const root = editor.root;
+    const style = document.createElement('style');
+    style.id = 'mk97VideoV22Style';
+    style.textContent = `
+      #fwcwlVideoStudio .v-snap-guide{position:absolute;z-index:11;top:0;bottom:0;width:1px;background:#5bd5ff;box-shadow:0 0 0 1px rgba(91,213,255,.14),0 0 14px rgba(91,213,255,.35);opacity:0;pointer-events:none}
+      #fwcwlVideoStudio .v-snap-guide.show{opacity:1}
+      #fwcwlVideoStudio .v-timeline-head button.active{color:#f3c95b;border-color:rgba(243,201,91,.24);background:rgba(243,201,91,.08)}
+      #fwcwlVideoStudio .v-track-label{position:relative;padding-left:26px!important;font-weight:850!important;letter-spacing:.08em!important}
+      #fwcwlVideoStudio .v-track-label:before{position:absolute;left:9px;top:50%;transform:translateY(-50%);color:#778692;font-size:10px}
+      #fwcwlVideoStudio .v-track-label:nth-child(1):before{content:'▣'}
+      #fwcwlVideoStudio .v-track-label:nth-child(2):before{content:'✦'}
+      #fwcwlVideoStudio .v-track-label:nth-child(3):before{content:'◇'}
+      #fwcwlVideoStudio .v-track-label:nth-child(4):before{content:'T'}
+      #fwcwlVideoStudio .v-track-label:nth-child(5):before{content:'♫'}
+      #fwcwlVideoStudio .v-track-row{background:linear-gradient(90deg,rgba(255,255,255,.018),rgba(255,255,255,.008))}
+      #fwcwlVideoStudio .v-clip{height:31px!important;border-radius:9px!important;box-shadow:0 5px 14px rgba(0,0,0,.22)!important;transition:border-color .12s ease,box-shadow .12s ease,transform .12s ease}
+      #fwcwlVideoStudio .v-clip:hover{transform:translateY(-1px)}
+      #fwcwlVideoStudio .v-clip.selected{border-color:#f3c95b!important;box-shadow:0 0 0 1px rgba(243,201,91,.22),0 8px 18px rgba(0,0,0,.28)!important}
+      #fwcwlVideoStudio .v-clip[data-type="audio"]:after{content:'';position:absolute;left:10px;right:10px;top:11px;height:8px;opacity:.34;background:repeating-linear-gradient(90deg,#65e0b7 0 2px,transparent 2px 5px);clip-path:polygon(0 45%,4% 20%,8% 75%,12% 25%,16% 68%,20% 34%,24% 80%,28% 18%,32% 65%,36% 40%,40% 72%,44% 22%,48% 65%,52% 30%,56% 82%,60% 20%,64% 74%,68% 35%,72% 69%,76% 20%,80% 78%,84% 33%,88% 70%,92% 24%,96% 62%,100% 45%)}
+      #fwcwlVideoStudio .mk97-v-clipbar{
+        position:absolute;z-index:90;left:50%;bottom:52px;transform:translate(-50%,10px);
+        display:flex;align-items:center;gap:6px;max-width:calc(100% - 24px);padding:7px;border:1px solid rgba(255,255,255,.08);border-radius:17px;
+        background:rgba(8,13,18,.91);backdrop-filter:blur(16px);box-shadow:0 16px 44px rgba(0,0,0,.34);opacity:0;pointer-events:none;transition:.18s ease
+      }
+      #fwcwlVideoStudio .mk97-v-clipbar.visible{opacity:1;pointer-events:auto;transform:translate(-50%,0)}
+      #fwcwlVideoStudio .mk97-v-clipbar .clipname{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 8px;color:#dfe6eb;font-size:9px;font-weight:850}
+      #fwcwlVideoStudio .mk97-v-clipbar button{height:34px;padding:0 10px;border:1px solid rgba(255,255,255,.08);border-radius:11px;background:#0e1720;color:#b8c3cc;font-size:8px;font-weight:800}
+      #fwcwlVideoStudio .mk97-v-clipbar button.primary{color:#171309;border-color:transparent;background:linear-gradient(180deg,#ffdf86,#f3c95b)}
+      #fwcwlVideoStudio .mk97-v-mobile-scrim{display:none}
+      #fwcwlVideoStudio .mk97-v-mobile-dock{display:none}
+      @media(max-width:900px){
+        #fwcwlVideoStudio.active{grid-template-rows:minmax(0,1fr) 300px!important;padding-bottom:78px!important}
+        #fwcwlVideoStudio .v-main{grid-template-columns:1fr!important;min-height:0!important}
+        #fwcwlVideoStudio .v-center{grid-template-rows:auto minmax(0,1fr) 52px!important}
+        #fwcwlVideoStudio .v-toolbar{overflow:auto;gap:8px;justify-content:flex-start!important;padding:8px 10px!important}
+        #fwcwlVideoStudio .v-toolbar-group{flex:0 0 auto}
+        #fwcwlVideoStudio .v-preview-wrap{padding:10px!important}
+        #fwcwlVideoStudio .v-playbar{min-height:52px}
+        #fwcwlVideoStudio .v-left,#fwcwlVideoStudio .v-right{
+          position:fixed!important;z-index:12010!important;left:8px!important;right:8px!important;bottom:84px!important;
+          width:auto!important;height:min(68dvh,600px)!important;max-height:none!important;border:1px solid rgba(255,255,255,.09)!important;border-radius:24px!important;
+          background:linear-gradient(180deg,#101a24,#0a1118)!important;box-shadow:0 28px 80px rgba(0,0,0,.55)!important;
+          transform:translateY(calc(100% + 110px));transition:transform .24s cubic-bezier(.2,.8,.2,1);overflow:hidden!important
+        }
+        #fwcwlVideoStudio .v-left.mk97-open,#fwcwlVideoStudio .v-right.mk97-open{transform:translateY(0)}
+        #fwcwlVideoStudio .v-panel-scroll,#fwcwlVideoStudio .v-inspector{height:calc(100% - 52px)!important}
+        #fwcwlVideoStudio .v-left:before,#fwcwlVideoStudio .v-right:before{content:'';position:absolute;z-index:4;left:50%;top:7px;transform:translateX(-50%);width:44px;height:4px;border-radius:99px;background:rgba(255,255,255,.14)}
+        #fwcwlVideoStudio .mk97-v-mobile-scrim{position:fixed;z-index:12000;inset:0;display:block;background:rgba(1,4,7,.54);backdrop-filter:blur(7px);opacity:0;pointer-events:none;transition:.2s ease}
+        #fwcwlVideoStudio .mk97-v-mobile-scrim.visible{opacity:1;pointer-events:auto}
+        #fwcwlVideoStudio .mk97-v-mobile-dock{
+          position:fixed;z-index:12100;left:8px;right:8px;bottom:8px;display:flex;gap:7px;padding:7px;overflow-x:auto;scrollbar-width:none;
+          border:1px solid rgba(255,255,255,.09);border-radius:22px;background:rgba(8,13,18,.94);backdrop-filter:blur(20px);box-shadow:0 20px 56px rgba(0,0,0,.46)
+        }
+        #fwcwlVideoStudio .mk97-v-mobile-dock button{flex:1 0 74px;min-height:52px;border:0;border-radius:16px;background:transparent;color:#82919d;display:grid;place-items:center;gap:2px;font-size:8px;font-weight:750}
+        #fwcwlVideoStudio .mk97-v-mobile-dock button span{font-size:17px}
+        #fwcwlVideoStudio .mk97-v-mobile-dock button.active{background:rgba(243,201,91,.08);color:#f3c95b}
+        #fwcwlVideoStudio .mk97-v-mobile-dock button.export{color:#171309;background:linear-gradient(180deg,#ffdf86,#f3c95b)}
+        #fwcwlVideoStudio .v-timeline{border-radius:22px 22px 0 0;overflow:hidden;border:1px solid rgba(255,255,255,.06);border-bottom:0}
+        #fwcwlVideoStudio .v-timeline-head{overflow:auto;gap:8px}
+        #fwcwlVideoStudio .v-timeline-head-left,#fwcwlVideoStudio .v-timeline-head-right{flex:0 0 auto}
+        #fwcwlVideoStudio .v-timeline-body{grid-template-columns:74px minmax(0,1fr)!important}
+        #fwcwlVideoStudio .v-track-label{font-size:6px!important;padding-left:23px!important}
+        #fwcwlVideoStudio .mk97-v-clipbar{bottom:88px;max-width:calc(100% - 18px);overflow:auto}
+        #fwcwlVideoStudio .mk97-v-clipbar .clipname{max-width:100px}
+      }
+    `;
+    document.head.appendChild(style);
+
+    const clipbar = document.createElement('div');
+    clipbar.className = 'mk97-v-clipbar';
+    clipbar.innerHTML = `
+      <span class="clipname">Selected clip</span>
+      <button class="primary" data-v22clip="split">Split</button>
+      <button data-v22clip="duplicate">Duplicate</button>
+      <button data-v22clip="keyframe">◇ Keyframe</button>
+      <button data-v22clip="inspector">Edit</button>
+      <button data-v22clip="delete">Delete</button>
+    `;
+    root.appendChild(clipbar);
+
+    const scrim = document.createElement('div');
+    scrim.className = 'mk97-v-mobile-scrim';
+    root.appendChild(scrim);
+
+    const dock = document.createElement('nav');
+    dock.className = 'mk97-v-mobile-dock';
+    dock.setAttribute('aria-label','Video editing tools');
+    dock.innerHTML = `
+      <button data-v22tool="media"><span>▣</span>Media</button>
+      <button data-v22tool="audio"><span>♫</span>Audio</button>
+      <button data-v22tool="text"><span>T</span>Text</button>
+      <button data-v22tool="effects"><span>✦</span>Effects</button>
+      <button data-v22tool="color"><span>◉</span>Color</button>
+      <button data-v22tool="motion"><span>↗</span>Motion</button>
+      <button data-v22tool="transition"><span>⋈</span>Transition</button>
+      <button class="export" data-v22tool="export"><span>⇩</span>Export</button>
+    `;
+    root.appendChild(dock);
+
+    function closeSheets(){
+      $('.v-left',root)?.classList.remove('mk97-open');
+      $('.v-right',root)?.classList.remove('mk97-open');
+      scrim.classList.remove('visible');
+      $$('[data-v22tool]',dock).forEach(b=>b.classList.remove('active'));
+    }
+    function openLeft(panel){
+      closeSheets();
+      const left=$('.v-left',root); left?.classList.add('mk97-open'); scrim.classList.add('visible');
+      const tab=$(`[data-vtab="${panel}"]`,root); tab?.click();
+    }
+    function openInspector(label){
+      closeSheets();
+      const right=$('.v-right',root); right?.classList.add('mk97-open'); scrim.classList.add('visible');
+      requestAnimationFrame(()=>{
+        const sections=$$('.v-section',root);
+        const target=sections.find(s=>{
+          const text=(s.textContent||'').toLowerCase();
+          return text.includes(label.toLowerCase());
+        });
+        target?.scrollIntoView({behavior:'smooth',block:'start'});
+      });
+    }
+    scrim.addEventListener('click',closeSheets);
+
+    dock.addEventListener('click',e=>{
+      const b=e.target.closest('[data-v22tool]'); if(!b)return;
+      const tool=b.dataset.v22tool;
+      $$('[data-v22tool]',dock).forEach(x=>x.classList.toggle('active',x===b));
+      if(tool==='media') openLeft('media');
+      else if(tool==='audio') openLeft('media');
+      else if(tool==='text') openLeft('create');
+      else if(tool==='effects') openInspector('effects');
+      else if(tool==='color') openInspector('color');
+      else if(tool==='motion') openInspector('motion');
+      else if(tool==='transition') openInspector('transition');
+      else if(tool==='export'){ closeSheets(); $('#vExport',root)?.click(); }
+    });
+
+    clipbar.addEventListener('click',e=>{
+      const b=e.target.closest('[data-v22clip]'); if(!b)return;
+      const action=b.dataset.v22clip;
+      if(action==='split') editor.splitSelected?.();
+      if(action==='duplicate') editor.duplicateSelected?.();
+      if(action==='keyframe') editor.addKeyframe?.();
+      if(action==='delete') editor.deleteSelected?.();
+      if(action==='inspector') openInspector('transform');
+      syncClipbar();
+    });
+
+    function syncClipbar(){
+      const clip=editor.selectedClip?.();
+      clipbar.classList.toggle('visible',!!clip);
+      if(clip) $('.clipname',clipbar).textContent=clip.name||clip.type||'Selected clip';
+    }
+
+    const originalSelect=editor.selectClip?.bind(editor);
+    if(originalSelect){
+      editor.selectClip=function(...args){ const result=originalSelect(...args); requestAnimationFrame(syncClipbar); return result; };
+    }
+    const originalRenderTimeline=editor.renderTimeline?.bind(editor);
+    if(originalRenderTimeline){
+      editor.renderTimeline=function(...args){ const result=originalRenderTimeline(...args); requestAnimationFrame(syncClipbar); return result; };
+    }
+
+    root.addEventListener('dblclick',e=>{
+      const clipEl=e.target.closest('.v-clip');
+      if(!clipEl)return;
+      editor.selectClip?.(clipEl.dataset.clipId);
+      if(window.innerWidth<=900) openInspector('transform');
+    });
+
+    document.addEventListener('keydown',e=>{
+      if(!editor.state?.active)return;
+      const typing=e.target instanceof HTMLInputElement||e.target instanceof HTMLTextAreaElement||e.target instanceof HTMLSelectElement;
+      if(typing)return;
+      if(e.key.toLowerCase()==='s'&&!e.ctrlKey&&!e.metaKey){ editor.splitSelected?.(); }
+      if(e.key.toLowerCase()==='k'&&!e.ctrlKey&&!e.metaKey){ editor.addKeyframe?.(); }
+      if(e.key==='Escape')closeSheets();
+    });
+
+    syncClipbar();
+  }
+
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',waitForEditor,{once:true});
+  else waitForEditor();
 })();
