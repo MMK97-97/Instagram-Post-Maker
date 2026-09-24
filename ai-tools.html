@@ -1,1 +1,74 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05080c"><title>AI / Smart Tools — MK97 Creative Studio</title><link rel="stylesheet" href="studio.css?v=19"></head><body data-nav="more" class=""><div class="page"><header class="topbar"><a class="brand" href="index.html"><span class="brandmark"><img src="assets/MK97.png" alt="MK97"></span><span><b>MK97</b><small>CREATIVE STUDIO</small></span></a><div class="top-title">AI / Smart Tools<small>CRICKET CREATOR ECOSYSTEM</small></div><a class="icon-btn" href="more.html">☷</a></header><main class="main"><div class="split"><section><div class="ai-list"><div class="ai-tool"><span class="ico">✂</span><div><b>Smart Cutout</b><small>Browser-local background separation for clean/simple backgrounds.</small></div><span>›</span></div><div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#3f77ff,#16339a)">◫</span><div><b>Auto Caption</b><small>Build match captions from your template information.</small></div><span>›</span></div><div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#18a973,#0d6848)">↻</span><div><b>Background Replace</b><small>Use transparent cutouts with a new poster background.</small></div><span>›</span></div><div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#d85b48,#7a251d)">✦</span><div><b>Style Match</b><small>Apply your saved MK97/FWCWL brand treatment.</small></div><span>›</span></div></div></section><aside class="panel"><h3>Smart Cutout</h3><label class="upload">Upload image<input id="aiUpload" type="file" accept="image/*" hidden></label><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px"><img id="aiOriginal" hidden style="width:100%;aspect-ratio:1;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#c8c8c8"><img id="aiResult" hidden style="width:100%;aspect-ratio:1;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:repeating-conic-gradient(#aaa 0 25%,#ddd 0 50%) 50%/14px 14px"></div><button id="removeBgBtn" class="gold-btn" style="width:100%;margin-top:12px">Remove Background</button><a class="ghost-btn" href="poster-editor.html" style="width:100%;margin-top:8px">Open Result in Poster Studio</a></aside></div></main><div data-bottomnav></div></div><script src="studio-data.js?v=19"></script><script src="studio.js?v=19"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#05080c">
+  <title>AI / Smart Tools — MK97 Creative Studio</title>
+  <link rel="stylesheet" href="studio.css?v=20">
+</head>
+<body data-nav="more">
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brandmark"><img src="assets/MK97.png" alt="MK97"></span><span><b>MK97</b><small>CREATIVE STUDIO</small></span></a>
+      <div class="top-title">AI / Smart Tools<small>CREATE SMARTER</small></div>
+      <div class="top-tools"><a class="icon-btn" href="poster-editor.html">✎</a></div>
+    </header>
+
+    <main class="main">
+      <section class="hero-banner" style="min-height:auto">
+        <div class="eyebrow">AI TOOLS</div>
+        <h1 style="font-size:clamp(28px,4vw,52px)">Smart tools for extraordinary cricket content.</h1>
+        <p>Use clean UI shortcuts for cutout, captions, style matching and background replacement.</p>
+        <div class="search-row section">
+          <div class="search"><input placeholder="Search AI tools, or describe what you want to create..."></div>
+          <button class="filter-btn" type="button">☰</button>
+        </div>
+        <div class="chips">
+          <button class="chip active" type="button">All Tools</button>
+          <button class="chip" type="button">Edit</button>
+          <button class="chip" type="button">Enhance</button>
+          <button class="chip" type="button">Generate</button>
+          <button class="chip" type="button">Social</button>
+        </div>
+      </section>
+
+      <div class="detail-layout section">
+        <section class="ai-list">
+          <div class="ai-tool"><span class="ico">✂</span><div><b>Magic Cutout</b><small>Remove or isolate subjects for cricket posters and covers.</small></div><span>›</span></div>
+          <div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#1bce86,#0b6f4a)">◫</span><div><b>Background Remove</b><small>Clean backgrounds in one click for uploaded images.</small></div><span>›</span></div>
+          <div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#ff67c6,#882b65)">CC</span><div><b>Auto Captions</b><small>Generate styled captions and creative text blocks.</small></div><span>›</span></div>
+          <div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#ffb548,#75420c)">✦</span><div><b>Highlight Detection</b><small>Spot strong moments for video and social highlights.</small></div><span>›</span></div>
+          <div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#4b84ff,#1d3477)">✎</span><div><b>Style Transfer</b><small>Apply a premium MK97 look to visuals.</small></div><span>›</span></div>
+          <div class="ai-tool"><span class="ico" style="background:linear-gradient(135deg,#f4c454,#6d4b0e);color:#17130a">▣</span><div><b>Brand Match</b><small>Apply saved logo, brand colors and style instantly.</small></div><span>›</span></div>
+        </section>
+
+        <aside class="stack">
+          <div class="info-card">
+            <h3>Smart Cutout</h3>
+            <label class="upload">Upload image<input id="aiUpload" type="file" accept="image/*" hidden></label>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px">
+              <img id="aiOriginal" hidden style="width:100%;aspect-ratio:1;object-fit:contain;border:1px solid var(--line);border-radius:14px;background:#c8c8c8">
+              <img id="aiResult" hidden style="width:100%;aspect-ratio:1;object-fit:contain;border:1px solid var(--line);border-radius:14px;background:repeating-conic-gradient(#aaa 0 25%,#ddd 0 50%) 50%/14px 14px">
+            </div>
+            <button id="removeBgBtn" class="gold-btn" style="width:100%;margin-top:12px" type="button">Remove Background</button>
+            <a class="ghost-btn" href="poster-editor.html" style="width:100%;margin-top:8px">Open Result in Poster Studio</a>
+          </div>
+          <div class="info-card">
+            <h3>Suggested workflow</h3>
+            <div class="meta-list">
+              <div class="meta-row"><span class="meta-icon">1</span><div><b>Upload image</b><div class="muted-sm">Choose a player, logo or object</div></div><span>•</span></div>
+              <div class="meta-row"><span class="meta-icon">2</span><div><b>Cutout & save</b><div class="muted-sm">Remove background and keep transparent PNG</div></div><span>•</span></div>
+              <div class="meta-row"><span class="meta-icon">3</span><div><b>Place in poster</b><div class="muted-sm">Continue editing in the poster workspace</div></div><span>→</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <div data-bottomnav></div>
+  </div>
+  <script src="studio-data.js?v=20"></script>
+  <script src="studio.js?v=20"></script>
+</body>
+</html>

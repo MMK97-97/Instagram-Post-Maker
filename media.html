@@ -1,1 +1,87 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#05080c"><title>Media / Asset Browser — MK97 Creative Studio</title><link rel="stylesheet" href="studio.css?v=19"></head><body data-nav="create" class=""><div class="page"><header class="topbar"><a class="brand" href="index.html"><span class="brandmark"><img src="assets/MK97.png" alt="MK97"></span><span><b>MK97</b><small>CREATIVE STUDIO</small></span></a><div class="top-title">Media / Asset Browser<small>CRICKET CREATOR ECOSYSTEM</small></div><a class="icon-btn" href="more.html">☷</a></header><main class="main"><div class="split"><section><label class="upload">＋ Upload Photo<input id="mediaUpload" type="file" accept="image/*" hidden><br><small style="color:var(--muted)">JPG · PNG · WEBP · under 2.5 MB for cross-page transfer</small></label><div class="section-head"><h2>Cricket Assets</h2></div><div class="asset-grid"><div class="asset">🏏</div><div class="asset">🏟️</div><div class="asset">🏆</div><div class="asset">🔴</div><div class="asset">🥇</div><div class="asset">⚡</div><div class="asset">📣</div><div class="asset">🎟️</div><div class="asset">🥅</div><div class="asset">🧢</div><div class="asset">⭐</div><div class="asset">🔥</div></div></section><aside class="panel"><h3>Uploaded Asset</h3><img id="uploadedPreview" hidden style="width:100%;border-radius:14px;border:1px solid var(--line)"><p style="color:var(--muted);font-size:10px;line-height:1.5">Your latest upload can be inserted automatically when Poster Studio opens.</p><a class="gold-btn" href="poster-editor.html">Open Poster Studio</a></aside></div></main><div data-bottomnav></div></div><script src="studio-data.js?v=19"></script><script src="studio.js?v=19"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#05080c">
+  <title>Media / Asset Browser — MK97 Creative Studio</title>
+  <link rel="stylesheet" href="studio.css?v=20">
+</head>
+<body data-nav="create">
+  <div class="page">
+    <header class="topbar">
+      <a class="brand" href="index.html"><span class="brandmark"><img src="assets/MK97.png" alt="MK97"></span><span><b>MK97</b><small>CREATIVE STUDIO</small></span></a>
+      <div class="top-title">Media Browser<small>ASSETS & UPLOADS</small></div>
+      <div class="top-tools"><a class="icon-btn" href="poster-editor.html">✎</a></div>
+    </header>
+
+    <main class="main">
+      <div class="section-head" style="margin-top:4px">
+        <div><h2>Media / Asset Browser</h2><p>Images, logos, backgrounds, overlays and audio-ready visuals.</p></div>
+      </div>
+
+      <div class="search-row">
+        <div class="search"><input placeholder="Search assets... e.g. player, stadium, trophy"></div>
+        <button class="filter-btn" type="button">☰</button>
+      </div>
+
+      <div class="asset-tabs section">
+        <div class="tab-card active"><span>🖼</span>Images</div>
+        <div class="tab-card"><span>▷</span>Videos</div>
+        <div class="tab-card"><span>◎</span>Logos</div>
+        <div class="tab-card"><span>◫</span>Backgrounds</div>
+        <div class="tab-card"><span>✦</span>Overlays</div>
+        <div class="tab-card"><span>♫</span>Audio</div>
+      </div>
+
+      <div class="detail-layout section">
+        <section class="stack">
+          <label class="upload">
+            ＋ Upload Photo
+            <input id="mediaUpload" type="file" accept="image/*" hidden>
+            <br><small style="color:var(--muted)">JPG · PNG · WEBP · under 2.5 MB for cross-page transfer</small>
+          </label>
+
+          <div class="section-head" style="margin-top:0">
+            <div><h3>Premium assets</h3><p>Cricket-themed visuals for posters and reels.</p></div>
+            <a class="see-link" href="poster-editor.html">Use in editor →</a>
+          </div>
+
+          <div class="asset-grid">
+            <div class="asset">🏏<div class="asset-label"><span>Player</span><span>↓</span></div></div>
+            <div class="asset">🏟️<div class="asset-label"><span>Stadium</span><span>↓</span></div></div>
+            <div class="asset">🏆<div class="asset-label"><span>Trophy</span><span>↓</span></div></div>
+            <div class="asset">🔴<div class="asset-label"><span>Ball</span><span>↓</span></div></div>
+            <div class="asset">⚡<div class="asset-label"><span>Overlay</span><span>↓</span></div></div>
+            <div class="asset">✨<div class="asset-label"><span>Particles</span><span>↓</span></div></div>
+            <div class="asset">🧢<div class="asset-label"><span>Player Kit</span><span>↓</span></div></div>
+            <div class="asset">🎟️<div class="asset-label"><span>Event</span><span>↓</span></div></div>
+            <div class="asset">🔥<div class="asset-label"><span>Smoke FX</span><span>↓</span></div></div>
+          </div>
+        </section>
+
+        <aside class="stack">
+          <div class="info-card">
+            <h3>Uploaded asset</h3>
+            <img id="uploadedPreview" hidden style="width:100%;border-radius:16px;border:1px solid var(--line)">
+            <p class="muted-sm">Your latest upload can be inserted automatically when Poster Studio opens.</p>
+            <a class="gold-btn" href="poster-editor.html">Open Poster Studio</a>
+          </div>
+          <div class="info-card">
+            <h3>Smart workflow</h3>
+            <div class="meta-list">
+              <div class="meta-row"><span class="meta-icon">1</span><div><b>Upload asset</b><div class="muted-sm">Add a player, logo or background</div></div><span>•</span></div>
+              <div class="meta-row"><span class="meta-icon">2</span><div><b>Remove background</b><div class="muted-sm">Use AI tools for a clean cutout</div></div><span>•</span></div>
+              <div class="meta-row"><span class="meta-icon">3</span><div><b>Place on poster</b><div class="muted-sm">Continue in the editor</div></div><span>→</span></div>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <div data-bottomnav></div>
+  </div>
+  <script src="studio-data.js?v=20"></script>
+  <script src="studio.js?v=20"></script>
+</body>
+</html>

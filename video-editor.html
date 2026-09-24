@@ -68,10 +68,13 @@
     href="styles.css?v=10.0.0"
   >
 
+  <link rel="stylesheet" href="studio.css?v=20">
+  <link rel="stylesheet" href="editor-premium.css?v=21">
+
 </head>
 
 
-<body>
+<body data-editor="video">
 
   <!-- ========================================================
        APP SHELL
@@ -81,6 +84,8 @@
     id="appShell"
     class="app-shell"
   >
+
+    <div class="editor-page-label" aria-hidden="true"></div>
 
 
     <!-- ======================================================
@@ -145,7 +150,7 @@
           <input
             id="projectName"
             type="text"
-            value="FWCWL Campaign"
+            value="MK97 Campaign"
             autocomplete="off"
             spellcheck="false"
             aria-label="Project name"
@@ -269,7 +274,7 @@
     <main
       id="posterWorkspace"
       class="poster-workspace"
-      aria-label="Poster editor"
+      aria-label="Video editor"
     >
 
 
@@ -355,7 +360,7 @@
               <div>
 
                 <div class="micro-label">
-                  FWCWL DESIGN LIBRARY
+                  MK97 DESIGN LIBRARY
                 </div>
 
 
@@ -1118,7 +1123,7 @@
 
             <i aria-hidden="true"></i>
 
-            FWCWL POSTER ENGINE
+            MK97 CREATIVE ENGINE
           </span>
 
 
@@ -1772,6 +1777,12 @@
       }, { once: true });
     })();
   </script>
+
+  <nav class="mk97-video-links" aria-label="Video tools">
+    <a href="motion-effects.html">Motion</a>
+    <a href="audio-tools.html">Audio</a>
+    <a href="video-export.html">Export</a>
+  </nav>
 
 </body>
 
