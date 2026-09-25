@@ -93,7 +93,9 @@ $('#undoBtn').onclick=undo;$('#redoBtn').onclick=redo;
 $('#fitBtn').onclick=()=>{state.zoom=1;render()};$('#zoomIn').onclick=()=>{state.zoom=Math.min(2.2,state.zoom+.1);render()};$('#zoomOut').onclick=()=>{state.zoom=Math.max(.45,state.zoom-.1);render()};$('#gridBtn').onclick=()=>{state.grid=!state.grid;$('#gridBtn').classList.toggle('active',state.grid);render()};
 $('#canvasSize').onchange=e=>{push();[state.w,state.h]=sizes[e.target.value];$('#posterDimensions').textContent=`${state.w} × ${state.h}`;render()};
 function exportPoster(){const keep=state.selected;state.selected=null;render();const a=document.createElement('a');a.download=`${($('#projectName').value||'MK97-poster').replace(/[^\w-]+/g,'-')}.png`;a.href=canvas.toDataURL('image/png',1);a.click();state.selected=keep;render();bump('exports');toast('PNG exported')}
+function sendToVideo(){const keep=state.selected;state.selected=null;render();const dataUrl=canvas.toDataURL('image/png',1);state.selected=keep;render();store.set('mk97.pendingVideoAsset',{src:dataUrl,name:($('#projectName').value||'MK97-poster')+'.png',kind:'image',timestamp:Date.now()});toast('Opening in Video Studio...');setTimeout(()=>{location.href='video-editor.html?import=poster'},300)}
 $('#exportBtn').onclick=exportPoster;$('#mobileExport').onclick=exportPoster;
+const sendBtn=$('#sendToVideoBtn');if(sendBtn)sendBtn.onclick=sendToVideo;
 function syncAll(){render();renderLayers();renderInspector()}
 function closeSheets(){$$('.bottom-sheet').forEach(s=>s.classList.remove('open'));$('#sheetBackdrop').classList.remove('open')}
 function openSheet(id){closeSheets();$(id).classList.add('open');$('#sheetBackdrop').classList.add('open')}
